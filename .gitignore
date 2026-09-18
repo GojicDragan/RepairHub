@@ -1,0 +1,79 @@
+# Lokale Konfiguration und Geheimnisse; nur Platzhalter werden versioniert.
+.env
+.env.*
+!.env.example
+secrets/
+certs/
+certificates/
+.ssh/
+.netrc
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+vault-password*
+*.vault-pass
+
+# Laufzeitdaten, Datenbanksicherungen und lokale Instanzen.
+instance/
+pgdata/
+backups/
+uploads/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.dump
+*.sql
+*.sql.gz
+*.backup
+*.log
+
+# Python-Umgebungen, Paketbau und lokale Qualitätsberichte.
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+reports/
+artifacts/
+.qa/
+.cache/
+
+# Editor- und Betriebssystemdateien.
+.idea/
+.vscode/
+*.swp
+*~
+~$*
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Aktuell nicht gestagte Unterlagen und Dokumentation (lokal behalten).
+/AGENTS.md
+/Diagramme/
+/LeitfadenSchriftlicheArbeiten_V2.1_abS2604 (1).pdf
+/Praxisarbeit IT-Architektur, Datenbank und Web-Entwicklung-Aufgabenstellung (2).pdf
+/Projektarbeit_Beschreibung.txt
+/RepairHub_Projektdokumentation_DockerCompose.docx
+/docs/architecture.md
+/docs/decisions.md
+/docs/requirements.md
+/docs/work-log.md
+/tests/README.md
