@@ -1,0 +1,43 @@
+[project]
+name = "repairhub"
+version = "0.1.0"
+description = "Verwaltung privater Reparaturfälle für Haushaltsgeräte und Elektronik"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "Flask==3.1.3",
+    "Flask-Login==0.6.3",
+    "Flask-Migrate==4.1.0",
+    "Flask-SQLAlchemy==3.1.1",
+    "Flask-WTF==1.3.0",
+    "SQLAlchemy==2.0.54",
+    "email-validator==2.3.0",
+    "gunicorn==26.2.0",
+    "itsdangerous==2.2.0",
+    "psycopg[binary]==3.3.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.16.8",
+]
+
+[tool.uv]
+# Deployment-Anwendung, kein auf PyPI zu veröffentlichendes Paket.
+package = false
+required-version = "==0.12.16"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: benötigt eine isolierte PostgreSQL-Testdatenbank",
+]
