@@ -591,3 +591,23 @@ Diese lokale Docker-Prüfung verwendet Shell-Argumentzerlegung und ersetzt keine
 neuen Lauf des GitHub-Runners. Der korrigierte Workflow muss mit einem neuen
 Commit gepusht werden; ein erneuter Lauf des alten Commits enthält die Korrektur
 nicht. Der vollständige Actions-Durchlauf bleibt bis dahin offen.
+
+## Korrektur: ungültiges Präfix in Dockerfile-Zeile 1
+
+Bezug T02, M07, N03–N05/N07–N10. Das vom Benutzer bereitgestellte Build-Log
+zeigt einen Dockerfile-Parserfehler vor dem eigentlichen Imagebau. Vor dem ersten
+`FROM` standen zusätzliche Zeichen; dieses Präfix wurde entfernt. Image-Pins,
+Build-Stufen und Laufzeitkonfiguration bleiben unverändert.
+
+Lokale Prüfung erfolgreich (Exit 0):
+
+```bash
+DOCKER_CONFIG=/tmp/repairhub-t02-public-docker docker build \
+  --platform linux/amd64 --target app \
+  --build-arg VCS_REF=local-dockerfile-fix \
+  --tag repairhub-app:dockerfile-fix-check .
+```
+
+Der Build verwendete vorhandene Cache-Schichten. Kein Image veröffentlicht und
+kein Deployment ausgeführt. Der vollständige GitHub-Build-Job einschliesslich
+Archivierung, Smoke-Test und E2E muss mit dem korrigierten Commit erneut laufen.

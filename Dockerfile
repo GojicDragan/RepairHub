@@ -1,4 +1,4 @@
-0k-.äüp6n9ki7k8-.äü98ü89k,8üijkn i9vk8ij-7ü 7v FROM ghcr.io/astral-sh/uv:0.12.16@sha256:adc68cd785ca65ea25c0611043b0a00b4ea3a22e1b54102fc084406d888082ee AS uv
+FROM ghcr.io/astral-sh/uv:0.12.16@sha256:adc68cd785ca65ea25c0611043b0a00b4ea3a22e1b54102fc084406d888082ee AS uv
 FROM python:3.13.15-alpine3.24@sha256:1a63a53928ce53d2b0baf08092a703f4840ac5dfbd61fd48802dbf48e08c801e AS dependencies
 COPY --from=uv /uv /usr/local/bin/uv
 WORKDIR /srv/repairhub
