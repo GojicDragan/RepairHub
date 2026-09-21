@@ -1,5 +1,7 @@
-:root { font-family: system-ui, sans-serif; color: #172b37; background: #f4f6f7; }
-body { margin: 0; }
-main { max-width: 44rem; margin: 12vh auto; padding: 2rem; }
-h1 { font-size: 2.5rem; letter-spacing: -.04em; }
-p { line-height: 1.6; }
+/* Bootstrap übernimmt Layout und Komponenten; hier nur RepairHub-Anpassungen. */
+main.container { max-width: 60rem; }
+h1 { letter-spacing: -.04em; }
+a { text-underline-offset: .2em; }
+a:focus-visible, button:focus-visible { outline: 3px solid #145c78; outline-offset: 4px; }
+.skip-link { position: absolute; top: -5rem; left: 1rem; padding: 1rem; background: white; z-index: 1100; }
+.skip-link:focus { top: 1rem; }

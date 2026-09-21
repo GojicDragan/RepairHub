@@ -64,6 +64,8 @@ jobs:
         run: |
           uv run --locked ruff check . --output-format=json --output-file reports/test/ruff.json
           uv run --locked ruff format --check .
+      - name: Frontend unit tests (Node.js on ubuntu-24.04 runner)
+        run: node --test --test-reporter=junit tests/unit/frontend/*.test.mjs > reports/test/frontend.xml
       - name: Unit tests and architecture
         run: uv run --locked pytest tests/unit --junitxml=reports/test/unit.xml
       - name: Integration tests with PostgreSQL and real processes

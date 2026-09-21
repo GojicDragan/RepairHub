@@ -22,6 +22,8 @@ def check_release(repository: str, ref: str, commit: str, event: str) -> None:
         raise ValueError("Dieses Ereignis darf keine Produktion ausliefern.")
     if not ref.startswith("refs/tags/"):
         raise ValueError("Nur Release-Tags dürfen veröffentlichen.")
+    # Erneut gegen den aktuellen Remote-Stand prüfen: Ein wartender CI-Lauf kann
+    # inzwischen veraltet sein, obwohl seine vorherigen Prüfungen erfolgreich waren.
     if remote_commit(repository, "refs/heads/main") != commit:
         raise ValueError(
             "Veralteter oder fremder Release: Commit ist nicht der aktuelle main-Stand."

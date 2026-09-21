@@ -1,11 +1,11 @@
 # T02 – Umsetzung und Prüfnachweis
 
 Prüfstände: **18. und 21. September 2026**. Bezug: **M07, N03–N05, N07–N10** sowie die
-CI/CD- und Ansible-Vorgaben. T02 ist lokal implementiert und geprüft. Der echte
-GitHub-Actions-/GHCR-Durchlauf und die Bereitstellung auf dem Produktionshost
-bleiben offen. Eine dauerhafte externe Testumgebung entfällt gemäss dem neueren
-Benutzerentscheid. T02 ist deshalb noch nicht vollständig
-abgenommen.
+CI/CD- und Ansible-Vorgaben. T02 ist lokal implementiert und geprüft.
+Der Benutzer hat den erfolgreichen Produktionsdurchlauf im Chat bestätigt.
+Run-Link, Commit und veröffentlichter Image-Digest wurden noch nicht übermittelt;
+eine eigene Prüfung dieses GitHub-Laufs durch den Agenten ist nicht erfolgt.
+Eine dauerhafte externe Testumgebung entfällt gemäss Benutzerentscheid.
 
 Die folgenden Abschnitte dokumentieren die aufeinanderfolgenden Prüfstände.
 Die ursprüngliche Veröffentlichung aller drei Images wurde durch den späteren
@@ -20,9 +20,9 @@ Nachweise erhalten.
 
 ## Aktueller Ticketstatus am 21.09.2026
 
-**Teilweise erfüllt: implementiert und lokal geprüft, externe Abnahme offen.**
-Die nachfolgenden historischen Nachweise sind keine Aussage über einen bereits
-veröffentlichten oder auf der VM betriebenen Release.
+**Implementierung und lokale Prüfungen vorhanden; Produktionsdurchlauf vom Benutzer bestätigt.**
+Offen bleibt die Ergänzung der konkreten Release-Nachweise. Frühere Angaben zu
+einem noch ausstehenden Produktionslauf beschreiben den damaligen Prüfstand.
 
 | Bestandteil | Aktueller Stand |
 | --- | --- |
@@ -37,16 +37,14 @@ veröffentlichten oder auf der VM betriebenen Release.
 Für die vollständige Abnahme noch nachzuweisen:
 
 - [ ] GitHub-Environment, Secrets/Variables und Branch-/Tagregeln tatsächlich eingerichtet und geprüft.
-- [ ] Vollständiger erfolgreicher Actions-Lauf mit App-Veröffentlichung in GHCR; Run-Link, Commit und Registry-Digest dokumentiert.
-- [ ] Bootstrap und Deployment auf der vorgesehenen Produktions-VM erfolgreich.
+- [x] Erfolgreicher Produktionsdurchlauf vom Benutzer bestätigt (nicht separat vom Agenten geprüft).
+- [ ] Run-Link, Commit und Registry-Digest zum bestätigten Durchlauf dokumentiert.
 - [ ] Öffentliche Zertifikatsausstellung und HTTPS-Bereitschaft für lab19.ifalabs.org nachgewiesen; Timer auf dem Zielhost geprüft.
 - [ ] Erneute Auslieferung desselben Releases und relevanter Fehlerpfad mit dem endgültigen Stand nachgewiesen.
 
-Aktuell bestehen lokale, noch nicht eingecheckte Änderungen. Die Dateien
-`docs/work-log.md` und `docs/decisions.md` bleiben auf früheren Benutzerwunsch
-Git-ignoriert. Die wesentlichen T02-Nachweise und Betriebsanweisungen stehen
-auch in den nicht ignorierten Dokumenten dieses Ordners; diese sind derzeit
-noch unversioniert und müssen mit der Implementierung eingecheckt werden.
+Die Dateien `docs/work-log.md` und `docs/decisions.md` bleiben auf früheren
+Benutzerwunsch Git-ignoriert. Die wesentlichen T02-Nachweise und Betriebsanweisungen
+stehen auch in den versionierten Dokumenten dieses Ordners.
 
 ## Geprüfter Umfang
 
@@ -718,3 +716,13 @@ Keine Docker-Dienst-/systemd-Installation auf der echten VM durchgeführt.
 Paketauflösung und Plattformauswahl sind geprüft, vollständiger Bootstrap und
 Produktionsdeployment folgen im Release-Workflow. SSH- und gegebenenfalls
 sudo-Passwort kommen weiterhin ausschliesslich aus der Environment production.
+
+
+## Bestätigung des Produktionsdurchlaufs durch den Benutzer
+
+Der Benutzer meldet: «der produktionsdurchlauf hat funktioniert.» Damit ist der
+bisher ausstehende erfolgreiche Produktionslauf als Benutzerbestätigung erfasst.
+Kein neuer Test oder Deployment wurde vom Agenten ausgeführt. Run-Link, Commit,
+Release-Tag und Image-Digest sind noch zu ergänzen. Die Bestätigung allein belegt
+keine zusätzliche Wiederholungsprüfung auf der VM oder tatsächlich erfolgte
+spätere Zertifikatserneuerung. Nächster Implementierungstask ist T03.

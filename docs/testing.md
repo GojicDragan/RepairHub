@@ -130,3 +130,17 @@ Testschritt verhindert den erfolgreichen Abschluss seiner Stufe und damit
 Veröffentlichung/Deployment. Tatsächliche Ergebnisse stehen in
 [t02-validation.md](t02-validation.md); eine lokale Prüfung ersetzt keinen
 ausgeführten GitHub-Actions-Lauf.
+
+## T03: Grundgerüst und Fehlerfälle
+
+Zusätzlich geprüft werden getrennte HTML-/JSON-404-Antworten, erhaltene
+Allow-/Retry-After-Header, CSRF-/Grössenfehler, 500 ohne Geheimnisse in Antwort
+oder Log, unabhängige Factory-Instanzen und sichere Umgebungsdefaults.
+Die Browsertests prüfen Fehlerseite, Rückkehr zur Startseite und API-404 durch
+Nginx. Ein Datenbankausfall wird mit echtem gestopptem PostgreSQL getestet.
+Konkrete Befehle und Ergebnisse: [t03-validation.md](t03-validation.md).
+
+Frontend-Unit-Tests: `node --test tests/unit/frontend/*.test.mjs` (Node.js 22 oder
+neuer), zusätzlich zu pytest. DOM-freie Presenter werden mit Fake-Views geprüft;
+DOM-Bindung, Bootstrap und progressive Erweiterung deckt Playwright ab.
+Siehe [Frontend-Aufbau](frontend.md).

@@ -105,7 +105,7 @@ Voraussetzungen. Einteilung, Berichte und Erweiterungsregeln stehen in
 [docs/testing.md](docs/testing.md).
 
 Die acht Paketgrenzen unter `app/` folgen dem Komponentenentwurf. Fachlogik gehört
-in die zuständigen Services, Datenzugriff in `app.data`; `app.services.costs`
+in die zuständigen Services, Datenzugriff in `app.data`; `app.domains.costs`
 bleibt eine reine Berechnungskomponente. Die technische Bereitschaftsprüfung
 verwendet eine gekapselte Diagnoseschnittstelle.
 
@@ -128,3 +128,15 @@ gehören ebenfalls nicht in das Repository oder Quellcode-ZIP.
 TLS für `lab19.ifalabs.org` stellt Ansible beim ersten Deployment über Let’s Encrypt
 aus. Ein Host-Timer prüft danach die Erneuerung. Dafür `ACME_EMAIL` im GitHub-Environment
 setzen und Port 80 für HTTP-01 freigeben; siehe [TLS-Einrichtung](docs/ci-cd.md#tls-automatisch-ausstellen-und-erneuern).
+
+Das in T03 vervollständigte Grundgerüst verwendet eine gemeinsame deutsche
+Seitenvorlage sowie getrennte HTML- und JSON-Fehlerantworten. Konfiguration,
+Fehlervertrag, Komponentengrenzen und Abnahme stehen in
+[docs/t03-validation.md](docs/t03-validation.md). Fachliche Konten- und
+Reparaturfunktionen folgen mit den nächsten Tasks.
+
+Das Frontend verwendet lokal eingebundenes Bootstrap und JavaScript mit kleinen
+DOM-Adaptern nach dem Humble-Object-Muster: [Frontend-Aufbau](docs/frontend.md).
+
+Fachkomponenten bleiben frameworkfrei; Datenadapter implementieren ihre Ports und
+werden injiziert: [Architektur und Abhängigkeitsumkehr](docs/domain-architecture.md).
