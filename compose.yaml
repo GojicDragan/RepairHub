@@ -1,0 +1,64 @@
+name: repairhub
+
+services:
+  db:
+    image: ${REPAIRHUB_POSTGRES_IMAGE:-repairhub-db:development}
+    env_file:
+      - path: ${DATABASE_ENV_FILE:-./runtime.env}
+        format: raw
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB fehlt}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER fehlt}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+    restart: unless-stopped
+
+  app:
+    image: ${REPAIRHUB_APP_IMAGE:-repairhub-app:development}
+    env_file:
+      - path: ${APP_ENV_FILE:-./runtime.env}
+        format: raw
+    environment:
+      REPAIRHUB_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  nginx:
+    image: ${REPAIRHUB_NGINX_IMAGE:-nginx:1.30.5-alpine@sha256:a5f2157a0302eb0c5e300415effb63a9e70ed1eb9c107283819bf6d149ab607c}
+    entrypoint: [nginx]
+    command: [-c, /etc/nginx/repairhub/nginx.conf, -g, 'daemon off;']
+    depends_on:
+      app:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:mode=0755,size=32m
+      - /var/run:mode=0755,size=1m
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      # Der externe Abnahmetest prüft zusätzlich die Zertifikatskette und den Namen.
+      test: [CMD, wget, --no-check-certificate, --spider, -q, 'https://127.0.0.1:8443/health/ready']
+      interval: 15s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  pgdata:

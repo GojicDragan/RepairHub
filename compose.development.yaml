@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: .
+      target: app
+    environment:
+      REPAIRHUB_ENV: development
+    command: [gunicorn, '--bind=0.0.0.0:8000', '--workers=1', --reload, '--worker-tmp-dir=/tmp', '--forwarded-allow-ips=', 'app:create_app()']
+    volumes:
+      - ./app:/srv/repairhub/app:ro
+  nginx:
+    command: [-c, /etc/nginx/repairhub/development.conf, -g, 'daemon off;']
+    ports:
+      - '127.0.0.1:${HTTP_LOCAL_PORT:-8080}:8080'
+    volumes:
+      - ./deploy/nginx:/etc/nginx/repairhub:ro
+      - ./app/web/static:/usr/share/nginx/html/static:ro
+    healthcheck:
+      test: [CMD, wget, --spider, -q, 'http://127.0.0.1:8080/health/ready']

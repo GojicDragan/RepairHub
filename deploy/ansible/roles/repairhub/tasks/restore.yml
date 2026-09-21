@@ -1,0 +1,93 @@
+---
+- name: Identische Infrastruktur vor jedem App-Rollback verlangen
+  ansible.builtin.assert:
+    that:
+      - repairhub_infrastructure_fingerprint == repairhub_previous.infrastructure_fingerprint
+    fail_msg: Ein App-Rollback über eine Infrastrukturänderung hinweg ist nicht zulässig; einen kontrollierten Wartungslauf verwenden.
+
+- name: Vorherige unveränderte App-Konfiguration wiederherstellen
+  ansible.builtin.copy:
+    src: "{{ repairhub_previous.release_dir }}/compose.env"
+    dest: "{{ repairhub_infrastructure_dir }}/.env"
+    remote_src: true
+    mode: "0600"
+
+- name: Ausschliesslich vorherige Anwendung starten
+  community.docker.docker_compose_v2:
+    project_src: "{{ repairhub_infrastructure_dir }}"
+    project_name: "{{ repairhub_project_name }}"
+    files: [compose.yaml, compose.production.yaml]
+    services: [app]
+    dependencies: false
+    state: present
+    build: never
+    pull: never
+    wait: true
+    wait_timeout: "{{ repairhub_wait_timeout }}"
+  no_log: true
+
+- name: Statische Dateien der vorherigen Anwendung atomar aktivieren
+  ansible.builtin.include_tasks: activate_static.yml
+  vars:
+    repairhub_static_release_key: "{{ repairhub_previous.release_key }}"
+
+- name: Vorherige öffentliche Test-CA auf dem Controller vorbereiten
+  ansible.builtin.tempfile:
+    state: file
+    prefix: repairhub-rollback-ca-
+    suffix: .crt
+  delegate_to: localhost
+  become: false
+  register: repairhub_rollback_ca
+  when: repairhub_previous.smoke_ca_pem | default('') | length > 0
+  changed_when: false
+
+- name: Vorherigen API-Prüfzugang ohne Ausgabe lesen
+  ansible.builtin.slurp:
+    src: "{{ repairhub_previous.release_dir }}/smoke-account.json"
+  register: repairhub_previous_api_file
+  when: repairhub_previous.authenticated_api | default(false)
+  no_log: true
+
+- name: Vorherigen API-Prüfzugang für die Abnahme bestimmen
+  ansible.builtin.set_fact:
+    repairhub_previous_api: >-
+      {{ repairhub_previous_api_file.content | b64decode | from_json
+         if repairhub_previous_api_file.content is defined else {} }}
+  no_log: true
+
+- name: Wiederhergestellten Stand mit vorheriger URL und Zertifikatskette prüfen
+  block:
+    - name: Vorherige öffentliche Test-CA übernehmen
+      ansible.builtin.copy:
+        dest: "{{ repairhub_rollback_ca.path }}"
+        content: "{{ repairhub_previous.smoke_ca_pem }}\n"
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+      when: repairhub_rollback_ca.path is defined
+      changed_when: false
+    - name: Gemeinsame HTTPS-Prüfung für den Vorgänger ausführen
+      ansible.builtin.include_tasks: smoke.yml
+      vars:
+        repairhub_has_api: "{{ repairhub_previous.authenticated_api | default(false) }}"
+        repairhub_check_url: "{{ repairhub_previous.public_url }}"
+        repairhub_check_ca: "{{ repairhub_rollback_ca.path | default('') }}"
+        repairhub_check_username: "{{ repairhub_previous_api.username | default('') }}"
+        repairhub_check_password: "{{ repairhub_previous_api.password | default('') }}"
+        repairhub_check_repair_id: "{{ repairhub_previous_api.repair_id | default(0) }}"
+  always:
+    - name: Temporäre Rollback-CA vom Controller entfernen
+      ansible.builtin.file:
+        path: "{{ repairhub_rollback_ca.path }}"
+        state: absent
+      delegate_to: localhost
+      become: false
+      when: repairhub_rollback_ca.path is defined
+      changed_when: false
+
+- name: Wiederhergestellten Release vermerken
+  ansible.builtin.copy:
+    dest: "{{ repairhub_install_dir }}/current.json"
+    content: "{{ repairhub_previous | to_nice_json }}"
+    mode: "0600"

@@ -1,0 +1,343 @@
+---
+- name: Gepinnte Infrastruktur vom Controller lesen
+  ansible.builtin.set_fact:
+    repairhub_infrastructure: "{{ lookup('ansible.builtin.file', repairhub_infrastructure_file) | from_json }}"
+
+- name: Vollständig freigegebene Infrastruktur verlangen
+  ansible.builtin.assert:
+    that:
+      - repairhub_infrastructure.schema_version == 1
+      - repairhub_infrastructure.nginx_image is match('^[a-z0-9][a-z0-9.:/_-]+@sha256:[a-f0-9]{64}$')
+      - repairhub_infrastructure.postgres_image is match('^[a-z0-9][a-z0-9.:/_-]+@sha256:[a-f0-9]{64}$')
+      - repairhub_infrastructure.database_contract is match('^[a-zA-Z0-9@.:_+/-]{8,512}$')
+    fail_msg: >-
+      deploy/infrastructure.json benötigt freigegebene Nginx- und PostgreSQL-Digests;
+      die festgelegten offiziellen Infrastruktur-Images müssen vollständig gepinnt sein.
+
+- name: Gespeicherten Stand feststellen
+  ansible.builtin.stat:
+    path: "{{ repairhub_install_dir }}/{{ item }}.json"
+  loop: [current, highwater, infrastructure, infrastructure-pending]
+  register: repairhub_state_files
+
+- name: Gespeicherte Metadaten lesen
+  ansible.builtin.slurp:
+    src: "{{ repairhub_install_dir }}/{{ item.name }}.json"
+  loop:
+    - {name: current, index: 0}
+    - {name: highwater, index: 1}
+    - {name: infrastructure, index: 2}
+    - {name: infrastructure-pending, index: 3}
+  when: repairhub_state_files.results[item.index].stat.exists
+  register: repairhub_saved_files
+
+- name: Alten Zustand und Prüfumfang bestimmen
+  ansible.builtin.set_fact:
+    repairhub_previous: >-
+      {{ (repairhub_saved_files.results[0].content | b64decode | from_json)
+         if repairhub_saved_files.results[0].content is defined else {} }}
+    repairhub_highwater: >-
+      {{ (repairhub_saved_files.results[1].content | b64decode | from_json)
+         if repairhub_saved_files.results[1].content is defined else {} }}
+    repairhub_installed_infrastructure: >-
+      {{ (repairhub_saved_files.results[2].content | b64decode | from_json)
+         if repairhub_saved_files.results[2].content is defined else {} }}
+    repairhub_pending_infrastructure: >-
+      {{ (repairhub_saved_files.results[3].content | b64decode | from_json)
+         if repairhub_saved_files.results[3].content is defined else {} }}
+    repairhub_has_migrations: "{{ (lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json') | from_json).schema_migrations }}"
+    repairhub_has_api: "{{ (lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json') | from_json).authenticated_api }}"
+    repairhub_database_contract: "{{ repairhub_infrastructure.database_contract }}"
+
+- name: Veraltete Läufe und ungeprüfte Datenbank-Upgrades abweisen
+  ansible.builtin.assert:
+    that:
+      - repairhub_release_sequence | int >= repairhub_highwater.sequence | default(0) | int
+      - >-
+        repairhub_release_sequence | int != repairhub_highwater.sequence | default(0) | int
+        or repairhub_release_commit == repairhub_highwater.commit
+      - >-
+        not repairhub_installed_infrastructure or
+        repairhub_database_contract == repairhub_installed_infrastructure.database_contract
+      - >-
+        not repairhub_pending_infrastructure or
+        repairhub_database_contract == repairhub_pending_infrastructure.database_contract | default('')
+      - >-
+        not repairhub_infrastructure_maintenance or not repairhub_previous or
+        repairhub_app_image == repairhub_previous.app_image
+      - >-
+        not repairhub_previous or not repairhub_state_files.results[3].stat.exists or
+        repairhub_infrastructure_maintenance
+    fail_msg: >-
+      Veralteter Lauf, ungeprüfter Datenbankvertrag oder unvollständige Infrastrukturwartung.
+      infrastructure.yml darf keinen gleichzeitigen App-Image-Wechsel durchführen;
+      Datenbank-Vertragswechsel benötigen einen gesonderten geprüften Migrationsplan.
+
+- name: Voraussetzungen für spätere Migration und API-Prüfung erzwingen
+  ansible.builtin.assert:
+    that:
+      - not repairhub_has_migrations or repairhub_migration_mode in ['compatible', 'maintenance']
+      - not repairhub_has_migrations or repairhub_backup_fetch_dir | length > 0
+      - not repairhub_has_api or repairhub_api_smoke_username | length > 0
+      - not repairhub_has_api or repairhub_api_smoke_password | length > 0
+      - not repairhub_has_api or repairhub_api_smoke_repair_id | int > 0
+    fail_msg: Migrationen benötigen Kompatibilitätsentscheidung und externen Backup-Pfad; API benötigt ein separates Prüfkonto.
+  no_log: true
+
+- name: T02-Abnahmeumfang festhalten
+  ansible.builtin.debug:
+    msg:
+      migrations: "{{ 'aktiv' if repairhub_has_migrations else 'Nicht anwendbar: noch kein Schema (T04).' }}"
+      authenticated_api: "{{ 'aktiv' if repairhub_has_api else 'Nicht anwendbar: noch keine fachliche API (T09).' }}"
+
+- name: Öffentliche Test-CA für eine spätere Rollback-Prüfung erfassen
+  ansible.builtin.set_fact:
+    repairhub_smoke_ca_pem: >-
+      {{ lookup('ansible.builtin.file', repairhub_smoke_ca_path)
+         if repairhub_smoke_ca_path | length > 0 else '' }}
+
+- name: Infrastruktur-Konfiguration unabhängig vom App-Release bestimmen
+  ansible.builtin.set_fact:
+    repairhub_database_configuration_fingerprint: >-
+      {{ [repairhub_database_env, repairhub_postgres_user, repairhub_postgres_db] | to_json | hash('sha256') }}
+    repairhub_infrastructure_fingerprint: >-
+      {{ [repairhub_infrastructure, repairhub_database_env,
+          ([repairhub_tls_mode, repairhub_acme_email] if repairhub_tls_mode == 'acme'
+           else [repairhub_tls_certificate, repairhub_tls_private_key]),
+          repairhub_postgres_user, repairhub_postgres_db, repairhub_https_port,
+          repairhub_public_url, repairhub_smoke_ca_pem,
+          lookup('ansible.builtin.file', repairhub_repo_root + '/compose.yaml'),
+          lookup('ansible.builtin.file', repairhub_repo_root + '/compose.production.yaml'),
+          lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/nginx/nginx.conf')]
+         | to_json | hash('sha256') }}
+  no_log: true
+
+- name: Ungeplante Infrastrukturänderung bei App-Releases verhindern
+  ansible.builtin.assert:
+    that:
+      - >-
+        not repairhub_previous or repairhub_infrastructure_maintenance or
+        repairhub_installed_infrastructure.fingerprint | default('') == repairhub_infrastructure_fingerprint
+      - >-
+        not repairhub_installed_infrastructure or
+        repairhub_installed_infrastructure.database_configuration_fingerprint | default('') == repairhub_database_configuration_fingerprint
+      - >-
+        not repairhub_pending_infrastructure or repairhub_infrastructure_maintenance or
+        repairhub_pending_infrastructure.fingerprint == repairhub_infrastructure_fingerprint
+      - >-
+        not repairhub_pending_infrastructure or
+        repairhub_pending_infrastructure.database_configuration_fingerprint | default('') == repairhub_database_configuration_fingerprint
+    fail_msg: >-
+      Infrastruktur-Pins, Compose, Nginx, TLS oder Datenbankkonfiguration wurden geändert.
+      Zuerst infrastructure.yml mit dem aktuell laufenden App-Digest ausführen. Änderungen von
+      Datenbankname, Benutzer oder Passwort benötigen einen gesonderten geprüften Datenbank-Wartungsplan.
+
+- name: Zertifikat unabhängig vom App-Image verwalten
+  ansible.builtin.include_tasks: tls.yml
+  when: repairhub_tls_mode == 'acme'
+
+- name: Bestehende Infrastruktur vor normalen App-Releases prüfen
+  ansible.builtin.include_tasks: verify_infrastructure.yml
+  when:
+    - repairhub_previous | length > 0
+    - not repairhub_infrastructure_maintenance
+
+- name: Konfigurationsgebundene App-Release-Kennung berechnen
+  ansible.builtin.set_fact:
+    repairhub_manage_infrastructure: >-
+      {{ not repairhub_previous or repairhub_infrastructure_maintenance }}
+    repairhub_config_fingerprint: >-
+      {{ [repairhub_app_image, repairhub_infrastructure_fingerprint, repairhub_runtime_env,
+          repairhub_api_smoke_username, repairhub_api_smoke_password, repairhub_api_smoke_repair_id,
+          lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json')]
+         | to_json | hash('sha256') }}
+  no_log: true
+
+- name: Release-Verzeichnis bestimmen
+  ansible.builtin.set_fact:
+    repairhub_release_key: "{{ repairhub_release_commit }}-{{ repairhub_config_fingerprint[:16] }}"
+    repairhub_release_dir: "{{ repairhub_install_dir }}/releases/{{ repairhub_release_commit }}-{{ repairhub_config_fingerprint[:16] }}"
+
+- name: Höchsten angenommenen Lauf vor Auslieferung sichern
+  ansible.builtin.copy:
+    dest: "{{ repairhub_install_dir }}/highwater.json"
+    content: "{{ {'sequence': repairhub_release_sequence | int, 'commit': repairhub_release_commit} | to_nice_json }}\n"
+    mode: "0600"
+
+- name: Vorherige Release-Metadaten sichern
+  ansible.builtin.copy:
+    dest: "{{ repairhub_install_dir }}/previous.json"
+    content: "{{ repairhub_previous | to_nice_json }}\n"
+    mode: "0600"
+  when:
+    - repairhub_previous | length > 0
+    - repairhub_previous.release_dir != repairhub_release_dir
+
+- name: Geschütztes App-Release-Verzeichnis anlegen
+  ansible.builtin.file:
+    path: "{{ repairhub_release_dir }}"
+    state: directory
+    mode: "0700"
+
+- name: Versionierte Fähigkeiten zum App-Release sichern
+  ansible.builtin.copy:
+    src: "{{ repairhub_repo_root }}/deploy/capabilities.json"
+    dest: "{{ repairhub_release_dir }}/capabilities.json"
+    mode: "0600"
+
+- name: App-Konfiguration geschützt zum Release schreiben
+  ansible.builtin.copy:
+    dest: "{{ repairhub_release_dir }}/runtime.env"
+    content: "{{ repairhub_runtime_env }}"
+    mode: "0600"
+  no_log: true
+  diff: false
+
+- name: Späteren API-Prüfzugang geschützt zum Release ablegen
+  ansible.builtin.copy:
+    dest: "{{ repairhub_release_dir }}/smoke-account.json"
+    content: >-
+      {{ {'username': repairhub_api_smoke_username, 'password': repairhub_api_smoke_password,
+          'repair_id': repairhub_api_smoke_repair_id} | to_json }}
+    mode: "0600"
+  when: repairhub_has_api
+  no_log: true
+  diff: false
+
+- name: Lesenden Registry-Zugang vorbereiten
+  ansible.builtin.include_tasks: registry.yml
+
+- name: Anwendung unter unveränderter Infrastruktur ausliefern
+  environment:
+    DOCKER_CONFIG: "{{ repairhub_registry_config.path | default(omit) }}"
+  block:
+    - name: Erstinstallation oder ausdrückliche Infrastrukturwartung vorbereiten
+      ansible.builtin.include_tasks: infrastructure.yml
+      when: repairhub_manage_infrastructure
+
+    - name: Releasebezogene Compose-Werte sichern
+      ansible.builtin.copy:
+        dest: "{{ repairhub_release_dir }}/compose.env"
+        mode: "0600"
+        content: |
+          REPAIRHUB_APP_IMAGE={{ repairhub_app_image }}
+          REPAIRHUB_NGINX_IMAGE={{ repairhub_infrastructure.nginx_image }}
+          REPAIRHUB_POSTGRES_IMAGE={{ repairhub_infrastructure.postgres_image }}
+          APP_ENV_FILE={{ repairhub_release_dir }}/runtime.env
+          DATABASE_ENV_FILE={{ repairhub_infrastructure_dir }}/database.env
+          POSTGRES_USER={{ repairhub_postgres_user }}
+          POSTGRES_DB={{ repairhub_postgres_db }}
+          HTTPS_HOST_PORT={{ repairhub_https_port }}
+          NGINX_CONFIG_DIRECTORY={{ repairhub_infrastructure_dir }}/nginx
+          TLS_DIRECTORY={{ repairhub_infrastructure_dir }}/tls
+          STATIC_ROOT={{ repairhub_install_dir }}/www
+
+    - name: Gewählten App-Release im stabilen Compose-Projekt setzen
+      ansible.builtin.copy:
+        src: "{{ repairhub_release_dir }}/compose.env"
+        dest: "{{ repairhub_infrastructure_dir }}/.env"
+        remote_src: true
+        mode: "0600"
+
+    - name: Ausschliesslich freigegebenes Anwendungsimage ziehen
+      community.docker.docker_compose_v2_pull:
+        project_src: "{{ repairhub_infrastructure_dir }}"
+        project_name: "{{ repairhub_project_name }}"
+        files: [compose.yaml, compose.production.yaml]
+        services: [app]
+        policy: missing
+      no_log: true
+
+    - name: Infrastruktur nur bei Erstinstallation oder Wartung starten
+      ansible.builtin.include_tasks: infrastructure_start.yml
+      when: repairhub_manage_infrastructure
+
+    - name: Bestehende Datenbank auf Bereitschaft prüfen
+      community.docker.docker_compose_v2_exec:
+        project_src: "{{ repairhub_infrastructure_dir }}"
+        project_name: "{{ repairhub_project_name }}"
+        files: [compose.yaml, compose.production.yaml]
+        service: db
+        argv: [pg_isready, --username, "{{ repairhub_postgres_user }}", --dbname, "{{ repairhub_postgres_db }}"]
+      changed_when: false
+      no_log: true
+
+    - name: Statische Dateien aus exakt dem geprüften App-Image übernehmen
+      ansible.builtin.include_tasks: static.yml
+
+    - name: Spätere Schemaänderungen kontrolliert durchführen
+      ansible.builtin.include_tasks: migrate.yml
+      when:
+        - repairhub_has_migrations
+        - repairhub_previous.release_dir | default('') != repairhub_release_dir
+
+    - name: Ausschliesslich die Anwendung ausrollen
+      community.docker.docker_compose_v2:
+        project_src: "{{ repairhub_infrastructure_dir }}"
+        project_name: "{{ repairhub_project_name }}"
+        files: [compose.yaml, compose.production.yaml]
+        services: [app]
+        dependencies: false
+        state: present
+        build: never
+        pull: never
+        wait: true
+        wait_timeout: "{{ repairhub_wait_timeout }}"
+      no_log: true
+
+    - name: Statische Dateien des gestarteten App-Releases atomar aktivieren
+      ansible.builtin.include_tasks: activate_static.yml
+      vars:
+        repairhub_static_release_key: "{{ repairhub_release_key }}"
+
+    - name: Nginx ausschliesslich bei Erstinstallation oder Wartung verwalten
+      ansible.builtin.include_tasks: nginx.yml
+      when: repairhub_manage_infrastructure
+
+    - name: Externe HTTPS- und gegebenenfalls API-Abnahme durchführen
+      ansible.builtin.include_tasks: smoke.yml
+
+    - name: Erfolgreiche Infrastruktur ohne App-Commit festhalten
+      ansible.builtin.copy:
+        dest: "{{ repairhub_install_dir }}/infrastructure.json"
+        content: >-
+          {{ repairhub_infrastructure | combine({
+              'fingerprint': repairhub_infrastructure_fingerprint,
+              'database_configuration_fingerprint': repairhub_database_configuration_fingerprint}) | to_nice_json }}
+        mode: "0600"
+      when: repairhub_manage_infrastructure
+
+    - name: Erfolgreichen App-Release atomar vermerken
+      ansible.builtin.copy:
+        dest: "{{ repairhub_install_dir }}/current.json"
+        content: >-
+          {{ {'commit': repairhub_release_commit, 'sequence': repairhub_release_sequence | int,
+              'release_dir': repairhub_release_dir, 'release_key': repairhub_release_key,
+              'app_image': repairhub_app_image,
+              'infrastructure_fingerprint': repairhub_infrastructure_fingerprint,
+              'database_contract': repairhub_database_contract,
+              'authenticated_api': repairhub_has_api,
+              'public_url': repairhub_public_url, 'smoke_ca_pem': repairhub_smoke_ca_pem,
+              'schema_compatible': not repairhub_has_migrations or repairhub_migration_mode == 'compatible'}
+             | to_nice_json }}
+        mode: "0600"
+    - name: Abgeschlossene Infrastrukturwartung vermerken
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/infrastructure-pending.json"
+        state: absent
+      when: repairhub_manage_infrastructure
+
+  rescue:
+    - name: Vorherige Anwendung nur bei kompatiblem Schema und gleicher Infrastruktur wiederherstellen
+      ansible.builtin.include_tasks: restore.yml
+      when:
+        - repairhub_previous | length > 0
+        - repairhub_previous.infrastructure_fingerprint | default('') == repairhub_infrastructure_fingerprint
+        - not repairhub_has_migrations or repairhub_migration_mode == 'compatible'
+    - name: Fehlgeschlagenen Lauf auch nach App-Rollback als Fehler melden
+      ansible.builtin.fail:
+        msg: >-
+          Release-Abnahme fehlgeschlagen. Eine vorherige kompatible Anwendung mit identischer
+          Infrastruktur wurde soweit möglich wiederhergestellt. Fehlgeschlagene Infrastrukturwartung
+          benötigt einen kontrollierten erneuten Wartungslauf; kein automatisches Datenbank-Downgrade,
+          kein Zurückspielen von Daten und kein automatischer Infrastruktur-Rollback.

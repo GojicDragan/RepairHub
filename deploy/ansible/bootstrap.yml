@@ -1,0 +1,7 @@
+---
+- name: RepairHub Docker-Host vorbereiten
+  hosts: repairhub
+  become: true
+  gather_facts: true
+  roles:
+    - docker_host

@@ -1,0 +1,24 @@
+---
+repairhub_repo_root: "{{ playbook_dir }}/../.."
+repairhub_install_dir: /opt/repairhub
+repairhub_project_name: "repairhub-{{ repairhub_environment }}"
+repairhub_postgres_user: repairhub
+repairhub_postgres_db: repairhub
+repairhub_https_port: 443
+repairhub_wait_timeout: 120
+repairhub_migration_mode: ""
+repairhub_registry_username: ""
+repairhub_registry_password: ""
+repairhub_smoke_ca_path: ""
+repairhub_backup_fetch_dir: ""
+repairhub_api_smoke_username: ""
+repairhub_api_smoke_password: ""
+repairhub_api_smoke_repair_id: 0
+repairhub_infrastructure_file: "{{ repairhub_repo_root }}/deploy/infrastructure.json"
+repairhub_infrastructure_dir: "{{ repairhub_install_dir }}/infrastructure"
+repairhub_infrastructure_maintenance: false
+# Lokale Test-Fixtures dürfen ihre eigene CA bereitstellen. Produktion nutzt ACME.
+repairhub_tls_mode: acme
+repairhub_tls_certificate: ""
+repairhub_tls_private_key: ""
+repairhub_acme_email: ""

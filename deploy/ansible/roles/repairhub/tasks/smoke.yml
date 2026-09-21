@@ -1,0 +1,53 @@
+---
+- name: HTTPS-Erreichbarkeit vom Controller mit Zertifikatsprüfung kontrollieren
+  ansible.builtin.uri:
+    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/health/ready"
+    method: GET
+    status_code: 200
+    return_content: true
+    validate_certs: true
+    ca_path: "{{ (repairhub_check_ca | default(repairhub_smoke_ca_path)) or omit }}"
+    follow_redirects: none
+    timeout: 10
+  register: repairhub_https_check
+  until: >-
+    repairhub_https_check.status | default(0) == 200 and
+    repairhub_https_check.json.status | default('') == 'ready'
+  retries: 6
+  delay: 5
+  delegate_to: localhost
+  become: false
+
+- name: API-Prüftoken mit separatem Prüfkonto beziehen
+  ansible.builtin.uri:
+    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/auth/token"
+    method: POST
+    body_format: json
+    body:
+      username: "{{ repairhub_check_username | default(repairhub_api_smoke_username) }}"
+      password: "{{ repairhub_check_password | default(repairhub_api_smoke_password) }}"
+    status_code: 200
+    return_content: true
+    validate_certs: true
+    ca_path: "{{ (repairhub_check_ca | default(repairhub_smoke_ca_path)) or omit }}"
+    follow_redirects: none
+  register: repairhub_api_token
+  when: repairhub_has_api | default(false)
+  delegate_to: localhost
+  become: false
+  no_log: true
+
+- name: Eigenen API-Prüffall authentifiziert lesen
+  ansible.builtin.uri:
+    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/repairs/{{ repairhub_check_repair_id | default(repairhub_api_smoke_repair_id) }}"
+    method: GET
+    headers:
+      Authorization: "Bearer {{ repairhub_api_token.json.access_token }}"
+    status_code: 200
+    validate_certs: true
+    ca_path: "{{ (repairhub_check_ca | default(repairhub_smoke_ca_path)) or omit }}"
+    follow_redirects: none
+  when: repairhub_has_api | default(false)
+  delegate_to: localhost
+  become: false
+  no_log: true

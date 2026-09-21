@@ -1,0 +1,91 @@
+---
+- name: Unveränderliche Sicherung des bisherigen Infrastrukturstands feststellen
+  ansible.builtin.stat:
+    path: "{{ repairhub_install_dir }}/infrastructure-history/{{ repairhub_installed_infrastructure.fingerprint }}/.complete"
+  register: repairhub_infrastructure_snapshot
+  when: repairhub_installed_infrastructure | length > 0
+
+- name: Vorherige Infrastrukturkonfiguration einmalig vor Wartungsänderungen sichern
+  when:
+    - repairhub_installed_infrastructure | length > 0
+    - repairhub_installed_infrastructure.fingerprint != repairhub_infrastructure_fingerprint
+    - not repairhub_infrastructure_snapshot.stat.exists | default(false)
+  block:
+    - name: Geschütztes Verzeichnis für bisherige Infrastrukturstände anlegen
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/infrastructure-history/{{ repairhub_installed_infrastructure.fingerprint }}"
+        state: directory
+        mode: "0700"
+    - name: Vorherige Compose-, Nginx-, Datenbank- und TLS-Dateien bewahren
+      ansible.builtin.copy:
+        src: "{{ repairhub_infrastructure_dir }}/"
+        dest: "{{ repairhub_install_dir }}/infrastructure-history/{{ repairhub_installed_infrastructure.fingerprint }}/"
+        remote_src: true
+        mode: preserve
+      no_log: true
+      diff: false
+    - name: Zugehörige Infrastruktur-Digests sichern
+      ansible.builtin.copy:
+        dest: "{{ repairhub_install_dir }}/infrastructure-history/{{ repairhub_installed_infrastructure.fingerprint }}/metadata.json"
+        content: "{{ repairhub_installed_infrastructure | to_nice_json }}"
+        mode: "0600"
+    - name: Vollständigen Originalstand vor späterem Überschreiben schützen
+      ansible.builtin.copy:
+        dest: "{{ repairhub_install_dir }}/infrastructure-history/{{ repairhub_installed_infrastructure.fingerprint }}/.complete"
+        content: "{{ repairhub_installed_infrastructure.fingerprint }}\n"
+        mode: "0600"
+
+- name: Unvollständige Infrastrukturänderung bis zur erfolgreichen Abnahme kennzeichnen
+  ansible.builtin.copy:
+    dest: "{{ repairhub_install_dir }}/infrastructure-pending.json"
+    content: >-
+      {{ {'fingerprint': repairhub_infrastructure_fingerprint,
+          'database_contract': repairhub_infrastructure.database_contract,
+          'database_configuration_fingerprint': repairhub_database_configuration_fingerprint} | to_json }}
+    mode: "0600"
+  when: repairhub_installed_infrastructure.fingerprint | default('') != repairhub_infrastructure_fingerprint
+
+- name: Geschützte stabile Infrastrukturverzeichnisse anlegen
+  ansible.builtin.file:
+    path: "{{ repairhub_infrastructure_dir }}/{{ item }}"
+    state: directory
+    mode: "0700"
+  loop: ["", nginx, tls]
+
+- name: Öffentlich lesbare statische Dateiverzeichnisse anlegen
+  ansible.builtin.file:
+    path: "{{ repairhub_install_dir }}/www/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: ["", releases]
+
+- name: Geprüfte gemeinsame Compose-Dateien ins stabile Projekt übernehmen
+  ansible.builtin.copy:
+    src: "{{ repairhub_repo_root }}/{{ item }}"
+    dest: "{{ repairhub_infrastructure_dir }}/{{ item }}"
+    mode: "0600"
+  loop: [compose.yaml, compose.production.yaml]
+
+- name: Stabile Nginx-Konfiguration bereitstellen
+  ansible.builtin.copy:
+    src: "{{ repairhub_repo_root }}/deploy/nginx/nginx.conf"
+    dest: "{{ repairhub_infrastructure_dir }}/nginx/nginx.conf"
+    mode: "0600"
+  register: repairhub_nginx_config
+
+- name: Stabile Datenbank- und TLS-Konfiguration geschützt bereitstellen
+  ansible.builtin.copy:
+    dest: "{{ repairhub_infrastructure_dir }}/{{ item.path }}"
+    content: "{{ item.content }}"
+    mode: "0600"
+  loop:
+    - path: database.env
+      content: "{{ repairhub_database_env }}"
+    - path: tls/server.crt
+      content: "{{ repairhub_tls_certificate }}"
+    - path: tls/server.key
+      content: "{{ repairhub_tls_private_key }}"
+  when: item.path == 'database.env' or repairhub_tls_mode == 'provided'
+  register: repairhub_infrastructure_secrets
+  no_log: true
+  diff: false

@@ -1,0 +1,123 @@
+---
+- name: Geschütztes Backup-Verzeichnis vorbereiten
+  ansible.builtin.file:
+    path: "{{ repairhub_install_dir }}/backups"
+    state: directory
+    mode: "0700"
+
+- name: Eindeutige Sicherungsdatei für diesen Migrationsversuch reservieren
+  ansible.builtin.tempfile:
+    path: "{{ repairhub_install_dir }}/backups"
+    state: file
+    prefix: "{{ repairhub_release_commit }}-{{ repairhub_release_sequence }}-"
+    suffix: .dump
+  register: repairhub_backup_file
+
+- name: Datenbank sichern und temporäre Kopie zuverlässig entfernen
+  block:
+    - name: Temporäres Backup-Verzeichnis vor dem Schreiben schützen
+      community.docker.docker_compose_v2_exec:
+        project_src: "{{ repairhub_infrastructure_dir }}"
+        project_name: "{{ repairhub_project_name }}"
+        files: [compose.yaml, compose.production.yaml]
+        service: db
+        argv: [mkdir, -m, "0700", "/tmp/repairhub-backup-{{ repairhub_backup_file.path | basename }}"]
+      changed_when: false
+      no_log: true
+
+    - name: Datenbank vor Migration in PostgreSQL sichern
+      community.docker.docker_compose_v2_exec:
+        project_src: "{{ repairhub_infrastructure_dir }}"
+        project_name: "{{ repairhub_project_name }}"
+        files: [compose.yaml, compose.production.yaml]
+        service: db
+        argv:
+          - pg_dump
+          - --format=custom
+          - --username
+          - "{{ repairhub_postgres_user }}"
+          - --dbname
+          - "{{ repairhub_postgres_db }}"
+          - "--file=/tmp/repairhub-backup-{{ repairhub_backup_file.path | basename }}/database.dump"
+      changed_when: true
+      no_log: true
+
+    - name: Sicherung aus dem Container übernehmen
+      ansible.builtin.command:
+        argv:
+          - docker
+          - compose
+          - --project-name
+          - "{{ repairhub_project_name }}"
+          - -f
+          - compose.yaml
+          - -f
+          - compose.production.yaml
+          - cp
+          - "db:/tmp/repairhub-backup-{{ repairhub_backup_file.path | basename }}/database.dump"
+          - "{{ repairhub_backup_file.path }}"
+        chdir: "{{ repairhub_infrastructure_dir }}"
+      changed_when: true
+      no_log: true
+
+    - name: Backup-Dateirechte setzen
+      ansible.builtin.file:
+        path: "{{ repairhub_backup_file.path }}"
+        mode: "0600"
+
+    - name: Geschütztes Backup-Ziel ausserhalb des Zielhosts anlegen
+      ansible.builtin.file:
+        path: "{{ repairhub_backup_fetch_dir }}/{{ repairhub_environment }}"
+        state: directory
+        mode: "0700"
+      delegate_to: localhost
+      become: false
+
+    - name: Externe Sicherungsdatei vor dem Schreiben schützen
+      ansible.builtin.copy:
+        content: ""
+        dest: "{{ repairhub_backup_fetch_dir }}/{{ repairhub_environment }}/{{ repairhub_backup_file.path | basename }}"
+        force: false
+        mode: "0600"
+      delegate_to: localhost
+      become: false
+
+    - name: Backup ausserhalb des Zielhosts sichern
+      ansible.builtin.fetch:
+        src: "{{ repairhub_backup_file.path }}"
+        dest: "{{ repairhub_backup_fetch_dir }}/{{ repairhub_environment }}/{{ repairhub_backup_file.path | basename }}"
+        flat: true
+      no_log: true
+  always:
+    - name: Temporäre Sicherung im Datenbankcontainer entfernen
+      community.docker.docker_compose_v2_exec:
+        project_src: "{{ repairhub_infrastructure_dir }}"
+        project_name: "{{ repairhub_project_name }}"
+        files: [compose.yaml, compose.production.yaml]
+        service: db
+        argv: [rm, -rf, "/tmp/repairhub-backup-{{ repairhub_backup_file.path | basename }}"]
+      changed_when: false
+      no_log: true
+
+- name: Bei inkompatibler Migration Wartungsfenster beginnen
+  community.docker.docker_compose_v2:
+    project_src: "{{ repairhub_infrastructure_dir }}"
+    project_name: "{{ repairhub_project_name }}"
+    files: [compose.yaml, compose.production.yaml]
+    services: [app]
+    state: stopped
+  when: repairhub_migration_mode == 'maintenance'
+  no_log: true
+
+# One-off Container im neuen geprüften Image: keine Migration in Gunicorn-Workern.
+# Alembic selbst erkennt bereits angewendete Revisionen; kein downgrade vorhanden.
+- name: Migration einmalig im freigegebenen Anwendungsimage ausführen
+  community.docker.docker_compose_v2_run:
+    project_src: "{{ repairhub_infrastructure_dir }}"
+    project_name: "{{ repairhub_project_name }}"
+    files: [compose.yaml, compose.production.yaml]
+    service: app
+    argv: [flask, --app, app, db, upgrade]
+    cleanup: true
+    no_deps: true
+  no_log: true

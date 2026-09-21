@@ -1,0 +1,11 @@
+---
+- name: Gepinnte RepairHub-Infrastruktur ausdrücklich warten
+  hosts: repairhub
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Infrastruktur ohne gleichzeitigen Anwendungswechsel verwalten
+      ansible.builtin.include_role:
+        name: repairhub
+      vars:
+        repairhub_infrastructure_maintenance: true

@@ -1,5 +1,4 @@
-# Positivliste: Nur Eingaben für das spätere Anwendungsimage übertragen.
-# Dockerfile/Compose und der echte Build werden erst in T02 erstellt/geprüft.
+# Positivliste: Nur Eingaben für das geprüfte Anwendungsimage übertragen.
 **
 !pyproject.toml
 !uv.lock

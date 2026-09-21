@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+runtime.env
 secrets/
 certs/
 certificates/
@@ -54,6 +55,7 @@ reports/
 artifacts/
 .qa/
 .cache/
+.ansible/
 
 # Editor- und Betriebssystemdateien.
 .idea/

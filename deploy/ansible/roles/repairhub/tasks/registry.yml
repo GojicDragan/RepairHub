@@ -1,0 +1,18 @@
+---
+- name: Temporäres Verzeichnis für lesenden Registry-Zugang anlegen
+  ansible.builtin.tempfile:
+    state: directory
+    prefix: repairhub-registry-
+  register: repairhub_registry_config
+  when: repairhub_registry_username | length > 0
+  changed_when: false
+
+- name: Lesenden Registry-Zugang geschützt konfigurieren
+  ansible.builtin.copy:
+    dest: "{{ repairhub_registry_config.path }}/config.json"
+    content: "{{ {'auths': {'ghcr.io': {'auth': (repairhub_registry_username + ':' + repairhub_registry_password) | b64encode}}} | to_json }}"
+    mode: "0600"
+  when: repairhub_registry_username | length > 0
+  no_log: true
+  diff: false
+  changed_when: false

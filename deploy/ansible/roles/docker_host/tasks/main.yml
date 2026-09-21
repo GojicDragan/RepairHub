@@ -1,0 +1,144 @@
+---
+- name: Unterstützte Zielplattform und vorgesehenen Deployment-Benutzer prüfen
+  ansible.builtin.assert:
+    that:
+      - ansible_facts.distribution == 'Ubuntu'
+      - ansible_facts.distribution_version == '24.04'
+      - ansible_facts.architecture == 'x86_64'
+      - repairhub_deploy_user is match('^[a-zA-Z_][a-zA-Z0-9_.-]*[$]?$')
+    fail_msg: Bootstrap benötigt Ubuntu 24.04 amd64 und einen ausdrücklich konfigurierten vorhandenen Deployment-Benutzer.
+
+- name: Vorhandenes Deployment-Konto vor Änderungen prüfen
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ repairhub_deploy_user }}"
+    fail_key: true
+  register: docker_host_deploy_account
+
+- name: Primäre Gruppe des vorhandenen Deployment-Kontos übernehmen
+  ansible.builtin.set_fact:
+    docker_host_deploy_gid: "{{ docker_host_deploy_account.ansible_facts.getent_passwd[repairhub_deploy_user][2] }}"
+
+- name: Voraussetzungen installieren
+  ansible.builtin.apt:
+    name: [ca-certificates, python3, python3-apt]
+    update_cache: true
+    cache_valid_time: 3600
+    state: present
+
+- name: APT-Schlüsselverzeichnis vorbereiten
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
+- name: Geprüften Docker-Repository-Schlüssel laden
+  ansible.builtin.get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    checksum: sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570
+    mode: "0644"
+
+- name: Offizielles Docker-Repository konfigurieren
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/docker.sources
+    mode: "0644"
+    content: |
+      Types: deb
+      URIs: https://download.docker.com/linux/ubuntu
+      Suites: noble
+      Components: stable
+      Architectures: amd64
+      Signed-By: /etc/apt/keyrings/docker.asc
+  register: docker_host_repository
+
+- name: Festgelegte Engine und Compose-v2-Version installieren
+  ansible.builtin.apt:
+    name:
+      - "docker-ce={{ docker_host_engine_version }}"
+      - "docker-ce-cli={{ docker_host_engine_version }}"
+      - "containerd.io={{ docker_host_containerd_version }}"
+      - "docker-buildx-plugin={{ docker_host_buildx_version }}"
+      - "docker-compose-plugin={{ docker_host_compose_version }}"
+    state: present
+    update_cache: "{{ docker_host_repository.changed }}"
+
+- name: Docker-Dienst bereitstellen
+  ansible.builtin.service:
+    name: docker
+    enabled: true
+    state: started
+
+- name: Vorhandenen Deployment-Benutzer zusätzlich der Docker-Gruppe zuordnen
+  ansible.builtin.user:
+    name: "{{ repairhub_deploy_user }}"
+    create_home: false
+    groups: docker
+    append: true
+
+# Eine bestehende SSH-Sitzung übernimmt neue Zusatzgruppen erst beim Anmelden.
+- name: SSH-Verbindung für die nächste Anmeldung mit aktuellen Gruppen erneuern
+  ansible.builtin.meta: reset_connection
+
+- name: Geschütztes Installationsverzeichnis vorbereiten
+  ansible.builtin.file:
+    path: "{{ repairhub_install_dir }}"
+    state: directory
+    owner: "{{ repairhub_deploy_user }}"
+    group: "{{ docker_host_deploy_gid }}"
+    mode: "0700"
+
+- name: Certbot für HTTP-01 auf dem Host installieren
+  ansible.builtin.apt:
+    name: [certbot=2.9.0-1, openssl]
+    state: present
+
+- name: Distributions-Timer zugunsten der koordinierten Erneuerung deaktivieren
+  ansible.builtin.systemd_service:
+    name: certbot.timer
+    enabled: false
+    state: stopped
+
+- name: Zertifikatsverwaltung installieren
+  ansible.builtin.copy:
+    src: repairhub-acme.py
+    dest: /usr/local/sbin/repairhub-acme
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Koordinierten Zertifikatsdienst installieren
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/repairhub-acme.service
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=RepairHub TLS issuance and renewal
+      Wants=network-online.target
+      After=network-online.target docker.service
+      ConditionPathExists=/etc/repairhub-acme.json
+      [Service]
+      Type=oneshot
+      UMask=0077
+      ExecStart=/usr/local/sbin/repairhub-acme
+
+- name: Zweimal tägliche Zertifikatsprüfung konfigurieren
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/repairhub-acme.timer
+    mode: "0644"
+    content: |
+      [Unit]
+      Description=RepairHub TLS renewal schedule
+      [Timer]
+      OnCalendar=*-*-* 00,12:00:00
+      RandomizedDelaySec=3600
+      Persistent=true
+      [Install]
+      WantedBy=timers.target
+
+- name: Automatische Zertifikatsprüfung aktivieren
+  ansible.builtin.systemd_service:
+    name: repairhub-acme.timer
+    daemon_reload: true
+    enabled: true
+    state: started

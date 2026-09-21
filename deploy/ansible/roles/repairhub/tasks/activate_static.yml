@@ -1,0 +1,25 @@
+---
+- name: Bisherigen statischen Release feststellen
+  ansible.builtin.stat:
+    path: "{{ repairhub_install_dir }}/www/current"
+    follow: false
+  register: repairhub_static_current
+
+# Der Parent bleibt dauerhaft gemountet. os.replace ersetzt nur den Link atomar;
+# Nginx sieht den neuen Inhalt ohne Container-Neustart oder Änderung seines Mounts.
+- name: Statischen Release durch atomaren Symlink-Wechsel aktivieren
+  ansible.builtin.command:
+    argv:
+      - python3
+      - -c
+      - >-
+        import os, pathlib, sys;
+        root = pathlib.Path(sys.argv[1]);
+        temporary = root / '.current-next';
+        temporary.unlink(missing_ok=True);
+        temporary.symlink_to('releases/' + sys.argv[2]);
+        os.replace(temporary, root / 'current')
+      - "{{ repairhub_install_dir }}/www"
+      - "{{ repairhub_static_release_key }}"
+  when: repairhub_static_current.stat.lnk_target | default('') != 'releases/' + repairhub_static_release_key
+  changed_when: true

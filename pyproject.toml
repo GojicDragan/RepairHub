@@ -18,9 +18,18 @@ dependencies = [
 ]
 
 [dependency-groups]
+ci = [
+    "ansible-core==2.21.4",
+    "ansible-lint==26.8.0",
+    "bandit==1.9.4",
+    "pip-audit==2.10.1",
+]
 dev = [
     "pytest==9.1.1",
     "ruff==0.16.8",
+]
+e2e = [
+    "playwright==1.63.0",
 ]
 
 [tool.uv]
@@ -37,7 +46,10 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-ra --strict-markers"
 markers = [
-    "integration: benötigt eine isolierte PostgreSQL-Testdatenbank",
+    "unit: einzelne Funktion oder Komponente ohne externe Dienste",
+    "integration: Zusammenspiel von Komponenten, PostgreSQL oder echten Prozessen",
+    "e2e: Chromium gegen die gebaute Anwendung mit Nginx, Gunicorn und PostgreSQL",
 ]

@@ -1,0 +1,50 @@
+---
+- name: Separat freigegebene Infrastruktur-Images herunterladen
+  community.docker.docker_compose_v2_pull:
+    project_src: "{{ repairhub_infrastructure_dir }}"
+    project_name: "{{ repairhub_project_name }}"
+    files: [compose.yaml, compose.production.yaml]
+    services: [db, nginx]
+    policy: missing
+  no_log: true
+
+- name: Identität des tatsächlich gezogenen offiziellen Datenbankimages lesen
+  ansible.builtin.command:
+    argv:
+      - docker
+      - image
+      - inspect
+      - "{{ repairhub_infrastructure.postgres_image }}"
+  register: repairhub_database_image_inspect
+  changed_when: false
+
+- name: Offizielle Datenbank-Metadaten und erwarteten Registry-Digest bestimmen
+  ansible.builtin.set_fact:
+    repairhub_database_image_metadata: "{{ (repairhub_database_image_inspect.stdout | from_json)[0] }}"
+    repairhub_database_expected_digest: "{{ repairhub_infrastructure.postgres_image | regex_replace(':[^/:@]+@', '@') }}"
+
+# Offizielle Images tragen keine projektspezifischen Labels. Digest und deren
+# PG-Metadaten binden den freigegebenen PostgreSQL-17-/Alpine-Datenvertrag.
+- name: Freigegebenen Digest und PostgreSQL-Laufzeitvertrag verlangen
+  ansible.builtin.assert:
+    that:
+      - repairhub_database_expected_digest in repairhub_database_image_metadata.RepoDigests | default([])
+      - "'PG_MAJOR=17' in repairhub_database_image_metadata.Config.Env"
+      - "'PG_VERSION=' + repairhub_infrastructure.postgres_version in repairhub_database_image_metadata.Config.Env"
+      - "'PGDATA=/var/lib/postgresql/data' in repairhub_database_image_metadata.Config.Env"
+      - repairhub_infrastructure.database_contract == 'postgres-17-alpine-uid70-pgdata-v1'
+    fail_msg: Das gezogene PostgreSQL-Image entspricht nicht dem freigegebenen Digest, der Version oder dem Datenverzeichnisvertrag.
+
+- name: Datenbank ausschliesslich bei Erstinstallation oder Wartung bereitstellen
+  community.docker.docker_compose_v2:
+    project_src: "{{ repairhub_infrastructure_dir }}"
+    project_name: "{{ repairhub_project_name }}"
+    files: [compose.yaml, compose.production.yaml]
+    services: [db]
+    dependencies: false
+    state: present
+    build: never
+    pull: never
+    wait: true
+    wait_timeout: "{{ repairhub_wait_timeout }}"
+  no_log: true

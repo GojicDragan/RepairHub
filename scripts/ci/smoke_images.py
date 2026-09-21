@@ -1,0 +1,41 @@
+"""Start the archived runtime combination on a private, temporary Docker network."""
+
+import argparse
+import json
+import os
+from pathlib import Path
+
+if __package__:
+    from .images import verify
+    from .isolated_runtime import isolated_runtime
+else:
+    from images import verify
+    from isolated_runtime import isolated_runtime
+
+
+def main(directory: Path, commit: str) -> None:
+    manifest = verify(directory, commit)
+    reports = Path("reports/build")
+    reports.mkdir(parents=True, exist_ok=True)
+    evidence = {"commit": commit, "images": manifest["images"], "passed": False}
+    try:
+        with isolated_runtime(manifest):
+            evidence["checks"] = [
+                "PostgreSQL bereit",
+                "Gunicorn bereit",
+                "Nginx HTTPS mit CA-Prüfung",
+                "Internes Netzwerk ohne veröffentlichte Ports",
+            ]
+        # A failed cleanup must not leave a successful smoke report behind.
+        evidence["passed"] = True
+    finally:
+        (reports / "smoke.json").write_text(json.dumps(evidence, indent=2) + "\n")
+    print("Archivierte Image-Kombination mit PostgreSQL und HTTPS geprüft.")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--directory", type=Path, default=Path("artifacts/images"))
+    parser.add_argument("--commit", default=os.environ.get("GITHUB_SHA", ""))
+    args = parser.parse_args()
+    main(args.directory, args.commit)

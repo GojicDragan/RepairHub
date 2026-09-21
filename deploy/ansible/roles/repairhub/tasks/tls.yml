@@ -1,0 +1,28 @@
+---
+- name: ACME-Ziel und Kontakt prüfen
+  ansible.builtin.assert:
+    that:
+      - repairhub_public_url is match('^https://[a-zA-Z0-9][a-zA-Z0-9.-]+[a-zA-Z0-9]$')
+      - repairhub_acme_email is match('^[^\s@]+@[^\s@]+\.[^\s@]+$')
+      - repairhub_https_port | int == 443
+    fail_msg: ACME benötigt eine öffentliche HTTPS-Domain, Port 443 und eine gültige Kontaktadresse.
+
+- name: Rootgeschützte ACME-Konfiguration bereitstellen
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/repairhub-acme.json
+    owner: root
+    group: root
+    mode: "0600"
+    content: >-
+      {{ {'domain': repairhub_public_url | urlsplit('hostname'),
+          'email': repairhub_acme_email,
+          'install_dir': repairhub_install_dir,
+          'project_name': repairhub_project_name} | to_nice_json }}
+
+- name: Erstes Zertifikat ausstellen oder fällige Erneuerung durchführen
+  become: true
+  ansible.builtin.command:
+    argv: [/usr/local/sbin/repairhub-acme, --deployment-lock-held]
+  register: repairhub_acme_result
+  changed_when: "'TLS_CHANGED' in repairhub_acme_result.stdout"
