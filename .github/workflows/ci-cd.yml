@@ -35,7 +35,7 @@ jobs:
           POSTGRES_PASSWORD: disposable-ci-only
         ports: ['5432:5432']
         options: >-
-          --health-cmd 'pg_isready -U repairhub_test -d repairhub_test'
+          --health-cmd "pg_isready -U repairhub_test -d repairhub_test"
           --health-interval 5s --health-timeout 5s --health-retries 12
     env:
       DATABASE_URL: postgresql+psycopg://repairhub_test:disposable-ci-only@127.0.0.1:5432/repairhub_test

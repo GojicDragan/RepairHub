@@ -573,3 +573,21 @@ Ausgeführt und bestanden:
 GitHub-Ereignisse, Tagauflösung gegen die echte Registry-/Repository-Konfiguration
 und produktive Environment-Tagregeln wurden nicht live abgenommen. Der frühere
 Build-/E2E-/Security-Nachweis wurde für diese Auslöseränderung nicht wiederholt.
+
+## Korrektur: Healthcheck-Quoting beim ersten GitHub-Testlauf
+
+Bezug T02, M07, N03–N05/N07–N10. Das vom Benutzer bereitgestellte Actions-Log
+belegt einen Fehler vor Ausführung der Tests: Der PostgreSQL-Service scheiterte
+bei `docker create` mit `unknown shorthand flag: 'U' in -U` (Exit 125).
+Die einfachen Anführungszeichen in `services.postgres.options` gruppierten
+den Healthcheck im Runner-Aufruf nicht korrekt. Im Workflow sind nun doppelte
+Anführungszeichen um `pg_isready -U repairhub_test -d repairhub_test` gesetzt.
+
+Lokal geprüft: Actionlint erfolgreich. Mit den aus dem Workflow gelesenen
+Service-Eingaben wurde ein eigener PostgreSQL-Container ohne Hostports erstellt;
+`docker inspect` bestätigte den vollständigen CMD-SHELL-Healthcheck, anschliessend
+wurde der Zustand `healthy` erreicht. Prüfcontainer samt anonymem Volume entfernt.
+Diese lokale Docker-Prüfung verwendet Shell-Argumentzerlegung und ersetzt keinen
+neuen Lauf des GitHub-Runners. Der korrigierte Workflow muss mit einem neuen
+Commit gepusht werden; ein erneuter Lauf des alten Commits enthält die Korrektur
+nicht. Der vollständige Actions-Durchlauf bleibt bis dahin offen.
