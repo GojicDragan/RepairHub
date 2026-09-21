@@ -1,6 +1,22 @@
 ---
-# Verifiziert gegen Dockers offiziellen Ubuntu-Noble-Paketindex am 18.09.2026.
-docker_host_engine_version: 5:29.8.1-1~ubuntu.24.04~noble
-docker_host_containerd_version: 2.3.5-1~ubuntu.24.04~noble
-docker_host_buildx_version: 0.37.1-1~ubuntu.24.04~noble
-docker_host_compose_version: 2.40.3-1~ubuntu.24.04~noble
+# Offizielle Docker-Paketindizes am 21.09.2026 geprüft; inklusive Distributionssuffix.
+docker_host_platforms:
+  Debian-12:
+    repository: debian
+    suite: bookworm
+    package_suffix: debian.12~bookworm
+    certbot_version: 2.1.0-4
+  Ubuntu-24.04:
+    repository: ubuntu
+    suite: noble
+    package_suffix: ubuntu.24.04~noble
+    certbot_version: 2.9.0-1
+
+docker_host_platform_key: >-
+  {{ ansible_facts.distribution ~ '-' ~
+     (ansible_facts.distribution_major_version if ansible_facts.distribution == 'Debian'
+      else ansible_facts.distribution_version) }}
+docker_host_engine_version: "5:29.8.1-1~{{ docker_host_platform.package_suffix }}"
+docker_host_containerd_version: "2.3.5-1~{{ docker_host_platform.package_suffix }}"
+docker_host_buildx_version: "0.37.1-1~{{ docker_host_platform.package_suffix }}"
+docker_host_compose_version: "2.40.3-1~{{ docker_host_platform.package_suffix }}"

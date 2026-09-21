@@ -408,14 +408,16 @@ Zertifikat über Let’s Encrypt aus, bevor Nginx startet. Voraussetzungen:
 - Der Deployment-Benutzer darf die ACME-Tasks über sudo ausführen; falls nötig
   liegt dessen sudo-Passwort in `DEPLOY_BECOME_PASSWORD`.
 
-Bootstrap installiert das Ubuntu-24.04-Paket `certbot=2.9.0-1` (Ubuntu Universe
-muss verfügbar sein), den Verwaltungshelfer und `repairhub-acme.timer`.
+Bootstrap installiert auf Debian 12 `certbot=2.1.0-4`, auf Ubuntu 24.04
+`certbot=2.9.0-1` (dort muss Universe verfügbar sein), den Verwaltungshelfer
+und `repairhub-acme.timer`.
 Certbot nutzt HTTP-01 im Standalone-Modus: Port 80 wird nur während der
 Validierung belegt und verarbeitet keine Anmeldungen. Nginx bleibt auf Port 443;
 es gibt weiterhin nur drei dauerhafte Compose-Dienste und ein veröffentlichtes
 App-Image. Zertifikat, Konto und Schlüssel bleiben auf der VM.
 [Certbot Standalone und Erneuerung](https://eff-certbot.readthedocs.io/en/stable/using.html),
 [HTTP-01 benötigt Port 80](https://letsencrypt.org/docs/challenge-types/),
+[Debian-Paketversion](https://packages.debian.org/bookworm/certbot),
 [Ubuntu-Paketversion](https://packages.ubuntu.com/noble/certbot).
 
 Jedes Deployment prüft mit `--keep-until-expiring`, ob Ausstellung oder
@@ -450,14 +452,17 @@ und eine öffentliche ACME-Ausstellung sind bisher nicht nachgewiesen.
 
 ## Hostvorbereitung und Ansible-Eingaben
 
-Bootstrap unterstützt Ubuntu 24.04 LTS auf amd64. Benötigt werden SSH, Python 3
+Die Produktions-VM verwendet gemäss Benutzerangabe Debian 12 (Bookworm).
+Bootstrap unterstützt Debian 12 sowie Ubuntu 24.04 LTS, jeweils auf amd64.
+Ansible prüft die Architektur vor der Installation. Benötigt werden SSH, Python 3
 mit `python3-apt`, ein separat geprüfter Hostschlüssel und ein administrativer
 Zugang für die Hostvorbereitung. Docker/Compose kommen aus der offiziellen
 Docker-Paketquelle; konkrete Versionen stehen in
 `roles/docker_host/defaults/main.yml`, der Schlüsselhash in
 `roles/docker_host/tasks/main.yml`. Betrieb und CI benötigen Compose
 mindestens 2.30.0 wegen `env_file.format: raw`.
-[Quelle: Docker auf Ubuntu](https://docs.docker.com/engine/install/ubuntu/).
+[Docker auf Debian](https://docs.docker.com/engine/install/debian/),
+[Docker auf Ubuntu](https://docs.docker.com/engine/install/ubuntu/).
 
 `bootstrap.yml` installiert Docker/Compose und erstellt das geschützte
 Installationsverzeichnis für den bereits vorhandenen Benutzer aus `DEPLOY_USER`.
@@ -544,9 +549,19 @@ Nach Korrektur kann derselbe beziehungsweise ein neuerer Lauf wiederholt werden;
 nicht gelöscht. Die konkreten Wiederholungs- und Fehlerprüfungen stehen in
 [t02-validation.md](t02-validation.md).
 
-Hostvorbereitung bleibt eine Voraussetzung: `bootstrap.yml` muss zur bestätigten
-Linux-Plattform passen und vor `deploy.yml` erfolgreich ausgeführt sein. Der
-normale Deploy-Job installiert derzeit kein fehlendes Docker automatisch.
+Der Deploy-Job führt vor `deploy.yml` automatisch `bootstrap.yml` aus. Dieser
+wiederholbare Schritt stellt Docker/Compose, Verzeichnisse, Docker-Gruppenzugang,
+Certbot und den Erneuerungstimer bereit. Er nutzt dieselben geschützten SSH-/sudo-
+Eingaben und läuft nur im freigegebenen Release-/Tag-Deployment. Bereits
+vorhandene Ressourcen werden mit `state: present` beziehungsweise `started`
+abgeglichen; kein pauschaler Dienstneustart oder Löschen von Datenvolumes.
+
+Bootstrap prüft die Plattform vor Paketänderungen. Unterstützt ist derzeit
+Debian 12 oder Ubuntu 24.04 auf amd64; andere Plattformen werden mit ihrer erkannten Version
+abgewiesen, bis passende Paketquellen und Versionen ergänzt sind. Ein fehlendes
+sudo-Passwort muss als `DEPLOY_BECOME_PASSWORD` hinterlegt werden, sofern der
+Benutzer sudo nicht passwortlos verwenden darf. Scheitert Bootstrap, wird das
+App-Deployment nicht ausgeführt und die temporären Eingaben werden entfernt.
 
 
 Der Deploy-Job verwendet die feste Gruppe `repairhub-deploy-production` mit

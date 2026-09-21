@@ -674,3 +674,47 @@ Fachliche Migrationen existieren noch nicht; deren reale Wiederholungsprüfung
 folgt mit T04. Der gemeldete Fehler `docker` fehlt auf der Produktions-VM bleibt
 als gesonderte Hostvoraussetzung offen; die unterstützte Linux-Plattform muss
 vor Bootstrap bestätigt werden. Idempotenz ersetzt keine Erstvorbereitung.
+
+
+## Korrektur 21.09.2026: Hostvorbereitung im Deploy-Job
+
+Bezug T02, M07, N03–N05/N07–N10. Erneutes vom Benutzer geliefertes Actions-Log
+zeigt fehlendes `docker` auf dem Produktionshost. Bisher war der manuelle
+Bootstrap Voraussetzung. Der Workflow ruft nun vor dem App-Deployment das
+bestehende `bootstrap.yml` mit denselben geschützten Eingaben auf. Ein Fehler
+in der Hostvorbereitung verhindert das App-Deployment. Temporäre Geheimnisdateien
+werden weiterhin auch bei Fehlern entfernt.
+
+Bootstrap bleibt auf Ubuntu 24.04 amd64 begrenzt und nennt bei Abweichung die
+erkannte Plattform. Der gemeldete Python-3.11-Pfad belegt allein keine bestimmte
+Linux-Distribution. Zielplattform und tatsächlicher Bootstrap-Erfolg auf der VM
+bleiben unbestätigt; keine Installation auf der VM durch den lokalen Agenten.
+
+Lokale Prüfungen: Actionlint für `.github/workflows/ci-cd.yml`, Ansible-Lint
+(keine Fehler/Warnungen), Syntaxprüfung von bootstrap.yml und deploy.yml sowie
+`git diff --check` bestanden. Kein erneuter Produktionslauf durchgeführt.
+
+## Nachtrag 21.09.2026: bestätigte Zielplattform Debian 12
+
+Bezug T02, M07, N03–N05/N07–N10. Benutzer lieferte `/etc/os-release` mit Debian
+GNU/Linux 12 (Bookworm). Bootstrap unterstützt jetzt Debian 12 und weiterhin
+Ubuntu 24.04, jeweils amd64; Architektur wird aus Ansible-Facts geprüft.
+Distributionsfremde Quellen werden nicht verwendet. Die Docker-Pins enthalten
+nun auch für containerd, Buildx und Compose den vollständigen Distributionssuffix.
+
+Debian-Pins: docker-ce/docker-ce-cli `5:29.8.1-1~debian.12~bookworm`, containerd.io
+`2.3.5-1~debian.12~bookworm`, Buildx `0.37.1-1~debian.12~bookworm`, Compose
+`2.40.3-1~debian.12~bookworm`, Certbot `2.1.0-4`. Versionen gegen die offiziellen
+Docker-Paketindizes und das Debian-Paketverzeichnis geprüft; Docker-GPG-Datei
+besitzt den hinterlegten SHA-256-Hash. Quellen siehe docs/ci-cd.md.
+
+Prüfungen erfolgreich:
+
+- `pytest tests/integration/ci/test_bootstrap_platform.py -q --junitxml=reports/test/bootstrap-platform.xml`: vier echte lokale Ansible-Prüfungen. Debian 12 (inklusive Punktversion) und Ubuntu 24.04 wählen die korrekten Paketversionen; Debian 13 und ARM64 werden vor Paketänderungen abgewiesen.
+- Ansible-Lint ohne Fehler/Warnungen, Bootstrap-Syntaxprüfung, Actionlint sowie Ruff/Format des neuen Tests.
+- `apt-get install --simulate` für alle sechs Pins in einem isolierten Debian-12-Container mit signierter offizieller Docker-Bookworm-Paketquelle: Exit 0. Bericht `reports/test/bookworm-apt-simulation.log`. Testbasis `debian:12-slim@sha256:3783cc01769c7b2b1b83a5c5ad96c815348e28ed7da68e2e3687004faa906251`; Container nach Prüfung entfernt.
+
+Keine Docker-Dienst-/systemd-Installation auf der echten VM durchgeführt.
+Paketauflösung und Plattformauswahl sind geprüft, vollständiger Bootstrap und
+Produktionsdeployment folgen im Release-Workflow. SSH- und gegebenenfalls
+sudo-Passwort kommen weiterhin ausschliesslich aus der Environment production.

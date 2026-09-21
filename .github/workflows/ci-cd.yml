@@ -270,6 +270,15 @@ jobs:
         run: |
           export DEPLOY_INPUT_DIR="$RUNNER_TEMP/repairhub-deploy"
           uv run --locked python scripts/ci/deployment_input.py
+      - name: Prepare Docker host with Ansible
+        env:
+          ANSIBLE_SSH_PASSWORD_MECHANISM: ssh_askpass
+        run: |
+          export DEPLOY_INPUT_DIR="$RUNNER_TEMP/repairhub-deploy"
+          export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$DEPLOY_INPUT_DIR/known_hosts -o PreferredAuthentications=password,keyboard-interactive -o PasswordAuthentication=yes -o KbdInteractiveAuthentication=yes -o PubkeyAuthentication=no"
+          uv run --locked --group ci ansible-playbook \
+            -i deploy/ansible/inventories/production/hosts.yml \
+            deploy/ansible/bootstrap.yml --extra-vars "@$DEPLOY_INPUT_DIR/vars.json"
       - name: Deploy checked digests with Ansible
         env:
           ANSIBLE_SSH_PASSWORD_MECHANISM: ssh_askpass
