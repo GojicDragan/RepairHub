@@ -1,0 +1,14 @@
+---
+# Ausschliesslich für den wegwerfbaren lokalen SSH-/Docker-Prüfstand.
+# Ohne generierte Fixture-Portangabe gibt es keinen verwendbaren SSH-Zugang.
+all:
+  children:
+    repairhub:
+      hosts:
+        local_deployment_fixture:
+          ansible_host: 127.0.0.1
+          ansible_port: "{{ lookup('ansible.builtin.env', 'REPAIRHUB_FIXTURE_SSH_PORT') | default('0', true) | int }}"
+          ansible_user: repairhub-deploy
+          # Interne Testkennung des Playbooks, kein GitHub Environment.
+          repairhub_environment: test
+          repairhub_project_name: repairhub-fixture

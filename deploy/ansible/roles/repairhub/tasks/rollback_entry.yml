@@ -1,0 +1,48 @@
+---
+- name: Exklusive Hostsperre für Notfall-Rollback erwerben
+  ansible.builtin.command:
+    argv: [mkdir, "{{ repairhub_install_dir }}/.deployment-lock"]
+  changed_when: false
+
+- name: Expliziten kompatiblen Rollback ausführen
+  block:
+    - name: Aktiven Infrastrukturstand für den Notfall-Rollback lesen
+      ansible.builtin.slurp:
+        src: "{{ repairhub_install_dir }}/infrastructure.json"
+      register: repairhub_rollback_current
+    - name: Aktiven Infrastrukturstand bestimmen
+      ansible.builtin.set_fact:
+        repairhub_infrastructure_fingerprint: "{{ (repairhub_rollback_current.content | b64decode | from_json).fingerprint }}"
+    - name: Vorherigen Release lesen
+      ansible.builtin.slurp:
+        src: "{{ repairhub_install_dir }}/previous.json"
+      register: repairhub_rollback_file
+    - name: Vorherigen Release bestimmen
+      ansible.builtin.set_fact:
+        repairhub_previous: "{{ repairhub_rollback_file.content | b64decode | from_json }}"
+    - name: Vorhandene Vorgängerkonfiguration prüfen
+      ansible.builtin.stat:
+        path: "{{ repairhub_previous.release_dir }}/compose.env"
+      register: repairhub_rollback_config
+    - name: Wiederherstellbaren Stand verlangen
+      ansible.builtin.assert:
+        that:
+          - repairhub_rollback_config.stat.exists
+          - repairhub_previous.release_dir.startswith(repairhub_install_dir + '/releases/')
+    - name: Unvollständige Infrastrukturwartung feststellen
+      ansible.builtin.stat:
+        path: "{{ repairhub_install_dir }}/infrastructure-pending.json"
+      register: repairhub_rollback_pending
+    - name: App-Rollback nur bei abgeschlossener Infrastrukturwartung erlauben
+      ansible.builtin.assert:
+        that:
+          - not repairhub_rollback_pending.stat.exists
+        fail_msg: Zuerst die unvollständige Infrastrukturwartung abschliessen.
+    - name: Gemeinsame Wiederherstellungslogik verwenden
+      ansible.builtin.include_tasks: restore.yml
+  always:
+    - name: Hostsperre freigeben
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/.deployment-lock"
+        state: absent
+      changed_when: false

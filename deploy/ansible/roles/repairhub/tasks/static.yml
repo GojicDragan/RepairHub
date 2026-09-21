@@ -1,0 +1,59 @@
+---
+- name: Vollständig extrahierte statische Dateien dieses Releases feststellen
+  ansible.builtin.stat:
+    path: "{{ repairhub_install_dir }}/www/releases/{{ repairhub_release_key }}/.complete"
+  register: repairhub_static_complete
+
+- name: Statische Dateien aus einem nicht gestarteten App-Container extrahieren
+  when: not repairhub_static_complete.stat.exists
+  block:
+    - name: Unvollständiges Ziel eines vorherigen Versuchs entfernen
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/www/releases/{{ repairhub_release_key }}"
+        state: absent
+
+    - name: Öffentlich lesbares Verzeichnis für statische Dateien vorbereiten
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/www/releases/{{ repairhub_release_key }}/static"
+        state: directory
+        mode: "0755"
+
+    # docker create startet keinen Code aus dem Image. Die Quelle ist immer dessen Digest.
+    - name: Temporären Container nur als Quelle der geprüften Dateien anlegen
+      ansible.builtin.command:
+        argv:
+          - docker
+          - create
+          - --name
+          - "{{ repairhub_project_name }}-static-{{ repairhub_config_fingerprint[:16] }}"
+          - --entrypoint
+          - /bin/true
+          - "{{ repairhub_app_image }}"
+      changed_when: true
+
+    - name: Statische Dateien aus dem unveränderten Anwendungsimage kopieren
+      ansible.builtin.command:
+        argv:
+          - docker
+          - cp
+          - "{{ repairhub_project_name }}-static-{{ repairhub_config_fingerprint[:16] }}:/srv/repairhub/app/web/static/."
+          - "{{ repairhub_install_dir }}/www/releases/{{ repairhub_release_key }}/static/"
+      changed_when: true
+
+    - name: Öffentliche Dateien für den Nginx-Worker lesbar machen
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/www/releases/{{ repairhub_release_key }}"
+        state: directory
+        recurse: true
+        mode: u=rwX,go=rX
+
+    - name: Vollständig kopierten statischen Release markieren
+      ansible.builtin.copy:
+        dest: "{{ repairhub_install_dir }}/www/releases/{{ repairhub_release_key }}/.complete"
+        content: "{{ repairhub_app_image }}\n"
+        mode: "0644"
+  always:
+    - name: Temporären Extraktionscontainer zuverlässig entfernen
+      ansible.builtin.command:
+        argv: [docker, container, rm, "{{ repairhub_project_name }}-static-{{ repairhub_config_fingerprint[:16] }}"]
+      changed_when: false

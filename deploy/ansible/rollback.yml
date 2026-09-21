@@ -1,0 +1,15 @@
+---
+- name: Vorherigen kompatiblen Release wiederherstellen
+  hosts: repairhub
+  gather_facts: false
+  serial: 1
+  tasks:
+    - name: Rollback ausdrücklich auf kompatibles Schema begrenzen
+      ansible.builtin.assert:
+        that:
+          - repairhub_rollback_schema_compatible | default(false) | bool
+        fail_msg: Schema-Kompatibilität muss vor dem Image-Rollback geprüft sein.
+    - name: Rollback unter derselben Hostsperre ausführen
+      ansible.builtin.include_role:
+        name: repairhub
+        tasks_from: rollback_entry

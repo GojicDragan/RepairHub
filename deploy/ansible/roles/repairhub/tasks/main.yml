@@ -1,0 +1,80 @@
+---
+- name: Unveränderliche Release-Eingaben prüfen
+  ansible.builtin.assert:
+    that:
+      - repairhub_environment in ['test', 'production']
+      - repairhub_tls_mode in ['acme', 'provided']
+      - repairhub_app_image is match('^[a-z0-9][a-z0-9.:/_-]+@sha256:[a-f0-9]{64}$')
+      - repairhub_release_commit is match('^[a-f0-9]{40}$')
+      - repairhub_release_sequence | int > 0
+      - repairhub_install_dir is match('^/[a-zA-Z0-9/_-]+$')
+      - repairhub_public_url is match('^https://[a-zA-Z0-9.\[\]:-]+$')
+      - repairhub_postgres_user is match('^[a-z][a-z0-9_]*$')
+      - repairhub_postgres_db is match('^[a-z][a-z0-9_]*$')
+      - repairhub_https_port | int > 0
+      - repairhub_https_port | int < 65536
+    fail_msg: Release-Digests, Commit, Reihenfolge und Zielkonfiguration müssen vollständig sein.
+
+- name: Vertrauliche Eingaben ohne Ausgabe prüfen
+  ansible.builtin.assert:
+    that:
+      - "'SECRET_KEY=' in repairhub_runtime_env"
+      - "'DATABASE_URL=' in repairhub_runtime_env"
+      - "'POSTGRES_PASSWORD=' in repairhub_database_env"
+      - "repairhub_tls_mode == 'acme' or 'BEGIN CERTIFICATE' in repairhub_tls_certificate"
+      - "repairhub_tls_mode == 'acme' or 'PRIVATE KEY' in repairhub_tls_private_key"
+      - (repairhub_registry_username | length > 0) == (repairhub_registry_password | length > 0)
+  no_log: true
+
+- name: Docker-Zugang prüfen
+  ansible.builtin.command:
+    argv: [docker, info, --format, "{{ '{{.ServerVersion}}' }}"]
+  changed_when: false
+
+- name: Compose-Version lesen
+  ansible.builtin.command:
+    argv: [docker, compose, version, --short]
+  register: repairhub_compose_version
+  changed_when: false
+
+- name: Unterstützte Compose-Version verlangen
+  ansible.builtin.assert:
+    that:
+      - repairhub_compose_version.stdout | regex_replace('^v', '') is version('2.30.0', '>=')
+
+- name: Vorbereitetes Installationsverzeichnis prüfen
+  ansible.builtin.stat:
+    path: "{{ repairhub_install_dir }}"
+  register: repairhub_root
+
+- name: Bootstrap als Voraussetzung durchsetzen
+  ansible.builtin.assert:
+    that:
+      - repairhub_root.stat.isdir | default(false)
+    fail_msg: Zuerst bootstrap.yml mit einem administrativen SSH-Zugang ausführen.
+
+# mkdir ist atomar; file:directory könnte eine bestehende fremde Sperre übernehmen.
+# Sperrerwerb/-freigabe sind Laufzeitkoordination und keine Konfigurationsänderung.
+- name: Exklusive Deployment-Sperre erwerben
+  ansible.builtin.command:
+    argv: [mkdir, "{{ repairhub_install_dir }}/.deployment-lock"]
+  changed_when: false
+
+- name: Release unter Hostsperre ausrollen
+  block:
+    - name: Kontrollierte Auslieferung durchführen
+      ansible.builtin.include_tasks: release.yml
+  always:
+    - name: Temporäre Registry-Zugangsdaten entfernen
+      ansible.builtin.file:
+        path: "{{ repairhub_registry_config.path }}"
+        state: absent
+      when: repairhub_registry_config.path is defined
+      no_log: true
+      diff: false
+      changed_when: false
+    - name: Deployment-Sperre freigeben
+      ansible.builtin.file:
+        path: "{{ repairhub_install_dir }}/.deployment-lock"
+        state: absent
+      changed_when: false

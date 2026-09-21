@@ -1,0 +1,23 @@
+services:
+  nginx:
+    ports:
+      - '${HTTPS_HOST_PORT:-443}:8443'
+    volumes:
+      - type: bind
+        source: ${NGINX_CONFIG_DIRECTORY:-./deploy/nginx}
+        target: /etc/nginx/repairhub
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${TLS_DIRECTORY:-./tls}
+        target: /etc/nginx/tls
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${STATIC_ROOT:-./www}
+        target: /usr/share/nginx/html
+        read_only: true
+        bind:
+          create_host_path: false

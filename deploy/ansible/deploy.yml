@@ -1,0 +1,7 @@
+---
+- name: Geprüften RepairHub-Release ausliefern
+  hosts: repairhub
+  gather_facts: false
+  serial: 1
+  roles:
+    - repairhub

@@ -1,0 +1,281 @@
+name: RepairHub CI/CD
+
+on:
+  pull_request:
+  push:
+    branches: ['**']
+    tags: ['**']
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  UV_VERSION: '0.12.16'
+  PYTHON_VERSION: '3.13.15'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17.11-alpine3.24@sha256:f02121de6f74d30d8a94cd1d9584125e2178d7e6c377d8130112d4e52d867995
+        env:
+          POSTGRES_DB: repairhub_test
+          POSTGRES_USER: repairhub_test
+          # Disposable runner database, reachable only through runner-local Docker.
+          POSTGRES_PASSWORD: disposable-ci-only
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U repairhub_test -d repairhub_test"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    env:
+      DATABASE_URL: postgresql+psycopg://repairhub_test:disposable-ci-only@127.0.0.1:5432/repairhub_test
+      TEST_DATABASE_URL: postgresql+psycopg://repairhub_test:disposable-ci-only@127.0.0.1:5432/repairhub_test
+      ANSIBLE_CONFIG: ${{ github.workspace }}/deploy/ansible/ansible.cfg
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: false
+      - name: Install locked tools and collections
+        run: |
+          uv sync --locked --group ci
+          uv run --locked --group ci ansible-galaxy collection install -r deploy/ansible/requirements.yml
+          mkdir -p reports/test
+          echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_hex(32))')" >> "$GITHUB_ENV"
+      - name: Validate workflow
+        run: |
+          uv run --locked python scripts/ci/install_scanners.py "$RUNNER_TEMP/repairhub-scanners" --only actionlint
+          "$RUNNER_TEMP/repairhub-scanners/actionlint" -format '{{json .}}' > reports/test/actionlint.json
+      - name: Lint and format
+        run: |
+          uv run --locked ruff check . --output-format=json --output-file reports/test/ruff.json
+          uv run --locked ruff format --check .
+      - name: Unit tests and architecture
+        run: uv run --locked pytest tests/unit --junitxml=reports/test/unit.xml
+      - name: Integration tests with PostgreSQL and real processes
+        run: |
+          uv run --locked pytest tests/integration --junitxml=reports/test/integration.xml
+          uv run --locked python -m scripts.ci.check_capabilities
+      - name: Ansible lint and syntax
+        run: |
+          uv run --locked --group ci ansible-lint deploy/ansible > reports/test/ansible-lint.txt
+          for playbook in bootstrap infrastructure deploy rollback; do
+            uv run --locked --group ci ansible-playbook -i deploy/ansible/inventories/production/hosts.yml "deploy/ansible/${playbook}.yml" --syntax-check
+          done
+      - name: Preserve test reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: test-${{ github.sha }}-${{ github.run_attempt }}
+          path: reports/test/
+          retention-days: 30
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: false
+      - name: Build app once, archive pinned Nginx and PostgreSQL images
+        run: uv run --locked python scripts/ci/images.py build
+      - name: Verify archives and start images with PostgreSQL
+        run: |
+          uv run --locked python scripts/ci/images.py verify
+          uv run --locked python scripts/ci/smoke_images.py
+      - name: Install pinned browser test dependencies
+        run: |
+          uv sync --locked --group e2e
+          uv run --locked --group e2e playwright install --with-deps --only-shell chromium
+      - name: End-to-end browser tests against built images
+        run: uv run --locked --group e2e pytest tests/e2e --junitxml=reports/e2e/pytest.xml
+      - name: Preserve immutable image archives
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: images-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/images/
+          compression-level: 0
+          overwrite: true
+          retention-days: 7
+          if-no-files-found: error
+      - name: Preserve build evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: build-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            reports/build/
+            reports/e2e/
+            artifacts/images/manifest.json
+          retention-days: 30
+
+  security:
+    name: Security
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: images-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/images/
+      - name: Install pinned scanners and verify archives
+        id: security_setup
+        run: |
+          uv sync --locked --group ci
+          uv run --locked python scripts/ci/install_scanners.py "$RUNNER_TEMP/repairhub-scanners" --only gitleaks trivy
+          uv run --locked python scripts/ci/images.py verify
+      - name: Dependency, static code, secret and image scans
+        run: uv run --locked --group ci python scripts/ci/security.py
+      - name: Active ZAP DAST against isolated runtime images
+        if: ${{ !cancelled() && steps.security_setup.outcome == 'success' }}
+        run: uv run --locked python scripts/ci/dast.py
+      - name: Preserve redacted security reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: security-${{ github.sha }}-${{ github.run_attempt }}
+          path: reports/security/
+          retention-days: 30
+
+  publish:
+    name: Publish checked app image
+    needs: security
+    if: >-
+      contains(fromJSON('["push", "release", "workflow_dispatch"]'), github.event_name) &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      app_image: ${{ steps.publish.outputs.app_image }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: images-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/images/
+      - name: Verify current production commit and release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run --locked python scripts/ci/check_release_ref.py
+      - name: Authenticate only for publication
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+          REGISTRY_USER: ${{ github.actor }}
+        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$REGISTRY_USER" --password-stdin
+      - name: Publish the scanned app archive and verify its registry digest
+        id: publish
+        run: uv run --locked python scripts/ci/images.py publish
+      - name: Preserve released image combination
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-${{ github.sha }}-${{ github.run_attempt }}
+          path: artifacts/images/release.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Remove registry credentials
+        if: always()
+        run: docker logout ghcr.io
+
+  deploy:
+    name: Deploy
+    needs: publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ vars.PUBLIC_URL }}
+    concurrency:
+      group: repairhub-deploy-production
+      cancel-in-progress: false
+    env:
+      ANSIBLE_CONFIG: ${{ github.workspace }}/deploy/ansible/ansible.cfg
+      REPAIRHUB_DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+      REPAIRHUB_DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
+      REPAIRHUB_DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: false
+      - name: Install locked Ansible
+        run: |
+          uv sync --locked --group ci
+          uv run --locked --group ci ansible-galaxy collection install -r deploy/ansible/requirements.yml
+      - name: Verify current production commit and release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run --locked python scripts/ci/check_release_ref.py
+      - name: Prepare protected inputs and pinned SSH host keys
+        env:
+          APP_IMAGE: ${{ needs.publish.outputs.app_image }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+          POSTGRES_DB: ${{ vars.POSTGRES_DB || 'repairhub' }}
+          POSTGRES_USER: ${{ vars.POSTGRES_USER || 'repairhub' }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ACME_EMAIL: ${{ vars.ACME_EMAIL }}
+          DEPLOY_BECOME_PASSWORD: ${{ secrets.DEPLOY_BECOME_PASSWORD }}
+          DEPLOY_SSH_PASSWORD: ${{ secrets.DEPLOY_SSH_PASSWORD }}
+          DEPLOY_SSH_KNOWN_HOSTS: ${{ secrets.DEPLOY_SSH_KNOWN_HOSTS }}
+          GHCR_READ_USERNAME: ${{ secrets.GHCR_READ_USERNAME }}
+          GHCR_READ_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+        run: |
+          export DEPLOY_INPUT_DIR="$RUNNER_TEMP/repairhub-deploy"
+          uv run --locked python scripts/ci/deployment_input.py
+      - name: Deploy checked digests with Ansible
+        env:
+          ANSIBLE_SSH_PASSWORD_MECHANISM: ssh_askpass
+        run: |
+          export DEPLOY_INPUT_DIR="$RUNNER_TEMP/repairhub-deploy"
+          export ANSIBLE_SSH_COMMON_ARGS="-o StrictHostKeyChecking=yes -o UserKnownHostsFile=$DEPLOY_INPUT_DIR/known_hosts -o PreferredAuthentications=password,keyboard-interactive -o PasswordAuthentication=yes -o KbdInteractiveAuthentication=yes -o PubkeyAuthentication=no"
+          uv run --locked --group ci ansible-playbook \
+            -i deploy/ansible/inventories/production/hosts.yml \
+            deploy/ansible/deploy.yml --extra-vars "@$DEPLOY_INPUT_DIR/vars.json"
+      - name: Remove temporary secrets even after deployment failure
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/repairhub-deploy"

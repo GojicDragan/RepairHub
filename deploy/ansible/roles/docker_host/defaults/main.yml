@@ -1,0 +1,6 @@
+---
+# Verifiziert gegen Dockers offiziellen Ubuntu-Noble-Paketindex am 18.09.2026.
+docker_host_engine_version: 5:29.8.1-1~ubuntu.24.04~noble
+docker_host_containerd_version: 2.3.5-1~ubuntu.24.04~noble
+docker_host_buildx_version: 0.37.1-1~ubuntu.24.04~noble
+docker_host_compose_version: 2.40.3-1~ubuntu.24.04~noble

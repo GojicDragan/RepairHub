@@ -1,0 +1,15 @@
+---
+repairhub_install_dir: /opt/repairhub
+# Normalerweise derselbe vorhandene SSH-Benutzer wie im Deployment. Bei Bootstrap
+# über ein Administratorkonto den späteren Benutzer mit -e repairhub_deploy_user=...
+# angeben; bestehendes Passwort, Login-Shell und SSH-Dateien bleiben erhalten.
+repairhub_deploy_user: >-
+  {{ lookup('ansible.builtin.env', 'REPAIRHUB_DEPLOY_USER')
+     | default(ansible_user | default('', true), true) }}
+repairhub_postgres_user: repairhub
+repairhub_postgres_db: repairhub
+repairhub_https_port: 443
+# Migrationsfreier T02-Stand: keine fachliche API-Prüfung möglich.
+# deploy/capabilities.json wird in CI gegen die registrierten API-Routen geprüft.
+repairhub_migration_mode: ""
+repairhub_wait_timeout: 120
