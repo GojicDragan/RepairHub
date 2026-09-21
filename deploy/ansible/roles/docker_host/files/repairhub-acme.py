@@ -77,10 +77,11 @@ def publish(config):
     changed = not (tls / "current").is_symlink() or os.readlink(tls / "current") != fingerprint
     # A directory symlink swaps the key/certificate pair together. Nginx has the
     # containing directory mounted, so it sees the new target without recreation.
-    temporary = tls / ".current-next"
-    temporary.unlink(missing_ok=True)
-    temporary.symlink_to(fingerprint)
-    temporary.replace(tls / "current")
+    if changed:
+        temporary = tls / ".current-next"
+        temporary.unlink(missing_ok=True)
+        temporary.symlink_to(fingerprint)
+        temporary.replace(tls / "current")
     for name in ("server.crt", "server.key"):
         link = tls / name
         expected = "current/" + name

@@ -9,8 +9,8 @@ from scripts.ci import check_release_ref as release
 COMMIT = "a" * 40
 
 
-@pytest.mark.parametrize("ref", ["refs/heads/main", "refs/tags/v1.0.0", "refs/tags/releases/v1"])
-@pytest.mark.parametrize("event", ["push", "release", "workflow_dispatch"])
+@pytest.mark.parametrize("ref", ["refs/tags/v1.0.0", "refs/tags/releases/v1"])
+@pytest.mark.parametrize("event", ["push", "release"])
 def test_current_release_is_allowed(monkeypatch, ref, event):
     monkeypatch.setattr(release, "remote_commit", lambda *args: COMMIT)
     release.check_release("owner/repo", ref, COMMIT, event)
@@ -20,6 +20,10 @@ def test_current_release_is_allowed(monkeypatch, ref, event):
     ("ref", "event"),
     [
         ("refs/heads/feature/a", "push"),
+        ("refs/heads/main", "push"),
+        ("refs/heads/main", "release"),
+        ("refs/heads/main", "workflow_dispatch"),
+        ("refs/tags/v1", "workflow_dispatch"),
         ("refs/heads/main", "pull_request"),
         ("refs/tags/v1", "pull_request_target"),
     ],
@@ -33,7 +37,7 @@ def test_untrusted_context_never_queries_production(monkeypatch, ref, event):
         release.check_release("owner/repo", ref, COMMIT, event)
 
 
-@pytest.mark.parametrize("ref", ["refs/heads/main", "refs/tags/v1"])
+@pytest.mark.parametrize("ref", ["refs/tags/v1"])
 def test_stale_or_non_main_commit_is_rejected(monkeypatch, ref):
     monkeypatch.setattr(release, "remote_commit", lambda *args: "b" * 40)
     with pytest.raises(ValueError, match="main-Stand"):

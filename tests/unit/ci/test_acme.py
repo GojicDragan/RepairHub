@@ -133,3 +133,19 @@ def test_deployment_never_releases_ansible_lock(setup, monkeypatch):
     (root / ".deployment-lock").mkdir()
     acme.main()
     assert (root / ".deployment-lock").exists()
+
+
+def test_ansible_activated_certificate_needs_no_reload_or_symlink_change(setup):
+    root, live, config, calls = setup
+    assert acme.publish(config)
+    tls = root / "infrastructure/tls"
+    link = tls / "current"
+    before = link.lstat()
+    # The Ansible nginx tasks write this marker after successful first startup.
+    (tls / ".loaded-fingerprint").write_text(link.readlink().name)
+    (root / "infrastructure/.env").touch()
+    calls.clear()
+    assert not acme.publish(config)
+    after = link.lstat()
+    assert (before.st_ino, before.st_mtime_ns) == (after.st_ino, after.st_mtime_ns)
+    assert not any("reload" in call for call in calls)
