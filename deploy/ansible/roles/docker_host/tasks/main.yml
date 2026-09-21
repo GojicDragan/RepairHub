@@ -2,11 +2,17 @@
 - name: Unterstützte Zielplattform und vorgesehenen Deployment-Benutzer prüfen
   ansible.builtin.assert:
     that:
-      - ansible_facts.distribution == 'Ubuntu'
-      - ansible_facts.distribution_version == '24.04'
+      - docker_host_platform_key in docker_host_platforms
       - ansible_facts.architecture == 'x86_64'
       - repairhub_deploy_user is match('^[a-zA-Z_][a-zA-Z0-9_.-]*[$]?$')
-    fail_msg: Bootstrap benötigt Ubuntu 24.04 amd64 und einen ausdrücklich konfigurierten vorhandenen Deployment-Benutzer.
+    fail_msg: >-
+      Bootstrap benötigt Debian 12 oder Ubuntu 24.04 auf amd64 und einen ausdrücklich konfigurierten vorhandenen Deployment-Benutzer.
+      Erkannte Plattform: {{ ansible_facts.distribution }} {{ ansible_facts.distribution_version }}
+      ({{ ansible_facts.architecture }}). Für andere Plattformen zuerst Paketquelle und Versionen anpassen.
+
+- name: Geprüfte Paketquelle und Versionen der Zielplattform auswählen
+  ansible.builtin.set_fact:
+    docker_host_platform: "{{ docker_host_platforms[docker_host_platform_key] }}"
 
 - name: Vorhandenes Deployment-Konto vor Änderungen prüfen
   ansible.builtin.getent:
@@ -34,7 +40,7 @@
 
 - name: Geprüften Docker-Repository-Schlüssel laden
   ansible.builtin.get_url:
-    url: https://download.docker.com/linux/ubuntu/gpg
+    url: "https://download.docker.com/linux/{{ docker_host_platform.repository }}/gpg"
     dest: /etc/apt/keyrings/docker.asc
     checksum: sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570
     mode: "0644"
@@ -45,8 +51,8 @@
     mode: "0644"
     content: |
       Types: deb
-      URIs: https://download.docker.com/linux/ubuntu
-      Suites: noble
+      URIs: https://download.docker.com/linux/{{ docker_host_platform.repository }}
+      Suites: {{ docker_host_platform.suite }}
       Components: stable
       Architectures: amd64
       Signed-By: /etc/apt/keyrings/docker.asc
@@ -90,7 +96,7 @@
 
 - name: Certbot für HTTP-01 auf dem Host installieren
   ansible.builtin.apt:
-    name: [certbot=2.9.0-1, openssl]
+    name: ["certbot={{ docker_host_platform.certbot_version }}", openssl]
     state: present
 
 - name: Distributions-Timer zugunsten der koordinierten Erneuerung deaktivieren
