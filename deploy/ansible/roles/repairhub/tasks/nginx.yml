@@ -34,3 +34,12 @@
   when: repairhub_previous | length > 0 and (repairhub_nginx_config.changed or repairhub_infrastructure_secrets.changed)
   changed_when: true
   no_log: true
+
+# Nach Erststart/Wartung verwendet der geprüfte Nginx diese Generation bereits.
+# Ohne diesen Marker würde der nächste identische Release unnötig nachladen.
+- name: Durch Nginx erfolgreich aktivierte Zertifikatsgeneration vermerken
+  ansible.builtin.copy:
+    dest: "{{ repairhub_infrastructure_dir }}/tls/.loaded-fingerprint"
+    content: "{{ repairhub_acme_current.stat.lnk_target }}"
+    mode: "0600"
+  when: repairhub_tls_mode == 'acme'

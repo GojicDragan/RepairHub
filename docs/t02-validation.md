@@ -27,7 +27,7 @@ veröffentlichten oder auf der VM betriebenen Release.
 | Bestandteil | Aktueller Stand |
 | --- | --- |
 | Test, Build und Security | Für alle Branch-Pushes sowie Pull Requests eingerichtet; getrennte Unit-/Integrations-/E2E-Prüfungen, Open-Source-Scanner und aktiver isolierter ZAP |
-| Veröffentlichung und Deployment | Für main, Tag-Pushes und veröffentlichte GitHub-Releases eingerichtet; Tags müssen auf den aktuellen main-Commit zeigen |
+| Veröffentlichung und Deployment | Ausschliesslich für Tag-Pushes und veröffentlichte GitHub-Releases eingerichtet; Tags müssen auf den aktuellen main-Commit zeigen |
 | Images | Nur App wird gebaut/veröffentlicht; Nginx und PostgreSQL aus offiziellen gepinnten Images |
 | Produktionszugang | GitHub-Environment production; SSH-Passwort plus geprüfter Hostschlüssel; optionales sudo-Passwort für ACME |
 | TLS | Ansible-Erstausstellung für die konfigurierte Domain und Host-Timer zur Erneuerung vorbereitet; lab19.ifalabs.org ist die vereinbarte Domain |
@@ -611,3 +611,66 @@ DOCKER_CONFIG=/tmp/repairhub-t02-public-docker docker build \
 Der Build verwendete vorhandene Cache-Schichten. Kein Image veröffentlicht und
 kein Deployment ausgeführt. Der vollständige GitHub-Build-Job einschliesslich
 Archivierung, Smoke-Test und E2E muss mit dem korrigierten Commit erneut laufen.
+
+
+## Korrektur 21.09.2026: Publish und Deploy ausschliesslich bei Release/Tag
+
+Bezug T02, M07, N03–N05/N07–N10. Explizite Benutzerkorrektur ersetzt die
+frühere zusätzliche Auslieferung bei main-Pushes: Beide Jobs verlangen jetzt
+einen Tag-Ref und das Ereignis push oder release. Merges/Pushes nach main,
+andere Branches, PRs und workflow_dispatch führen nur Test, Build und Security
+aus. Die Freigabeprüfung weist auch direkte Aufrufe mit main oder manuellen
+Ereignissen ab. Tag-Zuordnung und aktueller main-Commit werden weiter geprüft.
+
+Geprüft: `pytest tests/unit/ci/test_release_ref.py -q` (14 bestanden), Ruff und
+Formatprüfung der betroffenen Python-Dateien sowie Actionlint für den Workflow
+erfolgreich. GitHub-Lauf nicht ausgelöst. Einrichtungsliste angepasst: production
+soll nur Tag-Regeln enthalten; bestehende main-Branchregel dort entfernen.
+
+## Nachtrag 21.09.2026: Idempotenz des aktuellen Deployments
+
+Bezug T02, M07, N03–N05/N07–N10. Zwei unnötige TLS-Änderungen korrigiert:
+Der Helfer ersetzt den Zertifikatslink nur noch bei einer anderen Generation.
+Ansible vermerkt nach erfolgreichem Nginx-Erststart beziehungsweise Wartung die
+bereits geladene ACME-Generation. Der nächste identische Release benötigt
+somit keinen zusätzlichen Nginx-Reload zur Erstmarkierung.
+
+Echte Ansible-Läufe auf einem neuen isolierten SSH-/Docker-in-Docker-Testhost
+mit offizieller PostgreSQL-/Nginx-Infrastruktur, lokaler Registry und Test-CA:
+
+| Fall | Ergebnis |
+| --- | --- |
+| Erstinstallation | ok=65, changed=23, failed=0; externe HTTPS-Prüfung erfolgreich |
+| Identischer Release | ok=46, changed=0, failed=0 |
+| Identischer Digest/Konfiguration, höhere Laufnummer | ok=46, changed=2, failed=0; ausschliesslich highwater.json und current.json geändert |
+| Absichtlich nicht existierender App-Digest, nächste Sequenz | failed=1, rescued=1; alter Release wiederhergestellt und HTTPS geprüft; Fehler bleibt sichtbar |
+| Korrigierter Wiederholungsversuch derselben Sequenz | ok=46, changed=1, failed=0; Release-Metadaten aktualisiert |
+| Weitere identische Wiederholung | ok=46, changed=0, failed=0 |
+
+In allen fünf Läufen nach der Erstinstallation blieben IDs und StartedAt-Werte
+von app, nginx und db identisch. Bericht: `reports/test/deploy-idempotency.json`.
+Der eigene Testhost samt anonymen Fixture-Volumes und temporären Schlüsseln wurde
+entfernt. Keine Produktionsdaten geändert.
+
+Vorbereitung über `scripts.prepare_deployment_test.prepare` mit
+`artifacts/official-postgres` und dem Commit aus dessen verifiziertem Manifest
+(f19b7949e9fa4296f6b77f164fa9404547ab78ea). Es wurden die aktuellen Playbooks
+gegen dieses vorhandene minimale App-Image geprüft, kein neuer Release gebaut.
+Läufe mit `source .qa/idempotency-check/controller.env`, PATH inklusive .venv/bin
+und `ansible-playbook -i tests/deployment/inventory.yml deploy/ansible/deploy.yml
+--extra-vars @<geschützte Fixture-Variablendatei>`. Variationen änderten nur
+Sequenz (1, 2, 3) beziehungsweise den App-Digest für den negativen Fall.
+
+Weitere Prüfungen bestanden:
+
+- 204 Tests: `pytest tests/unit/ci tests/integration/test_acme_certificate.py -q --junitxml=reports/test/deploy-idempotency.xml`.
+- Darunter Regression für unveränderten TLS-Link (Inode und mtime) sowie unterbleibenden Reload nach der Ansible-Aktivierungsmarkierung.
+- `.qa/check_acme_nginx.py`: echte Zertifikatsrotation und HTTPS-Auslieferung ohne Container-Neuerstellung, Wiederholung ohne Reload; öffentliche ACME-Ausstellung simuliert.
+- Ansible-Lint, Deploy-Syntaxprüfung, Ruff/Format und Bandit für den TLS-Helfer erfolgreich.
+
+Grenzen: Fixture nutzt supplied/provided TLS statt öffentlicher ACME-Ausstellung.
+Ubuntu-Bootstrap und tatsächlicher systemd-Timer auf der VM wurden nicht geprüft.
+Fachliche Migrationen existieren noch nicht; deren reale Wiederholungsprüfung
+folgt mit T04. Der gemeldete Fehler `docker` fehlt auf der Produktions-VM bleibt
+als gesonderte Hostvoraussetzung offen; die unterstützte Linux-Plattform muss
+vor Bootstrap bestätigt werden. Idempotenz ersetzt keine Erstvorbereitung.

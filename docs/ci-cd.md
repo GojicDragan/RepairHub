@@ -10,21 +10,21 @@ Flask-Monolith in den drei Diensten `nginx`, `app` und `db`.
 ## Pipeline und Branches
 
 Für diese Praxisarbeit gibt es gemäss aktuellem Benutzerentscheid genau ein
-Bereitstellungsziel: `main` → GitHub-Environment `production`. Eine separate
+Bereitstellungsziel: Release-Tags → GitHub-Environment `production`. Eine separate
 Testumgebung und ein Integrationsbranch für Deployments sind nicht vorgesehen.
 Dies ersetzt die frühere Zuordnung `develop` → `test`.
 Pushes auf **alle Branches**, einschliesslich `main`, sowie Pull Requests führen
-Test, Build und Security aus. Nur `main` und Release-Tags dürfen anschliessend
+Test, Build und Security aus. Nur Tag-Pushes und veröffentlichte GitHub-Releases dürfen anschliessend
 das geprüfte App-Image veröffentlichen und nach `production` ausliefern.
 
 | Auslöser | Test → Build → Security | Publish → Deploy |
 | --- | --- | --- |
 | Push auf beliebigen anderen Branch | Ja | Nein |
-| Push auf `main` | Ja | Ja |
+| Push auf `main` (auch Merge) | Ja | Nein |
 | Pull Request | Ja | Nein |
 | Push eines Tags (beliebiger Name) | Ja | Ja, für aktuellen `main`-Commit |
 | GitHub-Release veröffentlicht (`release.published`) | Ja | Ja, für aktuellen `main`-Commit |
-| Manueller Lauf | Ja | Nur auf `main` oder einem Tag des aktuellen `main`-Commits |
+| Manueller Lauf (`workflow_dispatch`) | Ja | Nein |
 
 Vor Veröffentlichung und erneut vor Deployment prüft `check_release_ref.py`,
 dass der Commit weiterhin dem aktuellen `main`-Stand entspricht. Bei Tags wird
@@ -318,10 +318,11 @@ Die Konfiguration erfolgt direkt im GitHub-Repository unter **Settings →
 Environments → production**:
 
 1. Die Environment `production` anlegen, sofern sie noch fehlt.
-2. Unter **Deployment branches and tags** den Branch `main` und die verwendeten
-   Release-Tags zulassen, beispielsweise Tag-Regel `*` für einfache Tagnamen
+2. Unter **Deployment branches and tags → Selected branches and tags** nur die
+   verwendeten Release-Tags zulassen; eine vorhandene Branch-Regel `main` entfernen.
+   Beispielsweise `*` für einfache Tagnamen
    und bei Bedarf `releases/*` für entsprechende Tags mit Schrägstrich.
-   Sonstige Branches bleiben ausgeschlossen. Tag-Erstellung und -Änderung über
+   Alle Branches bleiben für Deployments ausgeschlossen. Tag-Erstellung und -Änderung über
    Repository-Regeln auf vertrauenswürdige Verantwortliche begrenzen.
    Keine zusätzliche manuelle Freigabe ist vorgesehen.
 3. Die folgenden nicht geheimen Werte unter **Environment variables** eintragen.
@@ -436,8 +437,9 @@ und geschützte Certbot-Logs unter `/var/log/letsencrypt`.
 
 Zertifikatserneuerungen verändern den Infrastruktur-Fingerprint nicht und
 lösen weder DB-Neuerstellung noch App-Rollback aus. ACME-Konfiguration bleibt
-Teil des Infrastrukturstands. Nach dem ersten Start kann der erste Timerlauf
-Nginx einmalig nachladen, um die erfolgreiche Aktivierung zu vermerken.
+Teil des Infrastrukturstands. Nach erfolgreichem Erststart beziehungsweise
+Infrastrukturwartung vermerkt Ansible die bereits geladene Zertifikatsgeneration.
+Der nächste identische Release oder Timerlauf lädt Nginx deshalb nicht erneut.
 Zertifikate werden nicht mit jedem Release zwangsweise neu ausgestellt.
 Manuelle Prüfung: `sudo systemctl start repairhub-acme.service`; Timerstatus:
 `systemctl list-timers repairhub-acme.timer`.
@@ -527,6 +529,25 @@ TLS-Prüfung wird dadurch nicht deaktiviert. Die ausführbaren Aufrufe und deren
 konkrete Ergebnisse stehen im separaten T02-Prüfnachweis.
 
 ## Auslieferung, Wiederholung und Fehlerbehandlung
+
+Idempotenz bezieht sich auf denselben Image-Digest und dieselbe Konfiguration:
+Ein identischer erfolgreicher Release erzeugt keine Konfigurationsänderungen,
+keine erneute statische Extraktion und keine Container-Neustarts. Ein neuer
+Workflow-Lauf mit höherer Sequenz aktualisiert die Laufmetadaten, ohne App,
+Nginx oder PostgreSQL neu zu starten. Bereitschafts- und HTTPS-Prüfungen laufen
+weiterhin. Eine tatsächlich fällige Zertifikatserneuerung ist eine beabsichtigte
+Änderung und lädt Nginx neu; unveränderte Zertifikate tun dies nicht.
+
+Ein fehlgeschlagener Lauf entfernt seine Hostsperre und temporäre Zugangsdaten.
+Nach Korrektur kann derselbe beziehungsweise ein neuerer Lauf wiederholt werden;
+ältere Sequenzen werden weiterhin abgewiesen. Vorhandene Datenvolumes werden
+nicht gelöscht. Die konkreten Wiederholungs- und Fehlerprüfungen stehen in
+[t02-validation.md](t02-validation.md).
+
+Hostvorbereitung bleibt eine Voraussetzung: `bootstrap.yml` muss zur bestätigten
+Linux-Plattform passen und vor `deploy.yml` erfolgreich ausgeführt sein. Der
+normale Deploy-Job installiert derzeit kein fehlendes Docker automatisch.
+
 
 Der Deploy-Job verwendet die feste Gruppe `repairhub-deploy-production` mit
 `cancel-in-progress: false`. Vor der

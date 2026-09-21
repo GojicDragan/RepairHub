@@ -18,15 +18,15 @@ def remote_commit(repository: str, ref: str) -> str:
 
 
 def check_release(repository: str, ref: str, commit: str, event: str) -> None:
-    if event not in {"push", "release", "workflow_dispatch"}:
+    if event not in {"push", "release"}:
         raise ValueError("Dieses Ereignis darf keine Produktion ausliefern.")
-    if ref != "refs/heads/main" and not ref.startswith("refs/tags/"):
-        raise ValueError("Nur main und Release-Tags dürfen veröffentlichen.")
+    if not ref.startswith("refs/tags/"):
+        raise ValueError("Nur Release-Tags dürfen veröffentlichen.")
     if remote_commit(repository, "refs/heads/main") != commit:
         raise ValueError(
             "Veralteter oder fremder Release: Commit ist nicht der aktuelle main-Stand."
         )
-    if ref.startswith("refs/tags/") and remote_commit(repository, ref) != commit:
+    if remote_commit(repository, ref) != commit:
         raise ValueError("Release-Tag verweist nicht mehr auf den geprüften Commit.")
 
 

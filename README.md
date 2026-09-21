@@ -114,7 +114,7 @@ verwendet eine gekapselte Diagnoseschnittstelle.
 - [Isolierter lokaler Ansible-Testhost](tests/deployment/README.md)
 
 Test, Build und Security laufen auf allen Branches und bei Pull Requests.
-`main`, Tag-Pushes und veröffentlichte GitHub-Releases durchlaufen zusätzlich
+Nur Tag-Pushes und veröffentlichte GitHub-Releases durchlaufen zusätzlich
 Publish und Deploy in die GitHub-Environment `production`; Release-Tags müssen
 auf den aktuellen `main`-Commit zeigen. Host und vorhandener SSH-Benutzer werden dort als **Variables**, SSH-Passwort,
 Anwendungs-/DB-Geheimnisse als **Secrets** hinterlegt; die

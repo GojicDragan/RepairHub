@@ -26,3 +26,9 @@
     argv: [/usr/local/sbin/repairhub-acme, --deployment-lock-held]
   register: repairhub_acme_result
   changed_when: "'TLS_CHANGED' in repairhub_acme_result.stdout"
+
+- name: Aktivierte ACME-Zertifikatsgeneration feststellen
+  ansible.builtin.stat:
+    path: "{{ repairhub_infrastructure_dir }}/tls/current"
+    follow: false
+  register: repairhub_acme_current
