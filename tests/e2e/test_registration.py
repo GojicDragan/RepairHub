@@ -23,7 +23,9 @@ from scripts.ci.images import docker
     indirect=True,
     ids=["en-javascript", "en-no-javascript", "de-javascript", "de-no-javascript"],
 )
-def test_register_confirm_login_and_logout(page, live_application):
+def test_register_confirm_login_and_logout(page, live_application, request):
+    settings = request.node.callspec.params["page"]
+    javascript = settings.get("javascript", True) if isinstance(settings, dict) else settings
     german = page.evaluate("navigator.language").startswith("de")
     login_label = "Anmelden" if german else "Log in"
     logout_label = "Abmelden" if german else "Log out"
@@ -103,13 +105,23 @@ def test_register_confirm_login_and_logout(page, live_application):
     page.goto(reset_url)
     page.locator('[name="password"]').fill("1234567")
     page.locator('[name="password_confirm"]').fill("1234567")
-    expect(page.locator('[type="submit"]')).to_be_disabled()
-    expect(page.locator('[data-field-error="password-length"]')).to_be_visible()
+    if javascript:
+        expect(page.locator('[type="submit"]')).to_be_disabled()
+        expect(page.locator('[data-field-error="password-length"]')).to_be_visible()
+    else:
+        # Ohne JS prüft der Server; das Formular muss weiterhin bedienbar sein.
+        page.locator('[type="submit"]').click()
+        expect(page.locator("[data-server-error]").first).to_be_visible()
     page.locator('[name="password"]').fill("new example test phrase")
     page.locator('[name="password_confirm"]').fill("different reset phrase")
     page.locator('[name="password_confirm"]').blur()
-    expect(page.locator('[type="submit"]')).to_be_disabled()
-    expect(page.locator('[data-field-error="password-match"]')).to_be_visible()
+    if javascript:
+        expect(page.locator('[type="submit"]')).to_be_disabled()
+        expect(page.locator('[data-field-error="password-match"]')).to_be_visible()
+    else:
+        page.locator('[type="submit"]').click()
+        expect(page.locator("[data-server-error]").first).to_be_visible()
+        page.locator('[name="password"]').fill("new example test phrase")
     page.locator('[name="password_confirm"]').fill("new example test phrase")
     page.locator('[type="submit"]').click()
     page.wait_for_url("**/login")

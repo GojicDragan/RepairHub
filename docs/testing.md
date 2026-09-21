@@ -163,3 +163,14 @@ Für isolierte Laufzeitprüfungen wird die Dev-Abhängigkeit `aiosmtpd` benötig
 `uv sync --locked --group e2e` installiert sie zusammen mit der standardmässigen
 Dev-Gruppe. `tests/support/smtp_receiver.py` ist Testinfrastruktur und gehört
 nicht als pytest-Test in eine der drei Teststufen.
+
+## T05: Anmeldung und Browsersitzungen
+
+`uv run --locked pytest tests/integration/users/test_sessions.py` prüft mit
+`TEST_DATABASE_URL` dieselbe PostgreSQL-Fixture wie die Registrierung: echte
+Sitzungs-/Remember-Cookies, CSRF für Login und Logout, deaktivierte Konten,
+entzogene Bestätigung und den frameworkfreien Identitätsport. Es werden keine
+Gerätefunktionen vorgezogen. Domain- und Routingtests sichern weiterhin den
+Aufrufweg über injizierte Handler. Der E2E-Ablauf prüft deutsche und englische
+Seiten mit und ohne JavaScript; Validierungsfehler ohne JS werden serverseitig
+abgenommen. Ergebnisse und Grenzen: [T05-Abnahme](t05-validation.md).
