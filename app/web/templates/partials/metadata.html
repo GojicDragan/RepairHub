@@ -1,0 +1,34 @@
+{# Nur die anonyme Startseite ist für Suchmaschinen öffentlich. Geteilte URLs nie
+   aus request.url ableiten: Bestätigungstokens und Queryparameter sind vertraulich. #}
+{% set public_page = request.endpoint == 'web.index' and viewer is none and status is not defined %}
+{% set descriptions = {
+  'security.login': _('Log in to your RepairHub account and return to your personal repair workshop.'),
+  'security.register': _('Create your RepairHub account. A new chapter for your things starts here.'),
+  'security.send_confirmation': _('Request a new confirmation email to activate your RepairHub account.')
+} %}
+{% set description = descriptions.get(request.endpoint, _('A personal workshop for the things you care about. Start your repair journey with RepairHub.')) %}
+{% if status is defined %}{% set description = message %}{% endif %}
+<meta name="description" content="{{ description }}">
+<meta name="robots" content="{{ 'index, follow' if public_page and config.REPAIRHUB_ENV == 'production' else 'noindex, nofollow' }}">
+<link rel="icon" type="image/png" sizes="96x96" href="{{ url_for('web.static', filename='favicon-96.png') }}">
+<link rel="icon" type="image/svg+xml" sizes="any" href="{{ url_for('web.static', filename='favicon.svg') }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('web.static', filename='apple-touch-icon.png') }}">
+{% if public_page %}
+{% set canonical_url = url_for('web.index', _external=True, _scheme=config.PREFERRED_URL_SCHEME) %}
+<link rel="canonical" href="{{ canonical_url }}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="RepairHub">
+<meta property="og:title" content="{{ page_title }}">
+<meta property="og:description" content="{{ description }}">
+<meta property="og:url" content="{{ canonical_url }}">
+<meta property="og:locale" content="{{ 'de_DE' if locale.startswith('de') else 'en_US' }}">
+<meta property="og:image" content="{{ url_for('web.static', filename='brand-mark-512.png', _external=True, _scheme=config.PREFERRED_URL_SCHEME) }}">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
+<meta property="og:image:alt" content="RepairHub">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ page_title }}">
+<meta name="twitter:description" content="{{ description }}">
+<meta name="twitter:image" content="{{ url_for('web.static', filename='brand-mark-512.png', _external=True, _scheme=config.PREFERRED_URL_SCHEME) }}">
+<meta name="twitter:image:alt" content="RepairHub">
+{% endif %}

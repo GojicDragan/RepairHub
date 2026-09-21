@@ -1,4 +1,4 @@
-"""Future schema/API implementation cannot silently retain disabled deployment checks."""
+"""Neue Schema-/API-Funktionen dürfen ihre Deployment-Prüfungen nicht deaktiviert lassen."""
 
 import importlib.util
 from pathlib import Path

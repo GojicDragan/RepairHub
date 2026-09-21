@@ -142,6 +142,8 @@
     - repairhub_previous | length > 0
     - not repairhub_infrastructure_maintenance
 
+# Der Commit allein genügt nicht: Auch geänderte Laufzeitwerte erzeugen einen
+# neuen Release. Identische Eingaben behalten denselben Pfad und vermeiden Neustarts.
 - name: Konfigurationsgebundene App-Release-Kennung berechnen
   ansible.builtin.set_fact:
     repairhub_manage_infrastructure: >-
@@ -158,6 +160,8 @@
     repairhub_release_key: "{{ repairhub_release_commit }}-{{ repairhub_config_fingerprint[:16] }}"
     repairhub_release_dir: "{{ repairhub_install_dir }}/releases/{{ repairhub_release_commit }}-{{ repairhub_config_fingerprint[:16] }}"
 
+# Die höchste angenommene Sequenz bleibt auch nach einem Rollback erhalten.
+# Ein älterer wartender Workflow darf den fehlgeschlagenen neueren Lauf nicht überholen.
 - name: Höchsten angenommenen Lauf vor Auslieferung sichern
   ansible.builtin.copy:
     dest: "{{ repairhub_install_dir }}/highwater.json"
@@ -307,6 +311,8 @@
         mode: "0600"
       when: repairhub_manage_infrastructure
 
+    # Erst nach externer Abnahme gilt der neue Stand als erfolgreich. Vorher bleibt
+    # current.json die Referenz für einen kompatiblen Rückweg.
     - name: Erfolgreichen App-Release atomar vermerken
       ansible.builtin.copy:
         dest: "{{ repairhub_install_dir }}/current.json"

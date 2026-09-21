@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Issue/renew TLS under the same host lock as Ansible; publish a complete pair."""
+"""TLS unter Ansible-Hostsperre erneuern und das vollständige Zertifikatspaar aktivieren."""
 
 import hashlib
 import json
@@ -20,7 +20,7 @@ def run(arguments, **kwargs):
 def publish(config):
     root = Path(config["install_dir"])
     domain = config["domain"]
-    # Certbot retains a valid certificate until renewal is due. No forced renewal.
+    # Certbot behält gültige Zertifikate bis zur fälligen Erneuerung; nichts erzwingen.
     run(
         [
             "/usr/bin/certbot",
@@ -75,8 +75,8 @@ def publish(config):
     for directory in (tls.parent, tls, generation):
         os.chown(directory, owner.st_uid, owner.st_gid)
     changed = not (tls / "current").is_symlink() or os.readlink(tls / "current") != fingerprint
-    # A directory symlink swaps the key/certificate pair together. Nginx has the
-    # containing directory mounted, so it sees the new target without recreation.
+    # Ein Verzeichnislink wechselt Schlüssel und Zertifikat gemeinsam. Nginx
+    # bindet das Elternverzeichnis ein und sieht das neue Ziel ohne Neuerstellung.
     if changed:
         temporary = tls / ".current-next"
         temporary.unlink(missing_ok=True)
@@ -165,6 +165,6 @@ if __name__ == "__main__":
     try:
         main()
     except (OSError, ValueError, subprocess.CalledProcessError):
-        # Captured child output may contain account details; failures stay red.
+        # Prozessausgaben können Kontodaten enthalten; Fehler trotzdem als Fehler melden.
         print("TLS-Ausstellung, Prüfung oder Nginx-Reload fehlgeschlagen.", file=sys.stderr)
         sys.exit(1)

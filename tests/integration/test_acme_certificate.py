@@ -1,4 +1,4 @@
-"""Exercise certificate validation with real OpenSSL and disposable local PEMs."""
+"""Zertifikatsprüfung mit echtem OpenSSL und kurzlebigen lokalen PEM-Dateien testen."""
 
 import importlib.util
 import subprocess

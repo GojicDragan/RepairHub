@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="{{ locale | default('en') }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% block email_title %}{{ _('Confirm your email address') }}{% endblock %} | RepairHub</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f8f6f0;color:#243b35;font-family:Arial,Helvetica,sans-serif;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;mso-hide:all;">{% block preheader %}{{ _('One small step: confirm your email and make yourself at home in RepairHub.') }}{% endblock %}</div>
+  {# Layouttabellen und Inline-Stile halten E-Mails unabhängig vom Browser-Stylesheet. #}
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f8f6f0" style="width:100%;background-color:#f8f6f0;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+        <tr><td bgcolor="#243b35" style="padding:30px 28px;background-color:#243b35;border-radius:12px 12px 0 0;">
+          <p style="margin:0 0 18px;color:#f8f6f0;font-size:27px;line-height:32px;font-weight:bold;letter-spacing:-1px;">Repair<span style="font-weight:normal;">Hub</span><span style="color:#ed936e;">.</span></p>
+          <p style="margin:0;color:#e0e3d9;font-family:Consolas,'Courier New',monospace;font-size:11px;line-height:18px;letter-spacing:1.5px;">{{ _('KEEP. REPAIR. REPEAT.') }}</p>
+        </td></tr>
+        <tr><td bgcolor="#fffefa" style="padding:36px 28px 32px;background-color:#fffefa;border-left:1px solid #d9dcd1;border-right:1px solid #d9dcd1;">
+          <p style="margin:0 0 14px;color:#b84020;font-family:Consolas,'Courier New',monospace;font-size:11px;line-height:18px;letter-spacing:1px;">{% block eyebrow %}{{ _('YOUR WORKSHOP STARTS HERE') }}{% endblock %}</p>
+          <h1 style="margin:0 0 20px;color:#243b35;font-size:32px;line-height:38px;font-weight:bold;letter-spacing:-1px;">{% block heading %}{{ _('Confirm your email address') }}{% endblock %}</h1>
+          <p style="margin:0 0 28px;color:#58645e;font-size:16px;line-height:26px;">{% block introduction %}{% endblock %}</p>
+          {% block action %}
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
+            <tr><td align="center" bgcolor="#b84020" style="background-color:#b84020;border-radius:6px;mso-padding-alt:16px 24px;">
+              <a href="{{ action_link | default(confirmation_link) }}" style="display:inline-block;padding:16px 24px;border:1px solid #b84020;border-radius:6px;color:#ffffff;font-size:15px;line-height:22px;font-weight:bold;text-decoration:none;">{% block button_label %}{{ _('Confirm your email address') }}{% endblock %}</a>
+            </td></tr>
+          </table>
+          <p style="margin:0 0 28px;color:#58645e;font-size:13px;line-height:21px;">{% block validity %}{{ _('This link is valid for 24 hours. Confirm your email before logging in.') }}{% endblock %}</p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;table-layout:fixed;border-top:1px solid #d9dcd1;">
+            <tr><td style="padding-top:22px;">
+              <p style="margin:0 0 8px;color:#58645e;font-size:13px;line-height:21px;">{{ _('Button not working? Copy this link into your browser:') }}</p>
+              <p style="margin:0;font-size:12px;line-height:20px;word-break:break-all;overflow-wrap:anywhere;"><a href="{{ action_link | default(confirmation_link) }}" style="color:#b84020;text-decoration:underline;word-break:break-all;overflow-wrap:anywhere;">{{ action_link | default(confirmation_link) }}</a></p>
+            </td></tr>
+          </table>
+          {% endblock %}
+        </td></tr>
+        <tr><td bgcolor="#eaece1" style="padding:22px 28px;background-color:#eaece1;border:1px solid #d9dcd1;border-top:0;border-radius:0 0 12px 12px;">
+          <p style="margin:0;color:#58645e;font-size:13px;line-height:21px;">{% block safety %}{{ _('If you did not create an account, you can ignore this message.') }}{% endblock %}</p>
+        </td></tr>
+        <tr><td style="padding:26px 20px;text-align:center;">
+          <p style="margin:0 0 6px;color:#243b35;font-size:14px;line-height:22px;font-weight:bold;">{{ _('Good things deserve a second life.') }}</p>
+          <p style="margin:0;color:#58645e;font-size:12px;line-height:20px;">RepairHub · {{ _('Made for a repair-first mindset.') }}</p>
+        </td></tr>
+      </table>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </td></tr>
+  </table>
+</body>
+</html>

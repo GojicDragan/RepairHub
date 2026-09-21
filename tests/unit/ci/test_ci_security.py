@@ -1,4 +1,4 @@
-"""Security-report redaction, error classification and mandatory source gates."""
+"""Bereinigung von Scanberichten, Fehlerkategorien und verpflichtende Quellcodeprüfungen."""
 
 import json
 import os
@@ -10,7 +10,7 @@ from scripts.ci import security
 
 
 def test_source_snippets_and_match_values_are_not_retained():
-    # Synthetic placeholders, never a functioning credential.
+    # Synthetische Platzhalter, niemals gültige Zugangsdaten.
     report = [{"RuleID": "synthetic", "Secret": "placeholder", "Match": "placeholder"}]
     redacted = security.redact_report("gitleaks", report)
     assert "Secret" not in redacted[0]

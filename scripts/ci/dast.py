@@ -247,7 +247,7 @@ def main(artifacts: Path, reports: Path, commit: str) -> int:
         manifest = verify(artifacts, commit)
         summary["images"] = manifest["images"]
         docker("pull", ZAP_IMAGE, capture=True)
-        with isolated_runtime(manifest) as runtime:
+        with isolated_runtime(manifest, receive_mail=True) as runtime:
             summary.update(scan(runtime.network))
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError):
         summary.update(passed=False, error_category="scan_setup_or_cleanup_failed")

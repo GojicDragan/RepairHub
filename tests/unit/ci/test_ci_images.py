@@ -1,4 +1,4 @@
-"""Untrusted or mismatched image artifacts must stop before publication."""
+"""Nicht vertrauenswürdige oder abweichende Image-Artefakte vor Veröffentlichung abweisen."""
 
 import hashlib
 import io
@@ -186,8 +186,8 @@ def test_docker_failure_does_not_include_command_credentials(monkeypatch):
 
 @pytest.fixture
 def containerd_archive(tmp_path):
-    # Docker 29/containerd save: compatibility manifest plus index -> manifest -> config,
-    # with BuildKit attestation sibling excluded from the executable image identity.
+    # Docker 29/containerd: Kompatibilitätsmanifest plus Index → Manifest → Konfiguration.
+    # Die zusätzliche BuildKit-Attestierung zählt nicht als ausführbares Laufzeitimage.
     config = json.dumps({"architecture": "amd64", "os": "linux"}).encode()
     config_digest = "sha256:" + hashlib.sha256(config).hexdigest()
     runtime = json.dumps(

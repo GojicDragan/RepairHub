@@ -22,6 +22,8 @@ RUN addgroup -g 10001 repairhub && adduser -D -H -u 10001 -G repairhub repairhub
        /usr/local/lib/python3.13/site-packages/pip-*.dist-info /usr/local/bin/pip*
 COPY --from=dependencies /srv/repairhub/.venv ./.venv
 COPY app ./app
+RUN pybabel compile -d app/translations
+COPY migrations ./migrations
 USER 10001:10001
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \

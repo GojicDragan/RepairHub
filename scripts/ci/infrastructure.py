@@ -1,4 +1,4 @@
-"""Load immutable references for the official Nginx and PostgreSQL images."""
+"""Unveränderliche Referenzen für die offiziellen Nginx- und PostgreSQL-Images laden."""
 
 import json
 import os

@@ -1,0 +1,523 @@
+# German (Germany) translations for RepairHub.
+# Copyright (C) 2026 RepairHub
+# This file is distributed under the same license as the RepairHub project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: RepairHub VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2026-09-21 17:15+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: RepairHub\n"
+"Language: de_DE\n"
+"Language-Team: German\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: app/bootstrap.py:90
+msgid "Invalid request: untrusted host."
+msgstr "Ungültige Anfrage: nicht erlaubter Hostname."
+
+#: app/bootstrap.py:95
+msgid "Invalid request"
+msgstr "Ungültige Anfrage"
+
+#: app/bootstrap.py:96
+msgid "Please reload the page and check your input."
+msgstr "Bitte lade die Seite neu und prüfe deine Eingaben."
+
+#: app/bootstrap.py:98
+msgid "Login required"
+msgstr "Anmeldung erforderlich"
+
+#: app/bootstrap.py:98
+msgid "Please log in to access this resource."
+msgstr "Bitte melde dich an, um auf diesen Inhalt zuzugreifen."
+
+#: app/bootstrap.py:99
+msgid "Access denied"
+msgstr "Zugriff verweigert"
+
+#: app/bootstrap.py:99
+msgid "This action is not allowed."
+msgstr "Diese Aktion ist nicht erlaubt."
+
+#: app/bootstrap.py:100
+msgid "Page not found"
+msgstr "Seite nicht gefunden"
+
+#: app/bootstrap.py:100
+msgid "The requested resource was not found."
+msgstr "Der angeforderte Inhalt wurde nicht gefunden."
+
+#: app/bootstrap.py:101
+msgid "Method not allowed"
+msgstr "Methode nicht erlaubt"
+
+#: app/bootstrap.py:101
+msgid "This request method is not supported here."
+msgstr "Diese Anfragemethode wird hier nicht unterstützt."
+
+#: app/bootstrap.py:103
+msgid "Unable to register"
+msgstr "Registrierung nicht möglich"
+
+#: app/bootstrap.py:104
+msgid "This username or email address is already in use."
+msgstr "Dieser Benutzername oder diese E-Mail-Adresse wird bereits verwendet."
+
+#: app/bootstrap.py:106
+msgid "Temporarily unavailable"
+msgstr "Vorübergehend nicht verfügbar"
+
+#: app/bootstrap.py:106
+msgid "Please try again later."
+msgstr "Bitte versuche es später erneut."
+
+#: app/bootstrap.py:107
+msgid "Request too large"
+msgstr "Anfrage zu gross"
+
+#: app/bootstrap.py:107
+msgid "The submitted data exceeds the allowed size."
+msgstr "Die übermittelten Daten überschreiten die erlaubte Grösse."
+
+#: app/bootstrap.py:109
+msgid "Internal error"
+msgstr "Interner Fehler"
+
+#: app/bootstrap.py:110
+msgid "The request could not be processed. Please try again later."
+msgstr ""
+"Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es später "
+"erneut."
+
+#: app/bootstrap.py:116
+msgid "Request failed"
+msgstr "Anfrage fehlgeschlagen"
+
+#: app/bootstrap.py:117
+msgid "The request could not be processed."
+msgstr "Die Anfrage konnte nicht verarbeitet werden."
+
+#: app/web/templates/base.html:15
+msgid "Skip to content"
+msgstr "Zum Inhalt springen"
+
+#: app/web/templates/base.html:17
+msgid "Main navigation"
+msgstr "Hauptnavigation"
+
+#: app/web/templates/base.html:18
+msgid "RepairHub – Home"
+msgstr "RepairHub – Startseite"
+
+#: app/web/templates/base.html:26
+msgid "Log out"
+msgstr "Abmelden"
+
+#: app/web/templates/base.html:29 app/web/templates/index.html:11
+#: app/web/templates/security/login_user.html:3
+#: app/web/templates/security/login_user.html:6
+#: app/web/templates/security/register_user.html:9
+msgid "Log in"
+msgstr "Anmelden"
+
+#: app/web/templates/base.html:30
+#: app/web/templates/security/register_user.html:3
+msgid "Register"
+msgstr "Registrieren"
+
+#: app/web/templates/base.html:39
+msgid "Dismiss message"
+msgstr "Meldung schliessen"
+
+#: app/web/templates/base.html:45
+#: app/web/templates/security/email/_base.html:42
+msgid "Made for a repair-first mindset."
+msgstr "Für alle, die lieber reparieren."
+
+#: app/web/templates/base.html:45 app/web/templates/security/_layout.html:9
+#: app/web/templates/security/email/_footer.txt:4
+msgid "Keep. Repair. Repeat."
+msgstr "Behalten. Reparieren. Weitermachen."
+
+#: app/web/templates/error.html:6
+msgid "A SMALL DETOUR"
+msgstr "EIN KLEINER UMWEG"
+
+#: app/web/templates/error.html:9
+msgid "Back to home"
+msgstr "Zur Startseite"
+
+#: app/web/templates/index.html:2
+msgid "Your personal repair workshop"
+msgstr "Deine persönliche Reparaturwerkstatt"
+
+#: app/web/templates/index.html:6
+msgid "YOUR PERSONAL REPAIR WORKSHOP"
+msgstr "DEINE PERSÖNLICHE REPARATURWERKSTATT"
+
+#: app/web/templates/index.html:8
+#: app/web/templates/security/email/_base.html:41
+#: app/web/templates/security/email/_footer.txt:3
+msgid "Good things deserve a second life."
+msgstr "Gute Dinge verdienen ein zweites Leben."
+
+#: app/web/templates/index.html:9
+msgid ""
+"A place for the things you care about. Bring a little order to fixing "
+"them, one repair at a time."
+msgstr ""
+"Ein Ort für die Dinge, die dir wichtig sind. Bring Ordnung ins Reparieren"
+" – eine Reparatur nach der anderen."
+
+#: app/web/templates/index.html:10
+#: app/web/templates/security/login_user.html:10
+#: app/web/templates/security/register_user.html:5
+msgid "Create an account"
+msgstr "Konto erstellen"
+
+#: app/web/templates/index.html:11
+msgid "Already part of the workshop?"
+msgstr "Schon Teil der Werkstatt?"
+
+#: app/web/templates/index.html:13
+msgid "Welcome to your workshop."
+msgstr "Willkommen in deiner Werkstatt."
+
+#: app/web/templates/index.html:14
+#, python-format
+msgid "You are logged in as %(username)s."
+msgstr "Du bist als %(username)s angemeldet."
+
+#: app/web/templates/index.html:15
+msgid "Your account is ready. A new chapter for your things starts here."
+msgstr "Dein Konto ist bereit. Hier beginnt ein neues Kapitel für deine Dinge."
+
+#: app/web/templates/index.html:19
+msgid "THE REPAIR MINDSET"
+msgstr "REPARIEREN STATT ERSETZEN"
+
+#: app/web/templates/index.html:19
+msgid "FIG. 01"
+msgstr "ABB. 01"
+
+#: app/web/templates/index.html:21
+msgid "Worth keeping."
+msgstr "Wertvoll genug zum Behalten."
+
+#: app/web/templates/index.html:21
+msgid "Worth fixing."
+msgstr "Wertvoll genug zum Reparieren."
+
+#: app/web/templates/index.html:21
+msgid "REPAIR"
+msgstr "REPARIEREN"
+
+#: app/web/templates/index.html:21
+msgid "REPEAT"
+msgstr "NOCHMAL"
+
+#: app/web/templates/index.html:25
+msgid "A LITTLE STRUCTURE. A LOT MORE POSSIBILITY."
+msgstr "ETWAS MEHR STRUKTUR. VIEL MEHR MÖGLICHKEITEN."
+
+#: app/web/templates/index.html:25
+msgid "Manage your personal repairs."
+msgstr "Verwalte deine privaten Reparaturen."
+
+#: app/web/templates/index.html:25
+msgid "COMING NEXT"
+msgstr "DEMNÄCHST"
+
+#: app/web/templates/index.html:26
+msgid "Accounts are ready. Device and repair management is not available yet."
+msgstr ""
+"Benutzerkonten sind bereit. Die Geräte- und Reparaturverwaltung folgt als"
+" Nächstes."
+
+#: app/web/templates/index.html:28
+msgid "Know your devices"
+msgstr "Kenne deine Geräte"
+
+#: app/web/templates/index.html:28
+msgid "A home for the details that matter, from the model to its repair history."
+msgstr ""
+"Alle wichtigen Details an einem Ort – vom Modell bis zur "
+"Reparaturhistorie."
+
+#: app/web/templates/index.html:29
+msgid "Follow the repair"
+msgstr "Behalte die Reparatur im Blick"
+
+#: app/web/templates/index.html:29
+msgid "Keep the problem, the next steps and your progress together."
+msgstr ""
+"Halte das Problem, die nächsten Schritte und deinen Fortschritt zusammen "
+"fest."
+
+#: app/web/templates/index.html:30
+msgid "See the full picture"
+msgstr "Behalte den Überblick"
+
+#: app/web/templates/index.html:30
+msgid "Bring parts, time and costs into one clear view."
+msgstr "Ersatzteile, Zeit und Kosten übersichtlich zusammengefasst."
+
+#: app/web/templates/partials/metadata.html:5
+msgid ""
+"Log in to your RepairHub account and return to your personal repair "
+"workshop."
+msgstr ""
+"Melde dich bei RepairHub an und kehre zu deiner persönlichen "
+"Reparaturwerkstatt zurück."
+
+#: app/web/templates/partials/metadata.html:6
+msgid "Create your RepairHub account. A new chapter for your things starts here."
+msgstr ""
+"Erstelle dein RepairHub-Konto. Hier beginnt ein neues Kapitel für deine "
+"Dinge."
+
+#: app/web/templates/partials/metadata.html:7
+msgid "Request a new confirmation email to activate your RepairHub account."
+msgstr ""
+"Fordere eine neue Bestätigungs-E-Mail an, um dein RepairHub-Konto zu "
+"aktivieren."
+
+#: app/web/templates/partials/metadata.html:9
+msgid ""
+"A personal workshop for the things you care about. Start your repair "
+"journey with RepairHub."
+msgstr ""
+"Eine persönliche Werkstatt für die Dinge, die dir wichtig sind. Starte "
+"deine Reparaturreise mit RepairHub."
+
+#: app/web/templates/security/_form.html:2
+msgid "Please check the highlighted fields."
+msgstr "Bitte prüfe die markierten Eingaben."
+
+#: app/web/templates/security/_form.html:16
+msgid "8–128 characters. Spaces and special characters welcome."
+msgstr "8–128 Zeichen. Leerzeichen und Sonderzeichen sind erlaubt."
+
+#: app/web/templates/security/_layout.html:4
+msgid "The RepairHub idea"
+msgstr "Die Idee hinter RepairHub"
+
+#: app/web/templates/security/_layout.html:5
+msgid "LESS WASTE. MORE POSSIBILITY."
+msgstr "WENIGER ABFALL. MEHR MÖGLICHKEITEN."
+
+#: app/web/templates/security/_layout.html:6
+msgid "Every fix starts with a little care."
+msgstr "Jede Reparatur beginnt mit etwas Sorgfalt."
+
+#: app/web/templates/security/_layout.html:8
+msgid "For the well-loved, the worn-in and the worth-keeping."
+msgstr "Für lieb gewonnene, oft gebrauchte und erhaltenswerte Dinge."
+
+#: app/web/templates/security/_layout.html:12
+#: app/web/templates/security/email/_base.html:21
+msgid "YOUR WORKSHOP STARTS HERE"
+msgstr "HIER BEGINNT DEINE WERKSTATT"
+
+#: app/web/templates/security/login_user.html:4
+msgid "WELCOME BACK"
+msgstr "WILLKOMMEN ZURÜCK"
+
+#: app/web/templates/security/login_user.html:7
+msgid "A little care goes a long way. Pick up where you left off."
+msgstr "Ein wenig Sorgfalt bewirkt viel. Mach dort weiter, wo du aufgehört hast."
+
+#: app/web/templates/security/login_user.html:9
+#: app/web/templates/security/register_user.html:8
+msgid "Resend confirmation link"
+msgstr "Bestätigungslink erneut senden"
+
+#: app/web/templates/security/login_user.html:10
+msgid "New to RepairHub?"
+msgstr "Neu bei RepairHub?"
+
+#: app/web/templates/security/register_user.html:6
+msgid ""
+"Make room for a repair-first mindset. We will email you a link to confirm"
+" your account."
+msgstr ""
+"Reparieren statt ersetzen. Wir senden dir einen Link per E-Mail, um dein "
+"Konto zu bestätigen."
+
+#: app/web/templates/security/register_user.html:9
+msgid "Already have an account?"
+msgstr "Hast du bereits ein Konto?"
+
+#: app/web/templates/security/send_confirmation.html:3
+msgid "Confirm email"
+msgstr "E-Mail bestätigen"
+
+#: app/web/templates/security/email/confirmation_instructions.html:2
+#: app/web/templates/security/send_confirmation.html:4
+msgid "ONE SMALL STEP"
+msgstr "EIN KLEINER SCHRITT"
+
+#: app/web/templates/security/send_confirmation.html:6
+msgid "Check your inbox"
+msgstr "Schau in dein Postfach"
+
+#: app/web/templates/security/send_confirmation.html:7
+msgid ""
+"Enter your email and we will send a fresh confirmation link. Confirm your"
+" address before logging in."
+msgstr ""
+"Gib deine E-Mail-Adresse ein und wir senden dir einen neuen "
+"Bestätigungslink. Bestätige deine Adresse vor der Anmeldung."
+
+#: app/web/templates/security/send_confirmation.html:8
+msgid "Confirmation links are valid for 24 hours."
+msgstr "Bestätigungslinks sind 24 Stunden gültig."
+
+#: app/web/templates/security/send_confirmation.html:10
+msgid "Back to log in"
+msgstr "Zurück zur Anmeldung"
+
+#: app/web/templates/security/email/_base.html:7
+#: app/web/templates/security/email/_base.html:22
+#: app/web/templates/security/email/_base.html:26
+#: app/web/templates/security/email/confirmation_instructions.txt:1
+msgid "Confirm your email address"
+msgstr "E-Mail-Adresse bestätigen"
+
+#: app/web/templates/security/email/_base.html:10
+msgid "One small step: confirm your email and make yourself at home in RepairHub."
+msgstr ""
+"Ein kleiner Schritt: Bestätige deine E-Mail-Adresse und richte dich bei "
+"RepairHub ein."
+
+#: app/web/templates/security/email/_base.html:18
+msgid "KEEP. REPAIR. REPEAT."
+msgstr "BEHALTEN. REPARIEREN. WEITERMACHEN."
+
+#: app/web/templates/security/email/_base.html:29
+#: app/web/templates/security/email/confirmation_instructions.txt:6
+#: app/web/templates/security/email/welcome.txt:6
+msgid "This link is valid for 24 hours. Confirm your email before logging in."
+msgstr ""
+"Dieser Link ist 24 Stunden gültig. Bestätige deine E-Mail-Adresse vor der"
+" Anmeldung."
+
+#: app/web/templates/security/email/_base.html:32
+msgid "Button not working? Copy this link into your browser:"
+msgstr "Funktioniert der Button nicht? Kopiere diesen Link in deinen Browser:"
+
+#: app/web/templates/security/email/_base.html:38
+#: app/web/templates/security/email/confirmation_instructions.txt:7
+#: app/web/templates/security/email/welcome.txt:7
+msgid "If you did not create an account, you can ignore this message."
+msgstr "Falls du kein Konto erstellt hast, kannst du diese Nachricht ignorieren."
+
+#: app/web/templates/security/email/confirmation_instructions.html:3
+#: app/web/templates/security/email/confirmation_instructions.txt:3
+msgid ""
+"Here is your new confirmation link. Confirm your email address to get "
+"your account ready for your next chapter of fixing things."
+msgstr ""
+"Hier ist dein neuer Bestätigungslink. Bestätige deine E-Mail-Adresse, "
+"damit dein Konto für die nächsten Reparaturen bereit ist."
+
+#: app/web/templates/security/email/welcome.html:2
+#: app/web/templates/security/email/welcome.txt:1
+msgid "Welcome to RepairHub."
+msgstr "Willkommen bei RepairHub."
+
+#: app/web/templates/security/email/welcome.html:3
+msgid ""
+"Good to have you here. Confirm your email address to finish setting up "
+"your account and step into your personal repair workshop."
+msgstr ""
+"Schön, dass du da bist. Bestätige deine E-Mail-Adresse, um dein Konto "
+"einzurichten und deine persönliche Reparaturwerkstatt zu betreten."
+
+#: app/web/templates/security/email/welcome.txt:3
+msgid "Please confirm your email address using this link:"
+msgstr "Bitte bestätige deine E-Mail-Adresse über diesen Link:"
+
+msgid "Email or username"
+msgstr "E-Mail oder Benutzername"
+
+msgid "Forgot password?"
+msgstr "Passwort vergessen?"
+
+msgid ""
+"Enter your email address. If an account matches, we will send you a "
+"password reset link."
+msgstr ""
+"Gib deine E-Mail-Adresse ein. Falls ein Konto dazu existiert, senden wir "
+"dir einen Link zum Zurücksetzen des Passworts."
+
+msgid "Reset your password"
+msgstr "Passwort zurücksetzen"
+
+msgid "Choose a new password, then log in again."
+msgstr "Wähle ein neues Passwort und melde dich danach erneut an."
+
+msgid "A fresh start for your RepairHub account."
+msgstr "Ein neuer Start für dein RepairHub-Konto."
+
+msgid "Use the link below to choose a new password for your RepairHub account."
+msgstr "Wähle über den folgenden Link ein neues Passwort für dein RepairHub-Konto."
+
+msgid "This link is valid for one hour and can only be used once."
+msgstr "Dieser Link ist eine Stunde gültig und kann nur einmal verwendet werden."
+
+msgid ""
+"If you did not request a password reset, ignore this email. Your password"
+" will stay unchanged."
+msgstr ""
+"Falls du kein neues Passwort angefordert hast, ignoriere diese E-Mail. "
+"Dein Passwort bleibt unverändert."
+
+msgid "Your password has been reset"
+msgstr "Dein Passwort wurde zurückgesetzt"
+
+msgid ""
+"Your RepairHub password was changed. You can now log in with your new "
+"password."
+msgstr ""
+"Dein RepairHub-Passwort wurde geändert. Du kannst dich jetzt mit deinem "
+"neuen Passwort anmelden."
+
+msgid ""
+"If you did not make this change, reset your password immediately using "
+"the login page."
+msgstr ""
+"Falls du diese Änderung nicht vorgenommen hast, setze dein Passwort "
+"sofort über die Anmeldeseite zurück."
+
+msgid "Your RepairHub account"
+msgstr "Dein RepairHub-Konto"
+
+msgid ""
+"An account already uses these details. Visit the login page to sign in, "
+"reset your password or request a confirmation email."
+msgstr ""
+"Diese Angaben werden bereits von einem Konto verwendet. Auf der "
+"Anmeldeseite kannst du dich anmelden, dein Passwort zurücksetzen oder "
+"eine Bestätigungs-E-Mail anfordern."
+
+msgid "Enter your email address."
+msgstr "Gib deine E-Mail-Adresse ein."
+
+msgid "Enter a valid email address, for example name@example.org."
+msgstr "Gib eine gültige E-Mail-Adresse ein, zum Beispiel name@example.org."
+
+msgid "Passwords must match."
+msgstr "Die Passwörter müssen übereinstimmen."
+
+#, python-format
+msgid "Use at least %(minimum)s characters."
+msgstr "Verwende mindestens %(minimum)s Zeichen."
+

@@ -1,4 +1,4 @@
-"""Protected deployment files retain special characters without shell interpolation."""
+"""Geschützte Deployment-Dateien erhalten Sonderzeichen ohne Shell-Interpolation."""
 
 import importlib.util
 import json
@@ -26,6 +26,12 @@ def deployment_environment(tmp_path, monkeypatch):
         "APP_IMAGE": "example/app@sha256:" + "a" * 64,
         "GITHUB_SHA": "d" * 40,
         "GITHUB_RUN_NUMBER": "1",
+        "BACKUP_PASSPHRASE": "synthetic-backup-value-at-least-32-characters",
+        "MAIL_SERVER": "smtp.example.org",
+        "MAIL_PORT": "587",
+        "MAIL_DEFAULT_SENDER": "noreply@example.org",
+        "MAIL_USERNAME": "smtp-user",
+        "MAIL_PASSWORD": "synthetic-mail-value",
         "PUBLIC_URL": "https://example.invalid",
         "ACME_EMAIL": "test@example.invalid",
         "DEPLOY_SSH_PASSWORD": "synthetic-SSH-" + " @:#'\"$`\\ä space ",
@@ -47,13 +53,28 @@ def test_secrets_are_protected_and_url_encoded(deployment_environment, capsys):
     directory = Path(values["DEPLOY_INPUT_DIR"])
     assert stat.S_IMODE(directory.stat().st_mode) == 0o700
     payload = json.loads((directory / "vars.json").read_text())
+    assert payload["repairhub_migration_mode"] == "compatible"
+    assert payload["repairhub_backup_fetch_dir"] == str(directory / "backups")
+    assert values["BACKUP_PASSPHRASE"] not in json.dumps(payload)
     assert payload["repairhub_tls_mode"] == "acme"
     assert payload["repairhub_acme_email"] == values["ACME_EMAIL"]
     assert "repairhub_tls_private_key" not in payload
     assert payload["ansible_password"] == values["DEPLOY_SSH_PASSWORD"]
     assert {file.name for file in directory.iterdir()} == {"vars.json", "known_hosts"}
     lines = dict(line.split("=", 1) for line in payload["repairhub_runtime_env"].splitlines())
-    assert set(lines) == {"SECRET_KEY", "DATABASE_URL"}
+    assert set(lines) == {
+        "SECRET_KEY",
+        "DATABASE_URL",
+        "MAIL_SERVER",
+        "MAIL_PORT",
+        "MAIL_DEFAULT_SENDER",
+        "MAIL_USERNAME",
+        "MAIL_PASSWORD",
+        "MAIL_USE_TLS",
+        "MAIL_USE_SSL",
+        "PUBLIC_URL",
+    }
+    assert lines["MAIL_PASSWORD"] == values["MAIL_PASSWORD"]
     assert payload["repairhub_database_env"] == f"POSTGRES_PASSWORD={values['POSTGRES_PASSWORD']}\n"
     assert (
         not {"repairhub_nginx_image", "repairhub_postgres_image", "repairhub_database_contract"}
@@ -119,7 +140,7 @@ def test_missing_ssh_credentials_or_target_block_before_writing_inputs(
 def test_askpass_control_characters_are_rejected_without_logging_password(
     deployment_environment, monkeypatch, capsys, character
 ):
-    # A plain mapping also lets this test exercise NUL rejection before any SSH call.
+    # Ein einfaches Mapping erlaubt die NUL-Prüfung, bevor ein SSH-Aufruf erfolgt.
     environment = dict(deployment_input.os.environ)
     password = "synthetic" + character + "SSH-password"
     environment["DEPLOY_SSH_PASSWORD"] = password
@@ -130,3 +151,10 @@ def test_askpass_control_characters_are_rejected_without_logging_password(
     assert not Path(deployment_environment["DEPLOY_INPUT_DIR"]).exists()
     captured = capsys.readouterr()
     assert captured.out == captured.err == ""
+
+
+@pytest.mark.parametrize("name", ["MAIL_SERVER", "MAIL_USERNAME", "MAIL_PASSWORD", "PUBLIC_URL"])
+def test_mail_env_line_injection_is_rejected(deployment_environment, monkeypatch, name):
+    monkeypatch.setenv(name, "synthetic\nMAIL_USE_TLS=false")
+    with pytest.raises(ValueError, match="Zeilenumbrüche"):
+        deployment_input.main()

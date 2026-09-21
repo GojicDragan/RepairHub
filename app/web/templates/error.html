@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 {% block title %}{{ status }} – {{ title }} | RepairHub{% endblock %}
 {% block content %}
-<h1>{{ title }}</h1>
-<p>{{ message }}</p>
-<p><a class="btn btn-primary" href="{{ url_for('web.index') }}">Zur Startseite</a></p>
+<section class="error-panel">
+  <p class="error-code" aria-hidden="true">{{ status }}</p>
+  <p class="eyebrow">{{ _('A SMALL DETOUR') }}</p>
+  <h1>{{ title }}</h1>
+  <p class="auth-intro">{{ message }}</p>
+  <a class="btn btn-primary" href="{{ url_for('web.index') }}">{{ _('Back to home') }} <span aria-hidden="true">↗</span></a>
+</section>
 {% endblock %}

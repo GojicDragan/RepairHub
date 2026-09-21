@@ -1,4 +1,4 @@
-"""Weboberfläche; Fachzugriff ausschliesslich über die vier Verwaltungsservices."""
+"""Weboberfläche; fachliche Aktionen laufen über die Anwendungsfälle der Domänen."""
 
 from flask import Blueprint
 

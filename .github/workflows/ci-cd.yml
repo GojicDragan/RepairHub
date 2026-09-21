@@ -31,7 +31,7 @@ jobs:
         env:
           POSTGRES_DB: repairhub_test
           POSTGRES_USER: repairhub_test
-          # Disposable runner database, reachable only through runner-local Docker.
+          # Kurzlebige Testdatenbank im Docker des Runners; keine Produktionszugangsdaten.
           POSTGRES_PASSWORD: disposable-ci-only
         ports: ['5432:5432']
         options: >-
@@ -257,11 +257,19 @@ jobs:
         run: uv run --locked python scripts/ci/check_release_ref.py
       - name: Prepare protected inputs and pinned SSH host keys
         env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
           APP_IMAGE: ${{ needs.publish.outputs.app_image }}
           PUBLIC_URL: ${{ vars.PUBLIC_URL }}
           POSTGRES_DB: ${{ vars.POSTGRES_DB || 'repairhub' }}
           POSTGRES_USER: ${{ vars.POSTGRES_USER || 'repairhub' }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          MAIL_SERVER: ${{ vars.MAIL_SERVER }}
+          MAIL_PORT: ${{ vars.MAIL_PORT }}
+          MAIL_DEFAULT_SENDER: ${{ vars.MAIL_DEFAULT_SENDER }}
+          MAIL_USE_TLS: ${{ vars.MAIL_USE_TLS || 'true' }}
+          MAIL_USE_SSL: ${{ vars.MAIL_USE_SSL || 'false' }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           ACME_EMAIL: ${{ vars.ACME_EMAIL }}
           DEPLOY_BECOME_PASSWORD: ${{ secrets.DEPLOY_BECOME_PASSWORD }}
@@ -290,6 +298,19 @@ jobs:
           uv run --locked --group ci ansible-playbook \
             -i deploy/ansible/inventories/production/hosts.yml \
             deploy/ansible/deploy.yml --extra-vars "@$DEPLOY_INPUT_DIR/vars.json"
+      - name: Encrypt database backups even after deployment failure
+        if: always()
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: python scripts/ci/encrypt_backups.py "$RUNNER_TEMP/repairhub-deploy/backups" "$RUNNER_TEMP/repairhub-encrypted-backups"
+      - name: Retain encrypted database backups
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
+        with:
+          name: database-backup-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/repairhub-encrypted-backups/*.gpg
+          if-no-files-found: ignore
+          retention-days: 30
       - name: Remove temporary secrets even after deployment failure
         if: always()
         run: rm -rf -- "$RUNNER_TEMP/repairhub-deploy"

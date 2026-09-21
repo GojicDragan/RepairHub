@@ -1,4 +1,4 @@
-"""Run every required scanner, retain redacted reports, and fail closed."""
+"""Alle Pflichtscanner ausführen; bereinigte Berichte speichern und bei Fehlern sperren."""
 
 import argparse
 import json
@@ -16,7 +16,7 @@ POSTGRES_GOSU_EXCEPTIONS = (
 
 
 def assess_report(kind: str, report: object, *, ignored_source: str | None = None) -> bool:
-    """True means findings or an incomplete/invalid report must block release."""
+    """True sperrt die Freigabe bei Befunden oder unvollständigen/ungültigen Berichten."""
     if kind == "pip-audit":
         if not isinstance(report, dict) or not isinstance(report.get("dependencies"), list):
             return True
@@ -82,8 +82,8 @@ def assess_report(kind: str, report: object, *, ignored_source: str | None = Non
             if not isinstance(modified, list):
                 return True
             for item in modified:
-                # Trivy owns CVE/path/PURL matching and expiry. Accept only its
-                # explicit exception output, never hidden or unrelated suppressions.
+                # Trivy prüft CVE, Pfad, PURL und Ablaufdatum. Nur ausdrücklich
+                # ausgewiesene Ausnahmen akzeptieren, keine fremden Unterdrückungen.
                 if (
                     ignored_source is None
                     or not isinstance(item, dict)
@@ -125,7 +125,7 @@ def assess_report(kind: str, report: object, *, ignored_source: str | None = Non
 
 def redact_report(kind: str, report: object) -> object:
     if kind == "gitleaks" and isinstance(report, list):
-        # No matched text, source snippets, secret values, or author email in artifacts.
+        # Keine Fundtexte, Codeausschnitte, Geheimnisse oder Autorenadressen in Artefakten.
         fields = ("RuleID", "File", "StartLine", "EndLine", "Fingerprint", "Commit")
         return [{key: finding.get(key) for key in fields} for finding in report]
     if kind == "bandit" and isinstance(report, dict):
@@ -136,7 +136,7 @@ def redact_report(kind: str, report: object) -> object:
 
 
 def error_category(stderr: str, returncode: int) -> str:
-    """Retain useful diagnostics without echoing scanner-controlled source text."""
+    """Nützliche Fehlerkategorien erhalten, ohne vom Scanner gelieferte Quelltexte auszugeben."""
     message = stderr.lower()
     if returncode == 127:
         return "scanner_unavailable"
@@ -159,7 +159,7 @@ def run_scan(
     *,
     trivy_ignorefile: Path | None = None,
 ) -> dict:
-    """A failed executable can never be mistaken for an empty successful scan."""
+    """Ein Prozessfehler darf niemals als erfolgreicher Scan ohne Befunde gelten."""
     report_path.unlink(missing_ok=True)
     try:
         result = subprocess.run(
@@ -218,7 +218,7 @@ def run_scan(
 
 
 def source_scans(reports: Path, binary_dir: Path) -> list[dict]:
-    """Shared locked dependency, Python-code and repository-secret gates."""
+    """Gemeinsame Prüfungen für gesperrte Abhängigkeiten, Python-Code und Geheimnisse."""
     reports.mkdir(parents=True, exist_ok=True)
     scans = []
     requirements = reports / "requirements-audit.txt"

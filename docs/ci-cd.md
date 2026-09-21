@@ -337,6 +337,11 @@ Environments → production**:
 | `DEPLOY_PORT` | SSH-Port; Standard `22` |
 | `DEPLOY_USER` | Erforderlich: vorhandener SSH-Benutzer der VM, dessen Passwort hinterlegt wird |
 | `PUBLIC_URL` | `https://lab19.ifalabs.org` (ohne abschliessenden Schrägstrich) |
+| `MAIL_SERVER` | SMTP-Host für Bestätigungsmails; erforderlich ab T04 |
+| `MAIL_PORT` | SMTP-Port des Anbieters, z.B. `587` |
+| `MAIL_DEFAULT_SENDER` | Beim Anbieter freigegebene Absenderadresse |
+| `MAIL_USE_TLS` | STARTTLS; Standard `true` |
+| `MAIL_USE_SSL` | Implizites TLS; Standard `false`; für Port 465 meist `true` und USE_TLS=false |
 | `ACME_EMAIL` | Erforderlich: eigene gültige Kontaktadresse für Let’s Encrypt |
 | `POSTGRES_DB` | Datenbankname; Standard `repairhub` |
 | `POSTGRES_USER` | Datenbankbenutzer; Standard `repairhub` |
@@ -345,6 +350,8 @@ Environments → production**:
 | --- | --- |
 | `DEPLOY_SSH_PASSWORD` | SSH-Anmeldepasswort des vorhandenen Benutzers aus `DEPLOY_USER` |
 | `DEPLOY_SSH_KNOWN_HOSTS` | Vorab geprüfte `known_hosts`-Zeile(n) für den Zielhost; bei abweichendem SSH-Port mit `[host]:port` |
+| `MAIL_USERNAME` | SMTP-Anmeldename |
+| `MAIL_PASSWORD` | SMTP-Passwort oder App-Passwort des Anbieters |
 | `SECRET_KEY` | Langer zufälliger Anwendungsschlüssel |
 | `POSTGRES_PASSWORD` | Datenbankpasswort; `DATABASE_URL` wird daraus mit korrekt kodierten Sonderzeichen erzeugt |
 | `DEPLOY_BECOME_PASSWORD` | sudo-Passwort des Deployment-Benutzers, falls sudo eines verlangt; bei root oder passwortlosem sudo weglassen |
@@ -617,3 +624,58 @@ kann eine Hostsperre verbleiben. Erst prüfen, ob kein Deployment mehr läuft un
 welcher Stand aktiv ist; anschliessend nur das leere Sperrverzeichnis entfernen
 und dasselbe Playbook erneut ausführen. Datenvolumes werden im Regelbetrieb
 nicht gelöscht; `down -v` ist kein Betriebsverfahren.
+
+
+### T04: E-Mail-Verifikation und Schema
+
+Flask-Security übernimmt Registrierung, E-Mail-Bestätigung und Browsersitzungen.
+`PUBLIC_URL` wird nun auch in die Anwendung übernommen und bindet externe Links
+und zulässige Hostnamen an die Produktions-Origin. SMTP-Werte werden über die
+bereits geschützte runtime.env ausgeliefert. Produktion erlaubt nur SMTP mit
+STARTTLS oder implizitem TLS und Zertifikatsprüfung; Testpostfächer sind keine
+Produktionsoption. `MAIL_USE_TLS` und `MAIL_USE_SSL` dürfen nicht beide aktiv sein.
+
+`deploy/capabilities.json` aktiviert jetzt Migrationen. Der bestehende Ansible-
+Ablauf sichert vor der Migration und führt `flask --app app db upgrade` im neuen
+Image aus. Die erste Migration ergänzt Identitätstabellen ohne vorhandene Daten
+zu verändern. Gleicher Release wird nicht erneut migriert. Ein Downgrade, das
+Konten löschen würde, wird ausdrücklich abgewiesen.
+
+SMTP-Zugang und Absenderfreigabe müssen beim Betreiber eingerichtet werden.
+Automatisierte Mailtests versenden ausschliesslich an einen isolierten lokalen
+Empfänger. Erfolgreicher SMTP-Transfer bestätigt die Annahme, nicht die Zustellung
+ins externe Postfach. Für Produktion bleibt ein kontrollierter Test nach Einrichtung
+und Release erforderlich. Der SSH-/TLS-/GHCR-Auslieferungsweg bleibt unverändert.
+
+### T04: Migration und verschlüsselte Deployment-Backups
+
+Zusätzlich ist im GitHub-Environment `production` das Secret
+`BACKUP_PASSPHRASE` erforderlich: ein eigenständiger, zufälliger Wert mit mindestens
+32 Zeichen ohne Zeilenumbrüche. Im Passwortmanager separat aufbewahren; ohne den
+zum Backup gehörenden Wert ist keine Wiederherstellung möglich. Nicht mit
+`SECRET_KEY` oder SMTP-/Datenbankpasswörtern wiederverwenden.
+
+T04 legt ausschliesslich neue Tabellen an. `deployment_input.py` setzt deshalb
+`repairhub_migration_mode=compatible`. Bei künftigen Migrationen muss diese
+Kompatibilitätsentscheidung erneut geprüft werden. Ansible sichert vor Migration
+mit `pg_dump` auf dem Host und lädt die Datei geschützt auf den Runner. Der Workflow
+verschlüsselt vorhandene Kopien auch nach fehlgeschlagenem Deployment mit GnuPG
+(AES-256), lädt ausschliesslich `.gpg` als `database-backup-…` hoch und löscht
+anschliessend temporäre Klartextdateien und Zugangsdaten. Artefakte bleiben 30 Tage;
+für längere Aufbewahrung herunterladen und separat sichern. Ein Runner-Ausfall vor
+dem Upload kann diese externe Kopie verhindern; die Hostkopie bleibt erhalten.
+
+Die Passphrase wird über Standard-Eingabe übergeben, nicht als Befehlsargument.
+Grundlage: [GnuPG-Batch-Optionen](https://www.gnupg.org/documentation/manuals/gnupg/GPG-Esoteric-Options.html).
+Wiederherstellung: Artefakt herunterladen, lokal `gpg --output database.dump --decrypt
+BACKUP.dump.gpg` ausführen (Passphrase interaktiv) und den bestehenden kontrollierten
+`pg_restore`-Ablauf nutzen. Niemals ungeprüft über aktuelle Produktionsdaten schreiben.
+
+Der lokale Test prüft Verschlüsselung und Entschlüsselung sowie Ablehnung einer
+falschen Passphrase. Ein vollständiger Produktions-Restore bleibt separat zu prüfen.
+
+T04 ändert ausserdem die Nginx-Konfiguration (Bestätigungstokens im Zugriffslog
+maskieren und den Host-Port beim Weiterleiten erhalten). Auf einer bestehenden
+T03-Installation deshalb vor dem App-Release den dokumentierten
+`infrastructure.yml`-Wartungslauf mit den geprüften Eingaben ausführen. Ein normaler
+Release soll diese Infrastrukturänderung weiterhin nicht stillschweigend vornehmen.

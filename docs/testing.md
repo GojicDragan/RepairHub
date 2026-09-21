@@ -98,7 +98,7 @@ Browser-Firewall. Es werden keine produktiven Zugangsdaten verwendet.
 
 Das T02-Grundgerüst hat drei Browserprüfungen:
 
-1. Startseite, deutsche Darstellung, tatsächlich geladenes CSS und
+1. Startseite, englische Darstellung, tatsächlich geladenes CSS und
    Sicherheitsheader über HTTPS.
 2. Bereitschaft über die gesamte Verbindung bis zur realen PostgreSQL-Datenbank.
 3. Ausfall der eigenen temporären Datenbank: generisches HTTP 503 ohne interne
@@ -144,3 +144,22 @@ Frontend-Unit-Tests: `node --test tests/unit/frontend/*.test.mjs` (Node.js 22 od
 neuer), zusätzlich zu pytest. DOM-freie Presenter werden mit Fake-Views geprüft;
 DOM-Bindung, Bootstrap und progressive Erweiterung deckt Playwright ab.
 Siehe [Frontend-Aufbau](frontend.md).
+
+## T04: Standard-Registrierung und E-Mail-Verifikation
+
+`pytest tests/integration/users` prüft Flask-Security mit echter PostgreSQL-Migration
+in einem eigenen Schema pro Test: Validierung, Passwort-Hashing, Eindeutigkeit,
+Konkurrenz, Bestätigung/Erneutversand/Ablauf, Login-Sperre und Mailfehler-Rollback.
+SMTP wird zusätzlich gegen einen lokalen `aiosmtpd`-Empfänger geprüft.
+
+`pytest tests/e2e --image-artifacts artifacts/t04` prüft Browser und echte Images.
+Der Mail-Empfänger ist ein isolierter STARTTLS-Container mit eigener Test-CA, ohne
+Host-Port und ohne Weiterleitung. Beide Browservarianten (mit/ohne JavaScript)
+lesen ausschliesslich dieses Testpostfach. Der DB-Neuerstellungstest ersetzt nur
+die eigene Fixture und übernimmt deren temporäres Volume. Tests prüfen zudem,
+dass Bestätigungstokens nicht im Nginx-Zugriffslog stehen.
+
+Für isolierte Laufzeitprüfungen wird die Dev-Abhängigkeit `aiosmtpd` benötigt;
+`uv sync --locked --group e2e` installiert sie zusammen mit der standardmässigen
+Dev-Gruppe. `tests/support/smtp_receiver.py` ist Testinfrastruktur und gehört
+nicht als pytest-Test in eine der drei Teststufen.

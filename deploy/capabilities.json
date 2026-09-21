@@ -1,4 +1,4 @@
 {
-  "schema_migrations": false,
+  "schema_migrations": true,
   "authenticated_api": false
 }

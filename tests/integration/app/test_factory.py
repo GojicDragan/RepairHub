@@ -18,7 +18,7 @@ def test_factory_instances_have_separate_configuration(app_config):
     [
         ({"SECRET_KEY": ""}, "SECRET_KEY"),
         ({"SQLALCHEMY_DATABASE_URI": "sqlite:///not-supported.db"}, "DATABASE_URL"),
-        ({"REPAIRHUB_ENV": "production", "TESTING": False, "DEBUG": True}, "Produktion"),
+        ({"REPAIRHUB_ENV": "production", "TESTING": False, "DEBUG": True}, "Production"),
     ],
 )
 def test_factory_enforces_configuration_validation(app_config, override, message):

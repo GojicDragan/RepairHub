@@ -1,0 +1,10 @@
+{% extends "security/_layout.html" %}
+{% from "security/_form.html" import render_form %}
+{% block title %}{{ _('Register') }} | RepairHub{% endblock %}
+{% block auth_content %}
+<h1 id="auth-heading">{{ _('Create an account') }}</h1>
+<p class="auth-intro">{{ _('Make room for a repair-first mindset. We will email you a link to confirm your account.') }}</p>
+{{ render_form(register_user_form, url_for('security.register'), validate_email=true) }}
+<p class="auth-help"><a href="{{ url_for('security.send_confirmation') }}">{{ _('Resend confirmation link') }}</a></p>
+<div class="auth-footer">{{ _('Already have an account?') }} <a href="{{ url_for('security.login') }}">{{ _('Log in') }}</a></div>
+{% endblock %}

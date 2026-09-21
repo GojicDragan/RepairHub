@@ -13,6 +13,7 @@ ALLOWED = {
         "app.domains.repairs",
         "app.domains.parts",
     },
+    "app.adapters.users": {"app.domains.users"},
     "app.api": {"app.domains.users", "app.domains.repairs"},
     "app.domains.users": set(),
     "app.domains.devices": set(),
@@ -76,18 +77,29 @@ def check_source(source: str, module: str, *, is_package: bool = False) -> list[
     tree = ast.parse(source)
     origin = component(module)
     errors = []
-    if origin is None and module not in TECHNICAL_MODULES and module != "app.domains":
+    if (
+        origin is None
+        and module not in TECHNICAL_MODULES
+        and module not in {"app.domains", "app.adapters"}
+    ):
         errors.append(f"{module}: nicht zugeordnete technische oder fachliche Komponente")
 
     for line, target in imports(tree, module, is_package):
         destination = component(target)
         reason = None
-        if origin and (
+        if target == "flask_security.views" or target.startswith("flask_security.views."):
+            reason = "Benutzerabläufe müssen über injizierte Handler statt Bibliotheks-Views laufen"
+        elif origin and (
             target.split(".")[0] == "importlib"
             or target in {"builtins.__import__", "builtins.eval", "builtins.exec"}
         ):
             reason = "dynamische Imports umgehen die überprüfbaren Modulgrenzen"
-        elif module in {"app.config", "app.extensions", "app.domains"} and target.startswith("app"):
+        elif module in {
+            "app.config",
+            "app.extensions",
+            "app.domains",
+            "app.adapters",
+        } and target.startswith("app"):
             reason = "technische Initialisierung darf keine Fachkomponenten nachladen"
         elif (
             module == "app.diagnostics"
@@ -116,9 +128,9 @@ def check_source(source: str, module: str, *, is_package: bool = False) -> list[
             and (target.split(".")[0] not in sys.stdlib_module_names | {"app", "__future__"})
         ):
             reason = "Fachkomponenten dürfen keine Framework-/Infrastrukturbibliothek importieren"
-        elif origin == "app.data" and destination and destination != origin:
+        elif origin in {"app.data", "app.adapters.users"} and destination and destination != origin:
             if not is_contract(target, destination):
-                reason = "Datenadapter dürfen nur Domain-Ports und DTOs importieren"
+                reason = "Adapter dürfen nur Domain-Ports und DTOs importieren"
         # Die Komponententabelle allein erlaubt noch jede Verbindung innerhalb
         # einer Domäne. Diese zweite Prüfung schützt zusätzlich ihre Slice-Grenzen.
         if not reason and origin and origin.startswith("app.domains.") and destination == origin:

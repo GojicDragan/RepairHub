@@ -1,0 +1,12 @@
+{% extends "security/_layout.html" %}
+{% from "security/_form.html" import render_form %}
+{% block title %}{{ _('Log in') }} | RepairHub{% endblock %}
+{% block auth_kicker %}{{ _('WELCOME BACK') }}{% endblock %}
+{% block auth_content %}
+<h1 id="auth-heading">{{ _('Log in') }}</h1>
+<p class="auth-intro">{{ _('A little care goes a long way. Pick up where you left off.') }}</p>
+{{ render_form(login_user_form, url_for('security.login')) }}
+<p class="auth-help"><a href="{{ url_for('security.forgot_password') }}">{{ _('Forgot password?') }}</a></p>
+<p class="auth-help"><a href="{{ url_for('security.send_confirmation') }}">{{ _('Resend confirmation link') }}</a></p>
+<div class="auth-footer">{{ _('New to RepairHub?') }} <a href="{{ url_for('security.register') }}">{{ _('Create an account') }}</a></div>
+{% endblock %}

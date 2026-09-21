@@ -1,29 +1,48 @@
 <!doctype html>
-<html lang="de-CH">
+<html lang="{{ locale }}">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f8f6f0">
     <title>{% block title %}RepairHub{% endblock %}</title>
+    {% set page_title = self.title() | striptags %}
+    {% include 'partials/metadata.html' %}
     <link rel="stylesheet" href="{{ url_for('web.static', filename='vendor/bootstrap-5.3.8/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('web.static', filename='app.css') }}">
     <script type="module" src="{{ url_for('web.static', filename='js/main.mjs') }}"></script>
   </head>
-  <body class="bg-body-tertiary d-flex flex-column min-vh-100">
-    <a class="skip-link" href="#content">Zum Inhalt</a>
-    <header class="bg-white border-bottom">
-      <nav class="container py-3" aria-label="Hauptnavigation">
-        <a class="fw-semibold" href="{{ url_for('web.index') }}">RepairHub – Startseite</a>
+  <body class="d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#content">{{ _('Skip to content') }}</a>
+    <header class="site-header">
+      <nav class="container brand-nav" aria-label="{{ _('Main navigation') }}">
+        <a class="brand" href="{{ url_for('web.index') }}" aria-label="{{ _('RepairHub – Home') }}">
+          {% include 'partials/brand_mark.html' %}<span>Repair<span class="brand-light">Hub</span><span class="brand-dot">.</span></span>
+        </a>
+        <div class="nav-actions">
+          {% if viewer is not none %}
+          <span class="account-name">{{ viewer.username }}</span>
+          <form action="{{ url_for('security.logout') }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Log out') }}</button>
+          </form>
+          {% else %}
+          <a class="nav-login" href="{{ url_for('security.login') }}" {% if request.endpoint == 'security.login' %}aria-current="page"{% endif %}>{{ _('Log in') }}</a>
+          <a class="btn btn-primary btn-sm" href="{{ url_for('security.register') }}" {% if request.endpoint == 'security.register' %}aria-current="page"{% endif %}>{{ _('Register') }} <span aria-hidden="true">↗</span></a>
+          {% endif %}
+        </div>
       </nav>
     </header>
-    <main class="container py-5 flex-grow-1" id="content" tabindex="-1">
+    <main class="container site-main flex-grow-1" id="content" tabindex="-1">
       {% for message in get_flashed_messages() %}
       <div class="alert alert-info d-flex align-items-center gap-3" role="status" data-notification>
         <span class="flex-grow-1">{{ message }}</span>
-        <button class="btn btn-outline-secondary btn-sm" type="button" data-dismiss-notification hidden>Meldung schliessen</button>
+        <button class="btn btn-outline-secondary btn-sm" type="button" data-dismiss-notification hidden>{{ _('Dismiss message') }}</button>
       </div>
       {% endfor %}
       {% block content %}{% endblock %}
     </main>
-    <footer class="container py-3 border-top text-body-secondary">RepairHub · Private Reparaturfälle verwalten</footer>
+    <footer class="site-footer">
+      <div class="container footer-inner"><span class="footer-brand">RepairHub<span class="brand-dot">.</span></span><span>{{ _('Made for a repair-first mindset.') }}</span><span class="footer-note">{{ _('Keep. Repair. Repeat.') }}</span></div>
+    </footer>
   </body>
 </html>

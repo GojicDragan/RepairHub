@@ -1,5 +1,6 @@
-"""Disposable runtime shared by image smoke tests, browser E2E and DAST scans."""
+"""Gemeinsame kurzlebige Testumgebung für Image-Smoke-Tests, Browser-E2E und DAST."""
 
+import json
 import os
 import secrets
 import subprocess
@@ -27,10 +28,11 @@ class IsolatedRuntime:
     ca_path: Path
     url: str = "https://nginx:8443"
     public_url: str | None = None
+    mail_directory: Path | None = None
 
 
 def ready(container: str, command: list[str], timeout: int = 90) -> None:
-    """Bound retries and suppress application output, including on failure."""
+    """Wartezeit begrenzen und Anwendungsausgaben auch im Fehlerfall unterdrücken."""
     deadline = time.monotonic() + timeout
     while time.monotonic() < deadline:
         try:
@@ -75,17 +77,20 @@ def _cleanup(containers: list[str], network: str | None) -> None:
 
 
 @contextmanager
-def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator[IsolatedRuntime]:
-    """Start already verified references; never connect to an external test target.
+def isolated_runtime(
+    manifest: dict, *, publish_https: bool = False, receive_mail: bool = False
+) -> Iterator[IsolatedRuntime]:
+    """Bereits geprüfte Images starten; kein externes Testziel kontaktieren.
 
-    The caller must have verified and loaded the archive manifest. Its references
-    work with both Docker's classic image store and the containerd image store.
-    Infrastructure images stay pinned independently of the application commit.
+    Der Aufrufer muss die Archive anhand des Manifests geprüft und geladen haben.
+    Die Referenzen unterstützen Dockers klassischen und den containerd-Imagespeicher.
+    Infrastruktur-Images bleiben unabhängig vom Anwendungscommit festgelegt.
     """
     prefix = f"repairhub-t02-check-{uuid.uuid4().hex[:12]}"
     images = manifest["images"]
     containers: list[str] = []
     network: str | None = None
+    volume: str | None = None
     with tempfile.TemporaryDirectory(prefix="repairhub-t02-runtime-") as temporary:
         temporary_path = Path(temporary)
         tls_directory = temporary_path / "tls"
@@ -103,6 +108,10 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
             tls_directory=tls_directory,
             ca_path=tls_directory / "server.crt",
         )
+        if receive_mail:
+            outbox = temporary_path / "outbox"
+            outbox.mkdir(mode=0o700)
+            runtime = replace(runtime, mail_directory=outbox)
         database_password = secrets.token_hex(24)
         _write_private(
             temporary_path / "db.env",
@@ -113,7 +122,13 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
             temporary_path / "app.env",
             f"SECRET_KEY={secrets.token_hex(32)}\n"
             f"DATABASE_URL=postgresql+psycopg://repairhub_test:{database_password}"
-            "@db:5432/repairhub_test\n",
+            "@db:5432/repairhub_test\n"
+            + (
+                "MAIL_SERVER=mail\nMAIL_PORT=1025\nMAIL_USE_TLS=true\n"
+                "MAIL_DEFAULT_SENDER=noreply@example.org\nSSL_CERT_FILE=/tmp/smoke-ca.crt\n"
+                if receive_mail
+                else ""
+            ),
         )
         try:
             subprocess.run(
@@ -129,7 +144,7 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
                     "-subj",
                     "/CN=nginx",
                     "-addext",
-                    "subjectAltName=DNS:nginx,IP:127.0.0.1",
+                    "subjectAltName=DNS:nginx,DNS:mail,IP:127.0.0.1",
                     "-keyout",
                     str(tls_directory / "server.key"),
                     "-out",
@@ -142,8 +157,8 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
             )
             (tls_directory / "server.key").chmod(0o600)
             runtime.ca_path.chmod(0o644)
-            # Docker does not publish ports on an internal bridge. Browser tests
-            # need their own bridge with only the explicit loopback HTTPS binding.
+            # Docker veröffentlicht keine Ports auf einer internen Bridge. Browsertests
+            # erhalten eine eigene Bridge mit ausschliesslich lokalem HTTPS-Port.
             docker(
                 "network",
                 "create",
@@ -152,13 +167,65 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
                 capture=True,
             )
             network = prefix
+            # Ein eigenes Volume bildet den Produktionsbetrieb ab und überlebt
+            # auch stop/start und Container-Neuerstellung innerhalb eines Tests.
+            docker("volume", "create", f"{prefix}-db", capture=True)
+            volume = f"{prefix}-db"
 
             def start(name: str, arguments: list[str]) -> None:
-                # Record creation before startup: a failed start must still be removed.
+                # Vor dem Start vormerken, damit auch fehlgeschlagene Starts bereinigt werden.
                 docker("create", "--name", name, *arguments, capture=True)
                 containers.append(name)
                 docker("start", name, capture=True)
 
+            if receive_mail:
+                # Derselbe App-Interpreter, aber Testwerkzeuge nur als read-only Mount.
+                # Kein SMTP-Paket oder Postfach gelangt dadurch ins Produktionsimage.
+                import aiosmtpd
+
+                tools_directory = Path(aiosmtpd.__file__).resolve().parent.parent
+                receiver_script = Path("tests/support/smtp_receiver.py").resolve()
+                mail_container = f"{prefix}-mail"
+                start(
+                    mail_container,
+                    [
+                        "--network",
+                        prefix,
+                        "--network-alias",
+                        "mail",
+                        "--no-healthcheck",
+                        "--user",
+                        f"{os.getuid()}:{os.getgid()}",
+                        "--read-only",
+                        "--cap-drop",
+                        "ALL",
+                        "--security-opt",
+                        "no-new-privileges:true",
+                        "--env",
+                        "PYTHONPATH=/test-tools",
+                        "--mount",
+                        f"type=bind,src={tools_directory},dst=/test-tools,readonly",
+                        "--mount",
+                        f"type=bind,src={receiver_script},dst=/receiver.py,readonly",
+                        "--mount",
+                        f"type=bind,src={tls_directory},dst=/tls,readonly",
+                        "--mount",
+                        f"type=bind,src={runtime.mail_directory},dst=/outbox",
+                        "--entrypoint",
+                        "python",
+                        images["app"]["reference"],
+                        "/receiver.py",
+                    ],
+                )
+                ready(
+                    mail_container,
+                    [
+                        "python",
+                        "-c",
+                        "import socket; "
+                        "socket.create_connection(('127.0.0.1',1025),timeout=2).close()",
+                    ],
+                )
             start(
                 runtime.db,
                 [
@@ -166,8 +233,8 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
                     prefix,
                     "--network-alias",
                     "db",
-                    "--tmpfs",
-                    "/var/lib/postgresql/data:mode=0700",
+                    "--mount",
+                    f"type=volume,src={volume},dst=/var/lib/postgresql/data",
                     "--env-file",
                     str(temporary_path / "db.env"),
                     images["db"]["reference"],
@@ -205,8 +272,13 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
                     "assert json.load(r)=={'status':'ready'}",
                 ],
             )
-            # Nginx serves the static files from exactly the tested application
-            # image. The stable directory and relative symlink match production.
+            # Derselbe explizite Migrationsschritt wie im Deployment, einmalig vor
+            # Browser-/DAST-Zugriffen; keine Migration in Gunicorn-Workern.
+            capabilities = json.loads(Path("deploy/capabilities.json").read_text())
+            if capabilities["schema_migrations"]:
+                docker("exec", runtime.app, "flask", "--app", "app", "db", "upgrade", capture=True)
+            # Nginx liefert statische Dateien aus genau dem geprüften Anwendungsimage.
+            # Stabiles Verzeichnis und relativer Symlink entsprechen der Produktion.
             docker(
                 "cp",
                 f"{runtime.app}:/srv/repairhub/app/web/static/.",
@@ -269,3 +341,5 @@ def isolated_runtime(manifest: dict, *, publish_https: bool = False) -> Iterator
             yield runtime
         finally:
             _cleanup(containers, network)
+            if volume is not None:
+                docker("volume", "rm", volume, capture=True)
