@@ -68,3 +68,23 @@ def test_production_rejects_unsafe_settings(valid_config, override):
     valid_config.update(override)
     with pytest.raises(ValueError, match="Produktion"):
         validate_config(valid_config)
+
+
+@pytest.mark.parametrize(
+    "override",
+    [
+        {"SESSION_COOKIE_HTTPONLY": False},
+        {"SESSION_COOKIE_SAMESITE": None},
+        {"REMEMBER_COOKIE_SECURE": False},
+        {"REMEMBER_COOKIE_HTTPONLY": False},
+        {"REMEMBER_COOKIE_SAMESITE": "None"},
+        {"WTF_CSRF_ENABLED": False},
+        {"SQLALCHEMY_ECHO": True},
+        {"TESTING": True},
+    ],
+)
+def test_production_rejects_other_security_bypasses(valid_config, override):
+    valid_config.update(REPAIRHUB_ENV="production", TESTING=False)
+    valid_config.update(override)
+    with pytest.raises(ValueError, match="Produktion"):
+        validate_config(valid_config)

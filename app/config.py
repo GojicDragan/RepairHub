@@ -8,15 +8,23 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.exc import ArgumentError
 
 
-def load_config() -> dict[str, Any]:
-    environment = os.environ.get("REPAIRHUB_ENV", "production")
+def load_config(environment: str | None = None) -> dict[str, Any]:
+    environment = (
+        environment if environment is not None else os.environ.get("REPAIRHUB_ENV", "production")
+    )
     return {
         "REPAIRHUB_ENV": environment,
         "SECRET_KEY": os.environ.get("SECRET_KEY", ""),
         "SQLALCHEMY_DATABASE_URI": os.environ.get("DATABASE_URL", ""),
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+        "SQLALCHEMY_ECHO": False,
+        "WTF_CSRF_ENABLED": True,
         "SQLALCHEMY_ENGINE_OPTIONS": {
+            # Alte Pool-Verbindungen nach einem DB-Neustart vor Verwendung prüfen.
             "pool_pre_ping": True,
+            "hide_parameters": True,
+            # Pool-Wartezeit, Verbindungsaufbau und SQL-Ausführung getrennt begrenzen;
+            # keine dieser Fristen allein deckt einen vollständigen Request ab.
             "pool_timeout": 3,
             "connect_args": {"connect_timeout": 3, "options": "-c statement_timeout=3000"},
         },
@@ -55,7 +63,31 @@ def validate_config(config: Mapping[str, Any]) -> None:
     if not valid_url:
         # URL und ursprüngliche Exception können Zugangsdaten enthalten.
         raise ValueError("DATABASE_URL muss eine vollständige PostgreSQL-URL mit psycopg sein.")
-    if config["REPAIRHUB_ENV"] == "production" and (
-        config["DEBUG"] or config["TESTING"] or not config["SESSION_COOKIE_SECURE"]
-    ):
-        raise ValueError("Produktion verlangt sichere Cookies und deaktivierten Debug-/Testmodus.")
+    if config["REPAIRHUB_ENV"] == "production":
+        required_flags = (
+            "SESSION_COOKIE_SECURE",
+            "SESSION_COOKIE_HTTPONLY",
+            "REMEMBER_COOKIE_SECURE",
+            "REMEMBER_COOKIE_HTTPONLY",
+            "WTF_CSRF_ENABLED",
+        )
+        # Nur echte boolesche True-Werte zulassen: Der String "false" ist in
+        # Python ebenfalls truthy und darf Sicherheitsflags nicht aktiv erscheinen lassen.
+        unsafe = (
+            config["DEBUG"]
+            or config["TESTING"]
+            or config["SQLALCHEMY_ECHO"]
+            or any(config.get(flag) is not True for flag in required_flags)
+            or any(
+                config.get(flag) not in {"Lax", "Strict"}
+                for flag in (
+                    "SESSION_COOKIE_SAMESITE",
+                    "REMEMBER_COOKIE_SAMESITE",
+                )
+            )
+        )
+        if unsafe:
+            raise ValueError(
+                "Produktion verlangt sichere Cookies, CSRF "
+                "und deaktivierte Debug-/Test-/SQL-Ausgaben."
+            )

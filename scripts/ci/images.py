@@ -213,6 +213,8 @@ def verify_archive(directory: Path, name: str, entry: dict, reference: str) -> d
     archive = directory / entry["archive"]
     if checksum(archive) != entry["sha256"]:
         raise ValueError(f"Prüfsumme stimmt für {name} nicht überein.")
+    # Die Archiv-Prüfsumme bindet die übertragenen Bytes; die folgende Prüfung
+    # bindet zusätzlich die darin enthaltene Laufzeitidentität an das Manifest.
     metadata = archived_image_metadata(archive)
     if (
         metadata["config_digest"] != entry.get("config_digest")
@@ -290,6 +292,8 @@ def publish_archive(directory: Path, entry: dict, image_name: str, tag: str) -> 
     if len(matches) != 1 or not DIGEST.fullmatch(matches[0].split("@", 1)[1]):
         raise ValueError("Registry-Digest konnte nicht eindeutig ermittelt werden.")
     # Docker IDs can represent config, platform manifest or an OCI index.
+    # Nach dem Push per unveränderlichem Digest zurücklesen, damit nicht nur der
+    # lokale Tag, sondern das tatsächlich veröffentlichte Image geprüft wird.
     docker("pull", "--platform", "linux/amd64", matches[0])
     metadata = archived_image_metadata(directory / entry["archive"])
     if inspect_image(matches[0])["Id"] not in metadata["identities"]:

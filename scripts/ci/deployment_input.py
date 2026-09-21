@@ -60,6 +60,8 @@ def main() -> None:
     }
     for name, content in paths.items():
         path = directory / name
+        # Bereits beim Anlegen restriktive Rechte setzen; ein erst nachträgliches
+        # chmod könnte neue Dateien kurzzeitig für andere Benutzer lesbar lassen.
         descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
         with os.fdopen(descriptor, "w") as stream:
             stream.write(content)

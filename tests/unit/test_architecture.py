@@ -18,11 +18,12 @@ def test_project_matches_component_contract():
 @pytest.mark.parametrize(
     ("module", "source"),
     [
-        ("app.web.routes.repairs", "from app.services.repairs import get_repair"),
-        ("app.api.routes", "from app.services.users import verify_token"),
-        ("app.services.repairs", "from app.services.costs import calculate"),
-        ("app.services.parts", "from app.data.queries import own_part"),
-        ("app.services.costs", "from decimal import Decimal"),
+        ("app.web.routes.repairs", "from app.domains.repairs import get_repair"),
+        ("app.api.routes", "from app.domains.users import verify_token"),
+        ("app.domains.repairs", "from app.domains.costs import calculate"),
+        ("app.data.queries", "from app.domains.parts.ports import PartRepository"),
+        ("app.data.queries", "from app.domains.parts.dto import PartSnapshot"),
+        ("app.domains.costs", "from decimal import Decimal"),
         ("app.web.routes.health", "from app.diagnostics import check_readiness"),
         ("app.data.health", "from app.extensions import db"),
     ],
@@ -37,17 +38,17 @@ def test_allowed_dependencies(module, source):
         ("app.web.routes.repairs", "from app.data.models import Repair"),
         ("app.web.routes.repairs", "from app import data"),
         ("app.web.routes.repairs", "from ...data import models"),
-        ("app.api.routes", "from app.services.parts import get_part"),
-        ("app.api.routes", "import app.services.devices as devices"),
-        ("app.services.parts", "from app.services.repairs import get_repair"),
-        ("app.services.costs", "from ..data import queries"),
-        ("app.services.costs", "from flask import current_app"),
-        ("app.services.costs", "import sqlalchemy"),
+        ("app.api.routes", "from app.domains.parts import get_part"),
+        ("app.api.routes", "import app.domains.devices as devices"),
+        ("app.domains.parts", "from app.domains.repairs import get_repair"),
+        ("app.domains.costs", "from ..data import queries"),
+        ("app.domains.costs", "from flask import current_app"),
+        ("app.domains.costs", "import sqlalchemy"),
         ("app.web.routes.repairs", "from app.extensions import db as store"),
         ("app.web.routes.repairs", "import psycopg"),
         ("app.web.routes.repairs", "from app.helpers import load_repair"),
         ("app.data.queries", "from app.web import routes"),
-        ("app.services.users", "from app.services.devices import get_device"),
+        ("app.domains.users", "from app.domains.devices import get_device"),
         ("app.api.routes", "import app"),
         ("app.api.routes", "__import__('app.data')"),
         ("app.api.routes", "importlib.import_module('app.data')"),
@@ -60,7 +61,7 @@ def test_forbidden_dependencies(module, source):
 
 
 def test_relative_import_from_package_is_checked():
-    assert check_source("from .. import repairs", "app.services.parts", is_package=True)
+    assert check_source("from .. import repairs", "app.domains.parts", is_package=True)
 
 
 def test_new_root_helper_requires_explicit_component_assignment():
@@ -69,5 +70,102 @@ def test_new_root_helper_requires_explicit_component_assignment():
 
 def test_technical_modules_cannot_hide_business_dependencies():
     assert check_source("from app.data import models", "app.extensions")
-    assert check_source("from app.services.repairs import get_repair", "app.diagnostics")
-    assert check_source("from app.data import models", "app.services", is_package=True)
+    assert check_source("from app.domains.repairs import get_repair", "app.diagnostics")
+    assert check_source("from app.data import models", "app.domains", is_package=True)
+
+
+@pytest.mark.parametrize("module", ["app.web.errors", "app.api.errors"])
+@pytest.mark.parametrize("source", ["from app.data import health", "from app.extensions import db"])
+def test_error_renderers_cannot_query_database(module, source):
+    assert check_source(source, module)
+
+
+def test_error_renderers_do_not_import_each_other():
+    assert check_source("from app.web.errors import render_error", "app.api.errors")
+    assert check_source("from app.api.errors import render_error", "app.web.errors")
+
+
+@pytest.mark.parametrize("domain", ["users", "devices", "repairs", "parts", "costs"])
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from flask import current_app",
+        "from werkzeug.security import generate_password_hash",
+        "from sqlalchemy import select",
+        "from app.data.queries import own_part",
+        "from app.extensions import db",
+        "from app.bootstrap import create_app",
+        "from flask_login import current_user",
+        "import itsdangerous",
+    ],
+)
+def test_domains_cannot_import_concrete_infrastructure(domain, source):
+    assert check_source(source, f"app.domains.{domain}.service")
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from app.domains.parts import PartService",
+        "from app.domains.parts.service import PartService",
+        "from app.domains.costs import calculate",
+    ],
+)
+def test_data_adapters_depend_only_on_domain_contracts(source):
+    assert check_source(source, "app.data.repositories.parts")
+
+
+def test_domain_packages_import_with_only_standard_library():
+    import subprocess
+    import sys
+
+    # -S entfernt site-packages: Flask/SQLAlchemy sind gar nicht verfügbar.
+    subprocess.run(
+        [
+            sys.executable,
+            "-S",
+            "-c",
+            "import app.domains.users; import app.domains.devices; "
+            "import app.domains.repairs; import app.domains.parts; "
+            "import app.domains.costs",
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+
+@pytest.mark.parametrize(
+    "module, source",
+    [
+        ("app.domains.repairs.create_repair.handler", "from .ports import RepairRepository"),
+        ("app.domains.repairs.create_repair.handler", "from ..model import RepairStatus"),
+        ("app.domains.repairs.create_repair.handler", "from .dto import CreateRepair"),
+        (
+            "app.data.repairs.create_repair",
+            "from app.domains.repairs.create_repair.ports import RepairRepository",
+        ),
+        ("app.domains.parts.add_part.handler", "from app.domains.costs import calculate"),
+    ],
+)
+def test_vertical_slice_allowed_dependencies(module, source):
+    assert check_source(source, module) == []
+
+
+@pytest.mark.parametrize(
+    "module, source",
+    [
+        ("app.domains.repairs.create_repair.handler", "from ..close_repair.handler import execute"),
+        ("app.domains.repairs.create_repair.handler", "from ..close_repair.dto import Result"),
+        ("app.domains.repairs.model", "from .create_repair.handler import execute"),
+        (
+            "app.data.repairs.create_repair",
+            "from app.domains.repairs.create_repair.handler import execute",
+        ),
+        ("app.domains.repairs.create_repair.handler", "from app.web.routes import repairs"),
+        ("app.domains.repairs.create_repair.handler", "from app.services.repairs import execute"),
+    ],
+)
+def test_vertical_slice_forbidden_dependencies(module, source):
+    assert check_source(source, module)

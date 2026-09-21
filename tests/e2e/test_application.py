@@ -50,3 +50,60 @@ def test_database_outage_is_reported_without_internal_details(page, live_applica
             ],
         )
     assert page.goto("/health/ready").status == 200
+
+
+def test_error_page_shares_navigation_and_returns_home(page):
+    response = page.goto("/not-found")
+    assert response.status == 404
+    assert page.get_by_role("heading", name="Seite nicht gefunden").is_visible()
+    page.get_by_role("link", name="Zur Startseite", exact=True).click()
+    assert page.get_by_role("heading", name="RepairHub", exact=True).is_visible()
+
+
+def test_unknown_api_route_returns_json_through_nginx(page):
+    response = page.goto("/api/not-found")
+    assert response.status == 404
+    assert response.json()["error"]["status"] == 404
+
+
+def test_bootstrap_and_humble_notification_adapter(page):
+    errors = []
+    page.on("pageerror", lambda error: errors.append(error))
+    page.goto("/")
+    assert (
+        page.evaluate(
+            "getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim()"
+        )
+        == "#0d6efd"
+    )
+    # Eine Rückmeldung als Fixture, bis fachliche POST-Routen in T05 entstehen.
+    page.evaluate("""async () => {
+        const message = document.createElement('div');
+        message.dataset.notification = '';
+        message.innerHTML = '<span>Gespeichert</span><button type="button" '
+            + 'data-dismiss-notification hidden>Meldung schliessen</button>';
+        document.querySelector('#content').prepend(message);
+        const { mountNotifications } = await import('/static/js/notification-view.mjs');
+        mountNotifications(document);
+    }""")
+    page.get_by_role("button", name="Meldung schliessen").click()
+    assert page.locator("[data-notification]").count() == 0
+    assert page.locator("#content").evaluate("element => element === document.activeElement")
+    assert not errors
+
+
+def test_home_works_without_javascript_on_small_screen(browser, live_application):
+    context = browser.new_context(
+        base_url=live_application.public_url,
+        ignore_https_errors=True,
+        java_script_enabled=False,
+        viewport={"width": 360, "height": 740},
+    )
+    try:
+        page = context.new_page()
+        page.goto("/")
+        assert page.get_by_role("heading", name="RepairHub", exact=True).is_visible()
+        assert page.get_by_role("link", name="RepairHub – Startseite").is_visible()
+        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    finally:
+        context.close()

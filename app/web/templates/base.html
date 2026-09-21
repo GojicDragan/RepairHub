@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="de-CH">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}RepairHub{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('web.static', filename='vendor/bootstrap-5.3.8/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('web.static', filename='app.css') }}">
+    <script type="module" src="{{ url_for('web.static', filename='js/main.mjs') }}"></script>
+  </head>
+  <body class="bg-body-tertiary d-flex flex-column min-vh-100">
+    <a class="skip-link" href="#content">Zum Inhalt</a>
+    <header class="bg-white border-bottom">
+      <nav class="container py-3" aria-label="Hauptnavigation">
+        <a class="fw-semibold" href="{{ url_for('web.index') }}">RepairHub – Startseite</a>
+      </nav>
+    </header>
+    <main class="container py-5 flex-grow-1" id="content" tabindex="-1">
+      {% for message in get_flashed_messages() %}
+      <div class="alert alert-info d-flex align-items-center gap-3" role="status" data-notification>
+        <span class="flex-grow-1">{{ message }}</span>
+        <button class="btn btn-outline-secondary btn-sm" type="button" data-dismiss-notification hidden>Meldung schliessen</button>
+      </div>
+      {% endfor %}
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="container py-3 border-top text-body-secondary">RepairHub · Private Reparaturfälle verwalten</footer>
+  </body>
+</html>

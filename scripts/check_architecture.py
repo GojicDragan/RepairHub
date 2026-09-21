@@ -4,40 +4,67 @@ import ast
 import sys
 from pathlib import Path
 
-# Entspricht RepairHub_02_Komponenten.puml; die versteckte Layoutkante fehlt bewusst.
+# Komponenten gemäss Diagramm; Importumkehr gemäss Benutzerentscheidung
+# vom 21. September 2026 (docs/domain-architecture.md).
 ALLOWED = {
     "app.web": {
-        "app.services.users",
-        "app.services.devices",
-        "app.services.repairs",
-        "app.services.parts",
+        "app.domains.users",
+        "app.domains.devices",
+        "app.domains.repairs",
+        "app.domains.parts",
     },
-    "app.api": {"app.services.users", "app.services.repairs"},
-    "app.services.users": {"app.data"},
-    "app.services.devices": {"app.data"},
-    "app.services.repairs": {"app.data", "app.services.costs"},
-    "app.services.parts": {"app.data", "app.services.costs"},
-    "app.services.costs": set(),
-    "app.data": set(),
+    "app.api": {"app.domains.users", "app.domains.repairs"},
+    "app.domains.users": set(),
+    "app.domains.devices": set(),
+    "app.domains.repairs": {"app.domains.costs"},
+    "app.domains.parts": {"app.domains.costs"},
+    "app.domains.costs": set(),
+    "app.data": {
+        "app.domains.users",
+        "app.domains.devices",
+        "app.domains.repairs",
+        "app.domains.parts",
+    },
 }
 DATABASE_LIBRARIES = {"sqlalchemy", "flask_sqlalchemy", "psycopg", "psycopg2", "sqlite3"}
-TECHNICAL_MODULES = {"app", "app.config", "app.extensions", "app.diagnostics"}
+TECHNICAL_MODULES = {"app", "app.bootstrap", "app.config", "app.extensions", "app.diagnostics"}
 
 
 def component(module: str) -> str | None:
     return next((name for name in ALLOWED if module == name or module.startswith(name + ".")), None)
 
 
+# Nur tatsächlich gemeinsam benötigte fachliche Typen liegen ausserhalb der Slices.
+DOMAIN_SHARED = {"ports", "dto", "model", "errors"}
+
+
+def domain_member(module: str, domain: str) -> str | None:
+    relative = module.removeprefix(domain + ".")
+    return relative.split(".")[0] if module != domain else None
+
+
+def is_contract(target: str, domain: str) -> bool:
+    parts = target.removeprefix(domain + ".").split(".")
+    # Domänenweit oder direkt im Anwendungsfall, niemals beliebig tief in Adaptern.
+    return parts[0] in {"ports", "dto"} or (
+        len(parts) >= 2 and parts[0] not in DOMAIN_SHARED and parts[1] in {"ports", "dto"}
+    )
+
+
 def imports(tree: ast.AST, module: str, is_package: bool) -> list[tuple[int, str]]:
     """Normalisiert auch relative Imports und `from app import data`."""
     found = []
     package = module if is_package else module.rpartition(".")[0]
+    # Auch Imports in Funktionen und TYPE_CHECKING-Blöcken sind Abhängigkeiten;
+    # die Analyse führt dafür keinen Anwendungscode aus.
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             found.extend((node.lineno, alias.name) for alias in node.names)
         elif isinstance(node, ast.ImportFrom):
             base = node.module or ""
             if node.level:
+                # Ein Punkt bezeichnet das aktuelle Paket, jeder weitere dessen
+                # Elternpaket; __init__.py hat deshalb eine andere Basis als Module.
                 parents = package.split(".")
                 base = ".".join(parents[: len(parents) - node.level + 1] + ([base] if base else []))
             for alias in node.names:
@@ -49,7 +76,7 @@ def check_source(source: str, module: str, *, is_package: bool = False) -> list[
     tree = ast.parse(source)
     origin = component(module)
     errors = []
-    if origin is None and module not in TECHNICAL_MODULES and module != "app.services":
+    if origin is None and module not in TECHNICAL_MODULES and module != "app.domains":
         errors.append(f"{module}: nicht zugeordnete technische oder fachliche Komponente")
 
     for line, target in imports(tree, module, is_package):
@@ -60,9 +87,7 @@ def check_source(source: str, module: str, *, is_package: bool = False) -> list[
             or target in {"builtins.__import__", "builtins.eval", "builtins.exec"}
         ):
             reason = "dynamische Imports umgehen die überprüfbaren Modulgrenzen"
-        elif module in {"app.config", "app.extensions", "app.services"} and target.startswith(
-            "app"
-        ):
+        elif module in {"app.config", "app.extensions", "app.domains"} and target.startswith("app"):
             reason = "technische Initialisierung darf keine Fachkomponenten nachladen"
         elif (
             module == "app.diagnostics"
@@ -85,15 +110,22 @@ def check_source(source: str, module: str, *, is_package: bool = False) -> list[
             reason = "Sammelimport der Application Factory"
         elif origin != "app.data" and origin and target.split(".")[0] in DATABASE_LIBRARIES:
             reason = "Datenbankbibliothek ausserhalb des Datenzugriffs"
-        elif origin == "app.services.costs" and target.split(".")[0] in {
-            "flask",
-            "flask_login",
-            "flask_wtf",
-            "flask_migrate",
-        }:
-            reason = "Kostenberechnung muss unabhängig von Flask bleiben"
+        elif (
+            origin
+            and origin.startswith("app.domains.")
+            and (target.split(".")[0] not in sys.stdlib_module_names | {"app", "__future__"})
+        ):
+            reason = "Fachkomponenten dürfen keine Framework-/Infrastrukturbibliothek importieren"
         elif origin == "app.data" and destination and destination != origin:
-            reason = "Datenzugriff darf keine höhere Schicht importieren"
+            if not is_contract(target, destination):
+                reason = "Datenadapter dürfen nur Domain-Ports und DTOs importieren"
+        # Die Komponententabelle allein erlaubt noch jede Verbindung innerhalb
+        # einer Domäne. Diese zweite Prüfung schützt zusätzlich ihre Slice-Grenzen.
+        if not reason and origin and origin.startswith("app.domains.") and destination == origin:
+            source_member = domain_member(module, origin)
+            target_member = domain_member(target, origin)
+            if source_member and target_member not in DOMAIN_SHARED | {source_member}:
+                reason = "Anwendungsfälle dürfen keine anderen Slices importieren"
         if reason:
             errors.append(f"{module}:{line}: {reason}: {target}")
 
