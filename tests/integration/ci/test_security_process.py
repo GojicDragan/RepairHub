@@ -1,4 +1,4 @@
-"""Scanner gates fail on real process failures and synthetic blocking findings."""
+"""Scannerprüfungen scheitern bei echten Prozessfehlern und synthetischen Sperrbefunden."""
 
 import copy
 import importlib.util

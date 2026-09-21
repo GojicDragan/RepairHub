@@ -1,7 +1,8 @@
-"""Keep deployment checks mandatory as schema and authenticated API are introduced."""
+"""Deployment-Prüfungen mit der Einführung von Schema und authentifizierter API erzwingen."""
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -26,7 +27,10 @@ def main() -> None:
     validate(capabilities, migration_files, routes)
     if capabilities["schema_migrations"]:
         for operation in ("upgrade", "check"):
-            subprocess.run(["flask", "--app", "app:create_app", "db", operation], check=True)
+            subprocess.run(
+                [sys.executable, "-m", "flask", "--app", "app:create_app", "db", operation],
+                check=True,
+            )
     else:
         print("T02: Noch keine Schemamigrationen; ab erster Revision wird Migration geprüft.")
     if not capabilities["authenticated_api"]:

@@ -1,0 +1,6 @@
+{{ _('Your RepairHub account') }}
+
+{{ _('An account already uses these details. Visit the login page to sign in, reset your password or request a confirmation email.') }}
+{{ _('If you did not create an account, you can ignore this message.') }}
+
+{% include 'security/email/_footer.txt' %}

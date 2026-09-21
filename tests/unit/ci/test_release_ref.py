@@ -1,4 +1,4 @@
-"""Production gates check current main and immutable tag-to-commit identity."""
+"""Produktionsfreigabe prüft den aktuellen main und die feste Tag-Commit-Zuordnung."""
 
 from types import SimpleNamespace
 

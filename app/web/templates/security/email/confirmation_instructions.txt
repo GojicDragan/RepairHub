@@ -1,0 +1,9 @@
+{{ _('Confirm your email address') }}
+
+{{ _('Here is your new confirmation link. Confirm your email address to get your account ready for your next chapter of fixing things.') }}
+{{ confirmation_link }}
+
+{{ _('This link is valid for 24 hours. Confirm your email before logging in.') }}
+{{ _('If you did not create an account, you can ignore this message.') }}
+
+{% include 'security/email/_footer.txt' %}

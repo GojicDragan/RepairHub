@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-layout">
+  <aside class="auth-story" aria-label="{{ _('The RepairHub idea') }}">
+    <p class="eyebrow">{{ _('LESS WASTE. MORE POSSIBILITY.') }}</p>
+    <h2>{{ _('Every fix starts with a little care.') }}</h2>
+    {% include 'partials/workshop_illustration.html' %}
+    <p class="auth-story-note">{{ _('For the well-loved, the worn-in and the worth-keeping.') }}</p>
+    <span class="story-signature">RepairHub — {{ _('Keep. Repair. Repeat.') }}</span>
+  </aside>
+  <section class="auth-card" aria-labelledby="auth-heading">
+    <p class="eyebrow auth-eyebrow">{% block auth_kicker %}{{ _('YOUR WORKSHOP STARTS HERE') }}{% endblock %}</p>
+    {% block auth_content %}{% endblock %}
+  </section>
+</div>
+{% endblock %}

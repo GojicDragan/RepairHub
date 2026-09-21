@@ -1,4 +1,4 @@
-"""Start the archived runtime combination on a private, temporary Docker network."""
+"""Archivierte Image-Kombination in einem privaten, kurzlebigen Docker-Netz starten."""
 
 import argparse
 import json
@@ -26,7 +26,7 @@ def main(directory: Path, commit: str) -> None:
                 "Nginx HTTPS mit CA-Prüfung",
                 "Internes Netzwerk ohne veröffentlichte Ports",
             ]
-        # A failed cleanup must not leave a successful smoke report behind.
+        # Eine fehlgeschlagene Bereinigung darf keinen erfolgreichen Prüfbericht hinterlassen.
         evidence["passed"] = True
     finally:
         (reports / "smoke.json").write_text(json.dumps(evidence, indent=2) + "\n")

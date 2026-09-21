@@ -1,0 +1,11 @@
+{% extends "security/_layout.html" %}
+{% from "security/_form.html" import render_form %}
+{% block title %}{{ _('Confirm email') }} | RepairHub{% endblock %}
+{% block auth_kicker %}{{ _('ONE SMALL STEP') }}{% endblock %}
+{% block auth_content %}
+<h1 id="auth-heading">{{ _('Check your inbox') }}</h1>
+<p class="auth-intro">{{ _('Enter your email and we will send a fresh confirmation link. Confirm your address before logging in.') }}</p>
+<div class="form-note">{{ _('Confirmation links are valid for 24 hours.') }}</div>
+{{ render_form(send_confirmation_form, url_for('security.send_confirmation'), validate_email=true) }}
+<div class="auth-footer"><a href="{{ url_for('security.login') }}">{{ _('Back to log in') }}</a></div>
+{% endblock %}

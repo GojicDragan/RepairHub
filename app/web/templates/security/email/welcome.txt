@@ -1,0 +1,9 @@
+{{ _('Welcome to RepairHub.') }}
+
+{{ _('Please confirm your email address using this link:') }}
+{{ confirmation_link }}
+
+{{ _('This link is valid for 24 hours. Confirm your email before logging in.') }}
+{{ _('If you did not create an account, you can ignore this message.') }}
+
+{% include 'security/email/_footer.txt' %}

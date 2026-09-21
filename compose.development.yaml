@@ -5,6 +5,19 @@ services:
       target: app
     environment:
       REPAIRHUB_ENV: development
+      # Dev fängt jede Mail ab, auch wenn runtime.env Produktions-SMTP enthält.
+      PUBLIC_URL: http://127.0.0.1:${HTTP_LOCAL_PORT:-8080}
+      MAIL_SERVER: mailpit
+      MAIL_PORT: '1025'
+      MAIL_USE_TLS: 'false'
+      MAIL_USE_SSL: 'false'
+      MAIL_USERNAME: ''
+      MAIL_PASSWORD: ''
+      MAIL_DEFAULT_SENDER: noreply@repairhub.test
+    networks: [default, mail]
+    depends_on:
+      mailpit:
+        condition: service_healthy
     command: [gunicorn, '--bind=0.0.0.0:8000', '--workers=1', --reload, '--worker-tmp-dir=/tmp', '--forwarded-allow-ips=', 'app:create_app()']
     volumes:
       - ./app:/srv/repairhub/app:ro
@@ -17,3 +30,22 @@ services:
       - ./app/web/static:/usr/share/nginx/html/static:ro
     healthcheck:
       test: [CMD, wget, --spider, -q, 'http://127.0.0.1:8080/health/ready']
+
+  mailpit:
+    image: axllent/mailpit:v1.31.2@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+    ports:
+      - '127.0.0.1:${MAILPIT_LOCAL_PORT:-8025}:8025'
+    networks: [mail]
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=128m
+    environment:
+      MP_MAX_MESSAGES: '500'
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+networks:
+  # Separates Entwicklungsnetz; SMTP wird nicht auf dem Host veröffentlicht.
+  mail: {}

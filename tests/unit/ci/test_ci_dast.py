@@ -1,4 +1,4 @@
-"""DAST must fail closed and retain only safe report metadata."""
+"""DAST muss bei Fehlern sperren und darf nur unkritische Berichtsmetadaten aufbewahren."""
 
 import copy
 import json
@@ -237,7 +237,7 @@ def test_evidence_response_bodies_and_request_uris_are_not_published(alert_repor
 
 @pytest.fixture
 def fake_scanner(monkeypatch, clean_report):
-    """Simulate scanner I/O without starting Docker or making HTTP requests."""
+    """Scanner-Ein-/Ausgabe ohne Docker-Start oder HTTP-Anfragen simulieren."""
     calls = []
     state = {
         "report": clean_report,
@@ -408,7 +408,8 @@ def test_main_records_setup_and_cleanup_failures_without_raw_diagnostics(
         return manifest
 
     @contextmanager
-    def runtime(_manifest):
+    def runtime(_manifest, *, receive_mail=False):
+        assert receive_mail is True
         if failure_stage == "startup":
             raise RuntimeError(SYNTHETIC_SECRET)
         yield SimpleNamespace(network="synthetic-private-network")

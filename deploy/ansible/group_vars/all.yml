@@ -9,7 +9,7 @@ repairhub_deploy_user: >-
 repairhub_postgres_user: repairhub
 repairhub_postgres_db: repairhub
 repairhub_https_port: 443
-# Migrationsfreier T02-Stand: keine fachliche API-Prüfung möglich.
+# Die fachliche Reparatur-API ist noch nicht implementiert; ihre Prüfung bleibt aus.
 # deploy/capabilities.json wird in CI gegen die registrierten API-Routen geprüft.
 repairhub_migration_mode: ""
 repairhub_wait_timeout: 120

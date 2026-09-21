@@ -54,8 +54,8 @@ flowchart LR
 Ports und Implementierungen werden zusammen mit einem tatsächlichen Anwendungsfall
 entwickelt. T03 enthält noch keine Benutzer-/Geräte-/Reparaturfunktionen: Es wurden
 bewusst keine leeren Repository-Interfaces oder vorgezogenen Fachservices ergänzt.
-T04 trennt fachliche Datenstrukturen von ORM-Modellen; T05–T09 ergänzen jeweils
-benötigte Ports, Adapter und Verdrahtung. Auch technische Bereitschaftsdiagnose und
+Ab T04 entstehen fachliche Typen, Ports, Adapter und Verdrahtung jeweils aus
+dem konkreten Anwendungsfall; ORM-Modelle werden daraus abgeleitet. Auch technische Bereitschaftsdiagnose und
 Flask-Konfiguration gehören nicht zum Fachkern und dürfen Infrastruktur verwenden.
 
 ## Bereits umgesetzt und geprüft
@@ -136,9 +136,9 @@ Schnittstellen. ORM-Tabellen sind nicht die Vorlage für die Anwendungsfälle.
 
 Tests folgen derselben Gliederung, etwa
 `tests/unit/domains/repairs/create_repair/`. Datenadapter werden mit PostgreSQL
-unter Integration getestet, der vollständige Nutzerablauf unter E2E. T04 schafft
-fachliche Typen und Persistenzgrundlagen; T05–T09 liefern jeweils vollständige
-Slices einschliesslich ihrer Adapter, Berechtigungen und Tests.
+unter Integration getestet, der vollständige Nutzerablauf unter E2E. Bereits T04
+liefert einen vollständigen Registrierungsslice; T05 ergänzt Anmeldung/Abmeldung.
+T06–T09 erweitern die Anwendung um die weiteren fachlichen Anwendungsfälle.
 
 ## Prüfung dieser Strukturänderung
 
@@ -150,3 +150,57 @@ und verbotene Querverbindungen. Alle fünf Domänen lassen sich weiterhin in ein
 separaten Prozess ohne installierte Framework-/Datenbankbibliotheken importieren.
 Es wurden keine Fachfunktionen vorgezogen. Kein erneuter Image-Build, Security-Scan
 oder Deployment für diese Paketverschiebung ausgeführt.
+
+
+## Fachlicher Bedarf bestimmt das Schema
+
+Präzisierung auf Benutzerwunsch: Kein vorgeschalteter Task für alle fünf Tabellen.
+Zuerst ein fachliches Beispiel und seine Regeln, dann ein frameworkfreier
+Anwendungsfall mit Ports und Fake-Adaptern. Erst anschliessend werden konkrete
+Adapter und die minimal benötigte Migration entwickelt. Der Slice endet mit
+Browser-/API-Anbindung und Integrationstests, nicht bereits mit den Domain-Tests.
+
+Nächster Task ist T04 «Benutzer registrieren», gefolgt von Anmeldung/Abmeldung
+in T05 und den Geräte-/Reparaturanwendungsfällen. Das vorhandene ERD dient zum
+Abgleich der vereinbarten Anforderungen. Fachliche Widersprüche werden geklärt;
+Tabellen und Spalten werden nicht allein deshalb vorab implementiert, weil sie
+im Entwurf stehen. Constraints, Transaktions-Rollback und Datenerhalt bleiben
+Abnahmekriterien der jeweils betroffenen Slices.
+
+
+## T04: Standard-Identitätsverwaltung als äussere Integration
+
+Neuere ausdrückliche Benutzerentscheidungen ersetzen die geplante Eigenregistrierung:
+Flask-Security übernimmt den vollständigen Registrierungs-/Bestätigungsablauf sowie
+die mitgelieferten Login-/Logout-Funktionen. E-Mail-Verifikation ist nun erforderlich,
+E-Mail-Adressen sind eindeutig. Diese generische Identitätsverwaltung wird nicht als
+eigene fachliche Kryptografie oder nachgebildeter Domain-Handler implementiert.
+
+- `app.adapters.users.security` initialisiert die Bibliothek und kapselt Mailfehler
+  sowie die zusätzliche CSRF-Absicherung der POST-Abmeldung.
+- `app.data.users` enthält ausschliesslich technische Bibliotheksmodelle und deren
+  Datastore. Die benötigten Rollen-/Zuordnungstabellen sind technische Voraussetzungen;
+  es werden keine Rollen vergeben oder Administratorfunktionen angeboten.
+- `app.domains.users.ports.IdentityProvider` und der unveränderliche
+  `UserIdentity`-DTO sind frameworkfrei. `FlaskSecurityIdentity` implementiert den
+  Vertrag und liefert nur angemeldete, bestätigte Identitäten. Eigene Vorlagen
+  erhalten diesen DTO; künftige fachliche Slices erhalten die Identität injiziert.
+- Der Bibliotheks-Blueprint darf seine eigene Identitätspersistenz verwenden.
+  Eigene Web-/API-Routen dürfen weiterhin weder ORM-Modelle noch Datenbank-Sessions
+  importieren. Die Paketgrenzen der Reparaturdomänen werden nicht gelockert.
+
+Die vorangehende Beschreibung eines eigenen `register_user/handler.py` ist eine
+Zielkonvention für fachliche Slices, kein Auftrag zur erneuten Implementierung der
+jetzt delegierten Authentifizierung. Anwendungsfall → benötigte Infrastruktur gilt
+weiterhin: Die neue Migration schafft nur die für diese Integration erforderlichen
+Identitätstabellen, keine vorgezogenen Geräte-/Reparaturtabellen.
+
+## Benutzerentscheidung: injizierte Benutzeranwendungsfälle
+
+Die oben beschriebene T04-Ausnahme für einen direkten Bibliotheks-Blueprint ist
+auf Benutzerauftrag vom 21. September 2026 aufgehoben. Auch die standardisierten
+Benutzerabläufe haben nun frameworkfreie Handler und Slice-Ports. Eigene Routen
+rufen diese tatsächlich auf; Flask-Security liefert die technische Implementierung
+im injizierten Adapter. Details und Grenzen: [Benutzeranwendungsfälle](user-use-cases.md).
+Neue Benutzerfunktionen müssen diesen Aufrufweg beibehalten; das Vorhandensein
+eines unbenutzten Domain-Wrappers genügt nicht.

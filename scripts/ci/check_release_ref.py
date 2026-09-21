@@ -1,4 +1,4 @@
-"""Reject stale production runs and resolve lightweight or annotated release tags."""
+"""Veraltete Produktionsläufe abweisen und beide Arten von Release-Tags auflösen."""
 
 import os
 import subprocess
@@ -6,8 +6,8 @@ from urllib.parse import quote
 
 
 def remote_commit(repository: str, ref: str) -> str:
-    # The commits endpoint peels annotated tags to their commit, unlike git/ref.
-    # Fixed gh executable with separate arguments; no shell evaluation.
+    # Der commits-Endpunkt löst auch annotierte Tags bis zum Commit auf; git/ref nicht.
+    # Festes gh-Programm mit getrennten Argumenten; keine Auswertung durch eine Shell.
     result = subprocess.run(  # nosec B603,B607
         ["gh", "api", f"repos/{repository}/commits/{quote(ref, safe='')}", "--jq", ".sha"],
         check=True,

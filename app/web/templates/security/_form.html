@@ -1,0 +1,37 @@
+{% macro render_form(form, action, validate_email=false) %}
+{% for error in form.form_errors %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endfor %}
+{% if form.errors and not form.form_errors %}<div class="alert alert-danger" role="alert">{{ _('Please check the highlighted fields.') }}</div>{% endif %}
+<form data-form-completion {% if validate_email %}data-validate-email {% endif %}class="identity-form" method="post" action="{{ action }}">
+  {{ form.hidden_tag() }}
+  {# Die Reihenfolge ist unabhängig von geerbten Bibliotheksfeldern: Identität vor Passwort. #}
+  {% set fields = [form.username, form.email, form.password, form.password_confirm, form.submit] if form.password_confirm is defined and form.username is defined else [form.password, form.password_confirm] if form.password_confirm is defined else [form.identity, form.password, form.remember] if form.identity is defined else form %}
+  {% for field in fields if field.type not in ['CSRFTokenField', 'HiddenField', 'SubmitField'] %}
+  <div class="form-field">
+    {% if field.type == 'BooleanField' %}
+      {{ field(class_='form-check-input') }} {{ field.label(class_='form-check-label') }}
+    {% else %}
+      {{ field.label(class_='form-label') }}
+      {# Neue Passwörter erhalten Mindestlänge und Vergleich; die Anmeldung prüft bestehende Daten. #}
+      {{ field(required=true, data_required_input='', data_min_length=config.SECURITY_PASSWORD_LENGTH_MIN if field.name == 'password' and form.password_confirm is defined else 0, data_match_field='password' if field.name == 'password_confirm' else '', class_='form-control' ~ (' is-invalid' if field.errors else ''),
+          autocomplete={'identity': 'username', 'username': 'username', 'email': 'email', 'password': 'new-password' if form.password_confirm is defined else 'current-password', 'password_confirm': 'new-password'}.get(field.name, 'on'),
+          aria_describedby=field.id ~ '-errors' ~ (' password-hint' if field.name == 'password' and form.password_confirm is defined else ''), aria_invalid='true' if field.errors else 'false') }}
+    {% endif %}
+    {% if field.name == 'password' and form.password_confirm is defined %}<p class="field-hint" id="password-hint">{{ _('8–128 characters. Spaces and special characters welcome.') }}</p>{% endif %}
+    <div id="{{ field.id }}-errors" class="text-danger" aria-live="polite">
+      {% if validate_email and field.name == 'email' %}
+      <span class="field-validation" data-field-error="required" hidden>{{ _('Enter your email address.') }}</span>
+      <span class="field-validation" data-field-error="email" hidden>{{ _('Enter a valid email address, for example name@example.org.') }}</span>
+      {% endif %}
+      {% if field.name == 'password' and form.password_confirm is defined %}
+      <span class="field-validation" data-field-error="password-length" hidden>{{ _('Use at least %(minimum)s characters.', minimum=config.SECURITY_PASSWORD_LENGTH_MIN) }}</span>
+      {% endif %}
+      {% if field.name == 'password_confirm' %}
+      <span class="field-validation" data-field-error="password-match" hidden>{{ _('Passwords must match.') }}</span>
+      {% endif %}
+      {% for message in field.errors %}<p data-server-error class="mb-0">{{ message }}</p>{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+  {{ form.submit(class_='btn btn-primary w-100') }}
+</form>
+{% endmacro %}

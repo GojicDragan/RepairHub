@@ -1,4 +1,4 @@
-"""Startseite des minimalen Gerüsts vor der fachlichen Implementierung."""
+"""Startseite mit Einstieg in die persönliche Reparaturverwaltung."""
 
 from flask import render_template
 

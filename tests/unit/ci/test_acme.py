@@ -1,4 +1,4 @@
-"""Renewal coordinates with deployment and only reloads complete certificates."""
+"""Erneuerung mit Deployment koordinieren und nur vollständige Zertifikatspaare nachladen."""
 
 import importlib.util
 import json
@@ -141,7 +141,7 @@ def test_ansible_activated_certificate_needs_no_reload_or_symlink_change(setup):
     tls = root / "infrastructure/tls"
     link = tls / "current"
     before = link.lstat()
-    # The Ansible nginx tasks write this marker after successful first startup.
+    # Die Nginx-Tasks schreiben diesen Marker nach dem erfolgreichen Erststart.
     (tls / ".loaded-fingerprint").write_text(link.readlink().name)
     (root / "infrastructure/.env").touch()
     calls.clear()

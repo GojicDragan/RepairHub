@@ -1,4 +1,4 @@
-"""Install verified upstream scanner binaries without executing remote installers."""
+"""Geprüfte Scannerprogramme installieren, ohne entfernte Installationsskripte auszuführen."""
 
 import argparse
 import hashlib
@@ -53,7 +53,7 @@ def install(destination: Path, names: list[str]) -> None:
         if hashlib.sha256(payload).hexdigest() != expected:
             raise SystemExit(f"Ungültige Prüfsumme für {name}.")
         with tarfile.open(fileobj=io.BytesIO(payload), mode="r:gz") as archive:
-            # Copy exactly one regular file; never extract archive-controlled paths.
+            # Genau eine reguläre Datei kopieren; keine vom Archiv vorgegebenen Pfade entpacken.
             member = archive.getmember(name)
             if not member.isfile():
                 raise SystemExit(f"Ungültiges Binary für {name}.")

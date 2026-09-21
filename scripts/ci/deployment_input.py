@@ -1,4 +1,4 @@
-"""Create protected Ansible input from separate environment secrets."""
+"""Geschützte Ansible-Eingaben aus getrennten Environment-Secrets erzeugen."""
 
 import json
 import os
@@ -17,9 +17,12 @@ def main() -> None:
     required("REPAIRHUB_DEPLOY_HOST")
     required("REPAIRHUB_DEPLOY_USER")
     ssh_password = required("DEPLOY_SSH_PASSWORD")
-    # OpenSSH consumes the askpass response as one password line.
+    # OpenSSH liest die askpass-Antwort als genau eine Passwortzeile.
     if any(character in ssh_password for character in ("\r", "\n", "\0")):
         raise ValueError("SSH-Passwort darf keine Zeilenumbrüche oder NUL-Zeichen enthalten.")
+    backup_password = required("BACKUP_PASSPHRASE")
+    if len(backup_password) < 32 or any(char in backup_password for char in "\r\n\0"):
+        raise ValueError("Backup-Passphrase benötigt mindestens 32 Zeichen ohne Steuerzeichen.")
     directory = Path(required("DEPLOY_INPUT_DIR"))
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     directory.chmod(0o700)
@@ -33,16 +36,39 @@ def main() -> None:
         f"postgresql+psycopg://{quote(user, safe='')}:{quote(password, safe='')}"
         f"@db:5432/{quote(database, safe='')}"
     )
-    # The derived URL contains a URL-encoded secret, so mask it separately in Actions.
+    # Die URL enthält das Geheimnis URL-kodiert; diese Form in Actions separat maskieren.
     if os.environ.get("GITHUB_ACTIONS") == "true":
         print(f"::add-mask::{database_url}")
-    # Compose's raw env-file format preserves $, quotes and # without interpolation.
+    # Das raw-Format von Compose erhält $, Anführungszeichen und # ohne Interpolation.
     runtime_env = f"SECRET_KEY={secret}\nDATABASE_URL={database_url}\n"
+    mail = {
+        name: required(name)
+        for name in (
+            "MAIL_SERVER",
+            "MAIL_PORT",
+            "MAIL_DEFAULT_SENDER",
+            "MAIL_USERNAME",
+            "MAIL_PASSWORD",
+        )
+    }
+    mail.update(
+        {
+            "MAIL_USE_TLS": os.environ.get("MAIL_USE_TLS", "true"),
+            "MAIL_USE_SSL": os.environ.get("MAIL_USE_SSL", "false"),
+            "PUBLIC_URL": required("PUBLIC_URL"),
+        }
+    )
+    if any(any(char in value for char in "\r\n\0") for value in mail.values()):
+        raise ValueError("SMTP-/URL-Werte dürfen keine Zeilenumbrüche oder NUL enthalten.")
+    runtime_env += "".join(f"{name}={value}\n" for name, value in mail.items())
     values = {
         "ansible_password": ssh_password,
         "repairhub_app_image": required("APP_IMAGE"),
         "repairhub_release_commit": required("GITHUB_SHA"),
         "repairhub_release_sequence": int(required("GITHUB_RUN_NUMBER")),
+        # T04 fügt nur Tabellen hinzu und bleibt zum bisherigen Image kompatibel.
+        "repairhub_migration_mode": "compatible",
+        "repairhub_backup_fetch_dir": str(directory / "backups"),
         "repairhub_public_url": required("PUBLIC_URL"),
         "repairhub_postgres_user": user,
         "repairhub_postgres_db": database,

@@ -21,7 +21,7 @@ def test_readiness_fails_without_database_and_hides_details(client, caplog):
     assert response.status_code == 503
     assert response.get_json() == {"status": "unavailable"}
     combined_output = response.get_data(as_text=True) + caplog.text
-    assert "Bereitschaftsprüfung: Datenbank nicht verfügbar." in caplog.text
+    assert "Readiness check: database unavailable." in caplog.text
     for sensitive_fragment in ("psycopg", "test:test", "127.0.0.1", "OperationalError"):
         assert sensitive_fragment not in combined_output
 
@@ -36,7 +36,7 @@ def test_readiness_rejects_state_changing_methods(client, method):
 def test_home_and_static_are_available(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "Die Anwendung wird vorbereitet." in response.get_data(as_text=True)
+    assert "Manage your personal repairs." in response.get_data(as_text=True)
     assert client.get("/static/app.css").status_code == 200
 
 
@@ -46,3 +46,15 @@ def test_csrf_is_initialized(app):
         return "unexpected"
 
     assert app.test_client().post("/test-form").status_code == 400
+
+
+@pytest.mark.parametrize(
+    "language,label", [("en", "Email or username"), ("de", "E-Mail oder Benutzername")]
+)
+def test_login_has_one_identity_input_before_password(client, language, label):
+    html = client.get("/login", headers={"Accept-Language": language}).text
+    assert label in html
+    assert html.index('name="identity"') < html.index('name="password"')
+    assert 'name="email"' not in html
+    assert 'name="username"' not in html
+    assert 'autocomplete="username"' in html

@@ -29,7 +29,7 @@ def live_application(pytestconfig):
     if not (directory / "manifest.json").is_file():
         pytest.fail("E2E benötigt gebaute Image-Archive: scripts/ci/images.py build ausführen.")
     manifest = verify(directory, commit)
-    with isolated_runtime(manifest, publish_https=True) as runtime:
+    with isolated_runtime(manifest, publish_https=True, receive_mail=True) as runtime:
         # Der Browser vertraut der kurzlebigen CA nicht systemweit. Vor seiner
         # Nutzung prüfen wir Zertifikatskette und Hostname ausdrücklich über TLS.
         tls_context = ssl.create_default_context(cafile=runtime.ca_path)
@@ -57,12 +57,15 @@ def browser(live_application):
 
 
 @pytest.fixture
-def page(browser, live_application):
+def page(browser, live_application, request):
     # Ausnahme ausschliesslich für die zuvor streng geprüfte lokale Test-CA.
+    settings = getattr(request, "param", True)
+    options = settings if isinstance(settings, dict) else {"javascript": settings}
     context = browser.new_context(
         base_url=live_application.public_url,
         ignore_https_errors=True,
-        locale="de-CH",
+        locale=options.get("locale", "en"),
+        java_script_enabled=options.get("javascript", True),
     )
     # HTTP(S)-Anfragen der Testseiten auf die lokale Test-Origin begrenzen.
     context.route(

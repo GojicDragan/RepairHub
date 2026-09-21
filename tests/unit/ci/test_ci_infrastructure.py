@@ -1,4 +1,4 @@
-"""Official infrastructure references must remain immutable and complete."""
+"""Offizielle Infrastrukturreferenzen müssen unveränderlich und vollständig bleiben."""
 
 import json
 

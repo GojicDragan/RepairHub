@@ -1,4 +1,4 @@
-"""Run actual Ansible platform selection without installing anything on the host."""
+"""Echte Ansible-Plattformauswahl ohne Installationen auf dem Host ausführen."""
 
 import json
 import os

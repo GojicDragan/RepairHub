@@ -9,9 +9,11 @@ def test_home_renders_with_styles_and_security_headers(page):
     page.on("pageerror", lambda error: errors.append(error))
     response = page.goto("/")
     assert response.status == 200
-    page.get_by_role("heading", name="RepairHub", exact=True).wait_for(state="visible")
-    assert page.locator("html").get_attribute("lang") == "de-CH"
-    assert page.get_by_text("Die Anwendung wird vorbereitet.", exact=True).is_visible()
+    page.get_by_role("heading", name="Good things deserve a second life.", exact=True).wait_for(
+        state="visible"
+    )
+    assert page.locator("html").get_attribute("lang") == "en"
+    assert page.get_by_text("Manage your personal repairs.", exact=True).is_visible()
     assert page.evaluate(
         "Array.from(document.styleSheets).some(sheet => "
         "sheet.href && new URL(sheet.href).pathname === '/static/app.css' "
@@ -55,9 +57,11 @@ def test_database_outage_is_reported_without_internal_details(page, live_applica
 def test_error_page_shares_navigation_and_returns_home(page):
     response = page.goto("/not-found")
     assert response.status == 404
-    assert page.get_by_role("heading", name="Seite nicht gefunden").is_visible()
-    page.get_by_role("link", name="Zur Startseite", exact=True).click()
-    assert page.get_by_role("heading", name="RepairHub", exact=True).is_visible()
+    assert page.get_by_role("heading", name="Page not found").is_visible()
+    page.get_by_role("link", name="Back to home", exact=True).click()
+    assert page.get_by_role(
+        "heading", name="Good things deserve a second life.", exact=True
+    ).is_visible()
 
 
 def test_unknown_api_route_returns_json_through_nginx(page):
@@ -74,19 +78,19 @@ def test_bootstrap_and_humble_notification_adapter(page):
         page.evaluate(
             "getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim()"
         )
-        == "#0d6efd"
+        == "#b84020"
     )
-    # Eine Rückmeldung als Fixture, bis fachliche POST-Routen in T05 entstehen.
+    # Die Meldungs-Fixture prüft das UI-Verhalten unabhängig von einer Kontoerstellung.
     page.evaluate("""async () => {
         const message = document.createElement('div');
         message.dataset.notification = '';
         message.innerHTML = '<span>Gespeichert</span><button type="button" '
-            + 'data-dismiss-notification hidden>Meldung schliessen</button>';
+            + 'data-dismiss-notification hidden>Dismiss message</button>';
         document.querySelector('#content').prepend(message);
         const { mountNotifications } = await import('/static/js/notification-view.mjs');
         mountNotifications(document);
     }""")
-    page.get_by_role("button", name="Meldung schliessen").click()
+    page.get_by_role("button", name="Dismiss message").click()
     assert page.locator("[data-notification]").count() == 0
     assert page.locator("#content").evaluate("element => element === document.activeElement")
     assert not errors
@@ -102,8 +106,10 @@ def test_home_works_without_javascript_on_small_screen(browser, live_application
     try:
         page = context.new_page()
         page.goto("/")
-        assert page.get_by_role("heading", name="RepairHub", exact=True).is_visible()
-        assert page.get_by_role("link", name="RepairHub – Startseite").is_visible()
+        assert page.get_by_role(
+            "heading", name="Good things deserve a second life.", exact=True
+        ).is_visible()
+        assert page.get_by_role("link", name="RepairHub – Home").is_visible()
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     finally:
         context.close()

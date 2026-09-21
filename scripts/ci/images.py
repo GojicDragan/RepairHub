@@ -1,4 +1,4 @@
-"""Build once, verify archives, and publish the exact scanned image IDs."""
+"""Einmal bauen, Archive prüfen und genau die gescannten Image-IDs veröffentlichen."""
 
 import argparse
 import hashlib
@@ -22,7 +22,7 @@ def docker(*args: str, capture: bool = False) -> str:
     try:
         result = subprocess.run(["docker", *args], check=True, text=True, capture_output=capture)
     except subprocess.CalledProcessError as error:
-        # docker run arguments may contain ephemeral test credentials; never echo argv.
+        # docker-run-Argumente können Testzugangsdaten enthalten; argv niemals ausgeben.
         raise RuntimeError(f"Docker-Operation fehlgeschlagen (Exit {error.returncode}).") from None
     return result.stdout.strip() if capture else ""
 
@@ -33,7 +33,7 @@ def checksum(path: Path) -> str:
 
 
 def archived_image_metadata(path: Path) -> dict:
-    """Separate config identity from Docker's classic/config or containerd/OCI ID."""
+    """Konfigurationsdigest und Dockers klassische beziehungsweise OCI-Image-ID unterscheiden."""
     with tarfile.open(path, "r") as archive:
 
         def read_file(name: str) -> bytes:
@@ -70,9 +70,9 @@ def archived_image_metadata(path: Path) -> dict:
                     if item.get("annotations", {}).get("vnd.docker.reference.type")
                     != "attestation-manifest"
                 ]
-                # A pulled upstream index retains descriptors for other platforms,
-                # whose blobs docker save deliberately omits. Bind the full index
-                # digest, but follow only its unique Linux/amd64 runtime branch.
+                # Ein geladener Index enthält auch andere Plattformen, deren Blobs
+                # docker save auslässt. Den gesamten Indexdigest prüfen, aber
+                # nur dem eindeutigen Linux/amd64-Laufzeitimage folgen.
                 for item in candidates:
                     if not DIGEST.fullmatch(item.get("digest", "")):
                         raise ValueError("Ungültiger OCI-Plattform-Deskriptor.")
@@ -231,7 +231,7 @@ def verify_archive(directory: Path, name: str, entry: dict, reference: str) -> d
 
 
 def verify_database_environment(actual: dict, configuration: dict) -> None:
-    # These are upstream image settings, not labels from a custom database build.
+    # Dies sind Einstellungen des Originalimages, keine Labels eines eigenen DB-Builds.
     expected = {
         "PG_MAJOR": configuration["postgres_version"].split(".", 1)[0],
         "PG_VERSION": configuration["postgres_version"],
@@ -291,7 +291,7 @@ def publish_archive(directory: Path, entry: dict, image_name: str, tag: str) -> 
     matches = [item for item in candidates if item.startswith(f"{image_name}@")]
     if len(matches) != 1 or not DIGEST.fullmatch(matches[0].split("@", 1)[1]):
         raise ValueError("Registry-Digest konnte nicht eindeutig ermittelt werden.")
-    # Docker IDs can represent config, platform manifest or an OCI index.
+    # Docker-IDs können Konfiguration, Plattformmanifest oder OCI-Index bezeichnen.
     # Nach dem Push per unveränderlichem Digest zurücklesen, damit nicht nur der
     # lokale Tag, sondern das tatsächlich veröffentlichte Image geprüft wird.
     docker("pull", "--platform", "linux/amd64", matches[0])

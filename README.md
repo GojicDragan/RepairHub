@@ -1,10 +1,11 @@
 # RepairHub
 
 RepairHub wird eine Webanwendung zur Verwaltung privater Reparaturfälle für
-Haushaltsgeräte und Elektronik. Der aktuelle T02-Stand enthält das minimale
-Flask-Gerüst mit PostgreSQL-Bereitschaftsprüfung, Docker Compose und eine
+Haushaltsgeräte und Elektronik. Der aktuelle Stand enthält
+Flask mit PostgreSQL-Bereitschaftsprüfung, Docker Compose und eine
 Pipeline für Test → Build → Security → Deploy über GitHub Actions und Ansible.
-Benutzerkonten, Geräte, Reparaturfälle und die fachliche API folgen ab T04.
+T04 ergänzt Registrierung und E-Mail-Verifikation über Flask-Security. Geräte,
+Reparaturfälle und die fachliche API folgen in den weiteren Funktionstasks.
 Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für aktive
 DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
 für Abhängigkeiten, Geheimnisse und Container.
@@ -53,7 +54,10 @@ with os.fdopen(fd, "w") as stream:
     stream.write(content)
 PY
 
-docker compose -f compose.yaml -f compose.development.yaml up --build -d --wait
+docker compose -f compose.yaml -f compose.development.yaml build app
+docker compose -f compose.yaml -f compose.development.yaml up -d --wait db mailpit
+docker compose -f compose.yaml -f compose.development.yaml run --rm --no-deps app flask --app app db upgrade
+docker compose -f compose.yaml -f compose.development.yaml up -d --wait
 curl --fail http://127.0.0.1:8080/health/ready
 ```
 
@@ -129,10 +133,10 @@ TLS für `lab19.ifalabs.org` stellt Ansible beim ersten Deployment über Let’s
 aus. Ein Host-Timer prüft danach die Erneuerung. Dafür `ACME_EMAIL` im GitHub-Environment
 setzen und Port 80 für HTTP-01 freigeben; siehe [TLS-Einrichtung](docs/ci-cd.md#tls-automatisch-ausstellen-und-erneuern).
 
-Das in T03 vervollständigte Grundgerüst verwendet eine gemeinsame deutsche
+Das in T03 vervollständigte Grundgerüst verwendet eine gemeinsame englische
 Seitenvorlage sowie getrennte HTML- und JSON-Fehlerantworten. Konfiguration,
 Fehlervertrag, Komponentengrenzen und Abnahme stehen in
-[docs/t03-validation.md](docs/t03-validation.md). Fachliche Konten- und
+[docs/t03-validation.md](docs/t03-validation.md). Registrierung und E-Mail-Verifikation sind mit T04 umgesetzt;
 Reparaturfunktionen folgen mit den nächsten Tasks.
 
 Das Frontend verwendet lokal eingebundenes Bootstrap und JavaScript mit kleinen
@@ -140,3 +144,65 @@ DOM-Adaptern nach dem Humble-Object-Muster: [Frontend-Aufbau](docs/frontend.md).
 
 Fachkomponenten bleiben frameworkfrei; Datenadapter implementieren ihre Ports und
 werden injiziert: [Architektur und Abhängigkeitsumkehr](docs/domain-architecture.md).
+
+
+## Registrierung und E-Mail-Bestätigung
+
+`/register` erstellt ein Konto; eine Bestätigung per E-Mail ist vor der
+Anmeldung erforderlich. Benutzername und E-Mail sind eindeutig, auch bei
+abweichender Gross-/Kleinschreibung. Benutzernamen: 1–80 Buchstaben/Ziffern;
+Passwörter: 8–128 Zeichen. Bestätigungslinks sind 24 Stunden gültig und können
+unter `/confirm` erneut angefordert werden. `/login` und die POST-Abmeldung
+stammen ebenfalls aus Flask-Security. `/reset` ermöglicht das Zurücksetzen des
+Passworts per E-Mail mit einem eine Stunde gültigen Link. Details und Nachweise:
+[Passwort-Recovery](docs/password-reset.md). Administratorfunktionen sind deaktiviert.
+
+In Produktion sind externer SMTP-Zugang und Absenderfreigabe Voraussetzung für
+tatsächlichen Mailversand; siehe [GitHub-Einrichtung](docs/ci-cd.md) und [T04-Nachweis](docs/t04-validation.md).
+Nach dem lokalen Build die Datenbank starten und die Migration explizit ausführen:
+
+```bash
+docker compose -f compose.yaml -f compose.development.yaml up -d db
+docker compose -f compose.yaml -f compose.development.yaml run --rm --no-deps app flask --app app db upgrade
+docker compose -f compose.yaml -f compose.development.yaml up -d
+```
+
+Migrationen werden nicht beim Start jedes Workers ausgeführt. In Produktion
+übernimmt das Ansible-Deployment den kontrollierten Migrationsschritt.
+
+
+### E-Mails in Development abfangen
+
+Development startet automatisch **Mailpit** mit der Anwendung. Alle Nachrichten
+landen unter **http://127.0.0.1:8025**, auch die Bestätigungslinks der Registrierung.
+Die Links zeigen auf die lokale Anwendung unter `http://127.0.0.1:8080`
+(beziehungsweise `HTTP_LOCAL_PORT`). Es werden keine externen E-Mails versendet:
+Mailpit hat keinen konfigurierten Relay oder Forwarder und keinen
+veröffentlichten SMTP-Port. Seine Weboberfläche ist nur auf Loopback erreichbar.
+
+Die Development-Datei überschreibt SMTP-Host, Port, Zugangsdaten, Absender und
+TLS-Einstellungen ausdrücklich; externe SMTP-Werte aus `runtime.env` werden daher
+nicht genutzt. Unverschlüsseltes SMTP auf `mailpit:1025` bleibt auf das interne
+Entwicklungsnetz begrenzt. Produktion verwendet weiterhin verschlüsseltes SMTP.
+
+```bash
+docker compose -f compose.yaml -f compose.development.yaml up --build -d --wait
+```
+
+Bei Bedarf `MAILPIT_LOCAL_PORT` in `.env` ändern. Nachrichten sind temporäre
+Testdaten und gehen beim Stoppen/Neuerstellen des Mailpit-Containers verloren.
+Nach erstmaligem Build die oben beschriebene Migration ausführen, bevor ein
+Benutzer registriert wird. Keine zusätzlichen SMTP-Secrets für Development nötig.
+
+Mailpit ist ein reines Entwicklungswerkzeug; es wird weder nach GHCR veröffentlicht
+noch durch Produktions-Ansible ausgerollt. Die isolierten CI-Mailtests bleiben
+unabhängig davon. Grundlage: [offizielle Docker-Dokumentation](https://mailpit.axllent.org/docs/install/docker/).
+
+Die Anwendung unterstützt Deutsch und Englisch anhand der Browsersprache
+(`Accept-Language`), mit Englisch als Fallback. Endpoints bleiben Englisch: [i18n-Konvention und Befehle](docs/i18n.md).
+
+Die visuelle Marke folgt dem Werkstatt-Thema mit klarer Formularhierarchie und
+Gestaltregeln: [Design-System](docs/design-system.md).
+
+Die Benutzerabläufe verwenden injizierte Domain-Handler und Flask-Security als
+technischen Adapter: [Aufrufwege und Grenzen](docs/user-use-cases.md).

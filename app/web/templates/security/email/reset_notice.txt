@@ -1,0 +1,6 @@
+{{ _('Your password has been reset') }}
+
+{{ _('Your RepairHub password was changed. You can now log in with your new password.') }}
+{{ _('If you did not make this change, reset your password immediately using the login page.') }}
+
+{% include 'security/email/_footer.txt' %}

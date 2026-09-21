@@ -136,6 +136,8 @@ def prepare(directory: Path, artifacts: Path, commit: str) -> None:
         "repairhub_infrastructure_file": str(infrastructure_path),
         "repairhub_release_commit": commit,
         "repairhub_release_sequence": 1,
+        "repairhub_migration_mode": "compatible",
+        "repairhub_backup_fetch_dir": str(directory / "backups"),
         "repairhub_public_url": f"https://127.0.0.1:{ports['https']}",
         "repairhub_smoke_ca_path": str(directory / "server.crt"),
         "repairhub_runtime_env": (

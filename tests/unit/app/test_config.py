@@ -66,7 +66,7 @@ def test_rejects_invalid_database_without_echoing_credentials(valid_config, url)
 def test_production_rejects_unsafe_settings(valid_config, override):
     valid_config.update(REPAIRHUB_ENV="production", TESTING=False)
     valid_config.update(override)
-    with pytest.raises(ValueError, match="Produktion"):
+    with pytest.raises(ValueError, match="Production"):
         validate_config(valid_config)
 
 
@@ -86,5 +86,26 @@ def test_production_rejects_unsafe_settings(valid_config, override):
 def test_production_rejects_other_security_bypasses(valid_config, override):
     valid_config.update(REPAIRHUB_ENV="production", TESTING=False)
     valid_config.update(override)
-    with pytest.raises(ValueError, match="Produktion"):
+    with pytest.raises(ValueError, match="Production"):
         validate_config(valid_config)
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        {"MAIL_USE_TLS": False, "MAIL_USE_SSL": False},
+        {"MAIL_BACKEND": "locmem"},
+    ],
+)
+def test_production_cannot_silently_discard_mail_or_send_without_tls(valid_config, settings):
+    valid_config.update(REPAIRHUB_ENV="production", TESTING=False, **settings)
+    with pytest.raises(ValueError, match="Production"):
+        validate_config(valid_config)
+
+
+def test_development_accepts_both_loopback_hostnames_but_production_does_not(monkeypatch):
+    monkeypatch.setenv("PUBLIC_URL", "http://127.0.0.1:8080")
+    assert load_config("development")["TRUSTED_HOSTS"] == ["localhost", "127.0.0.1"]
+    assert load_config("production")["TRUSTED_HOSTS"] == ["127.0.0.1"]
+    monkeypatch.setenv("PUBLIC_URL", "https://example.org")
+    assert load_config("development")["TRUSTED_HOSTS"] == ["example.org"]

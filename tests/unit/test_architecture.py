@@ -169,3 +169,29 @@ def test_vertical_slice_allowed_dependencies(module, source):
 )
 def test_vertical_slice_forbidden_dependencies(module, source):
     assert check_source(source, module)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from app.data.users.model import User",
+        "from app.domains.users.register_user.handler import execute",
+        "from app.web import blueprint",
+    ],
+)
+def test_identity_adapter_cannot_bypass_ports(source):
+    assert check_source(source, "app.adapters.users.identity")
+
+
+def test_identity_adapter_may_use_domain_contract():
+    assert (
+        check_source(
+            "from app.domains.users.dto import UserIdentity", "app.adapters.users.identity"
+        )
+        == []
+    )
+
+
+@pytest.mark.parametrize("module", ["app.web.routes.users", "app.adapters.users.registration"])
+def test_library_http_views_cannot_bypass_user_use_cases(module):
+    assert check_source("from flask_security.views import register", module)

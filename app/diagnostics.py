@@ -10,5 +10,5 @@ from app.data.health import database_ready
 def check_readiness() -> bool:
     ready = database_ready()
     if not ready:
-        current_app.logger.warning("Bereitschaftsprüfung: Datenbank nicht verfügbar.")
+        current_app.logger.warning("Readiness check: database unavailable.")
     return ready

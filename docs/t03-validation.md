@@ -109,7 +109,7 @@ T03-Stand muss später die normale Branch-/PR-Pipeline und für Produktion einen
 Release-/Tag-Lauf durchlaufen. Eine vierwöchige Verfügbarkeit wird nicht behauptet.
 
 Die Muss-Ziele M01–M06 sind mit diesem technischen Grundgerüst noch nicht
-umgesetzt. Nächster Task ist **T04: Datenmodell und Migrationen**.
+umgesetzt. Nächster Task ist **T04: Benutzer registrieren als vertikaler Slice**.
 
 ## Ergänzung: Bootstrap und Humble Objects
 
@@ -148,7 +148,7 @@ protokollierten Läufe und Image-Digests gelten jeweils für ihren vorherigen St
 
 Auf Benutzerwunsch die fünf Fachpakete von `app.services` nach `app.domains`
 verschoben und Regeln für vertikale Anwendungsfälle ergänzt. Konkrete Slices
-entstehen mit T05–T09. Architekturprüfung und Tests sichern Slice-Grenzen sowie
+entstehen ab T04. Architekturprüfung und Tests sichern Slice-Grenzen sowie
 frameworkfreie Imports. **333 Unit-/Factory-/Fehlertests bestanden**, Ruff und
 Architekturprüfung ebenfalls. Details: [domain-architecture.md](domain-architecture.md).
 Kein neuer Build oder Deployment für diesen anschliessenden Strukturstand.
