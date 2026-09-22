@@ -237,3 +237,8 @@ Deployment-Prüfwerte sind in [docs/api.md](docs/api.md) beschrieben.
 T10 vervollständigt Navigation und Fehlerpfade. Der vollständige Browserablauf
 von Registrierung bis Kostenanzeige wird in beiden Sprachen mit und ohne
 JavaScript geprüft: [T10-Abnahme](docs/t10-validation.md).
+
+Deployment, Backupaufbewahrung und Wiederherstellung sind in der
+[Betriebsanleitung](docs/operations.md) beschrieben. T11 ist als Dokumentationsaufgabe
+abgeschlossen; eine Datenbankwiederherstellung wurde ausdrücklich nicht ausgeführt:
+[T11-Nachweis](docs/t11-validation.md).
