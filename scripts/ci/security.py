@@ -160,6 +160,7 @@ def run_scan(
     trivy_ignorefile: Path | None = None,
 ) -> dict:
     """Ein Prozessfehler darf niemals als erfolgreicher Scan ohne Befunde gelten."""
+    # Ein fehlgeschlagener Neustart darf keinen alten grünen Bericht wiederverwenden.
     report_path.unlink(missing_ok=True)
     try:
         result = subprocess.run(

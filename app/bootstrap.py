@@ -96,6 +96,29 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     identity = FlaskSecurityIdentity()
     app.extensions["identity_provider"] = identity
 
+    from app.data.devices.get_device import GetDeviceRepository
+    from app.data.devices.list_devices import ListDevicesRepository
+    from app.data.devices.register_device import RegisterDeviceRepository
+    from app.data.devices.suggest_device_values import SuggestDeviceValuesRepository
+    from app.data.devices.update_device import UpdateDeviceRepository
+    from app.domains.devices.get_device.handler import GetDevice
+    from app.domains.devices.list_devices.handler import ListDevices
+    from app.domains.devices.register_device.handler import RegisterDevice
+    from app.domains.devices.suggest_device_values.handler import SuggestDeviceValues
+    from app.domains.devices.update_device.handler import UpdateDevice
+    from app.web.routes.devices import create_device_blueprint
+
+    app.register_blueprint(
+        create_device_blueprint(
+            identity=identity,
+            register=RegisterDevice(RegisterDeviceRepository()),
+            update=UpdateDevice(UpdateDeviceRepository()),
+            get=GetDevice(GetDeviceRepository()),
+            listing=ListDevices(ListDevicesRepository()),
+            suggestions=SuggestDeviceValues(SuggestDeviceValuesRepository()),
+        )
+    )
+
     @app.context_processor
     def identity_context():
         # Eigene Vorlagen erhalten nur einen Wert, kein nachladendes ORM-Objekt.

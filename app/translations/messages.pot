@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RepairHub VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-21 20:00+0200\n"
+"POT-Creation-Date: 2026-09-22 08:32+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,92 +17,128 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:119
+#: app/bootstrap.py:145
 msgid "Invalid request: untrusted host."
 msgstr ""
 
-#: app/bootstrap.py:124
+#: app/bootstrap.py:150
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:125
+#: app/bootstrap.py:151 app/web/routes/devices.py:42
 msgid "Please reload the page and check your input."
 msgstr ""
 
-#: app/bootstrap.py:127
+#: app/bootstrap.py:153
 msgid "Login required"
 msgstr ""
 
-#: app/bootstrap.py:127
+#: app/bootstrap.py:153
 msgid "Please log in to access this resource."
 msgstr ""
 
-#: app/bootstrap.py:128
+#: app/bootstrap.py:154
 msgid "Access denied"
 msgstr ""
 
-#: app/bootstrap.py:128
+#: app/bootstrap.py:154
 msgid "This action is not allowed."
 msgstr ""
 
-#: app/bootstrap.py:129
+#: app/bootstrap.py:155
 msgid "Page not found"
 msgstr ""
 
-#: app/bootstrap.py:129
+#: app/bootstrap.py:155
 msgid "The requested resource was not found."
 msgstr ""
 
-#: app/bootstrap.py:130
+#: app/bootstrap.py:156
 msgid "Method not allowed"
 msgstr ""
 
-#: app/bootstrap.py:130
+#: app/bootstrap.py:156
 msgid "This request method is not supported here."
 msgstr ""
 
-#: app/bootstrap.py:132
+#: app/bootstrap.py:158
 msgid "Unable to register"
 msgstr ""
 
-#: app/bootstrap.py:133
+#: app/bootstrap.py:159
 msgid "This username or email address is already in use."
 msgstr ""
 
-#: app/bootstrap.py:135
+#: app/bootstrap.py:161
 msgid "Temporarily unavailable"
 msgstr ""
 
-#: app/bootstrap.py:135
+#: app/bootstrap.py:161
 msgid "Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:136
+#: app/bootstrap.py:162
 msgid "Request too large"
 msgstr ""
 
-#: app/bootstrap.py:136
+#: app/bootstrap.py:162
 msgid "The submitted data exceeds the allowed size."
 msgstr ""
 
-#: app/bootstrap.py:138
+#: app/bootstrap.py:164
 msgid "Internal error"
 msgstr ""
 
-#: app/bootstrap.py:139
+#: app/bootstrap.py:165
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:145
+#: app/bootstrap.py:171 app/web/routes/devices.py:53
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:146
+#: app/bootstrap.py:172 app/web/routes/devices.py:46
 msgid "The request could not be processed."
 msgstr ""
 
 #: app/adapters/users/security.py:19
 msgid "Email or username"
+msgstr ""
+
+#: app/web/forms/devices.py:7
+msgid "Device name"
+msgstr ""
+
+#: app/web/forms/devices.py:8 app/web/templates/devices/detail.html:8
+msgid "Manufacturer"
+msgstr ""
+
+#: app/web/forms/devices.py:9 app/web/templates/devices/detail.html:8
+msgid "Model"
+msgstr ""
+
+#: app/web/routes/devices.py:43 app/web/templates/devices/form.html:9
+msgid "Your session has expired. Please log in again."
+msgstr ""
+
+#: app/web/routes/devices.py:44
+msgid "Device not found."
+msgstr ""
+
+#: app/web/routes/devices.py:118
+msgid "This field is required."
+msgstr ""
+
+#: app/web/routes/devices.py:119
+msgid "Use at most 120 characters."
+msgstr ""
+
+#: app/web/routes/devices.py:120
+msgid "Use text without control characters."
+msgstr ""
+
+#: app/web/routes/devices.py:130
+msgid "Device saved."
 msgstr ""
 
 #: app/web/templates/base.html:15
@@ -117,32 +153,38 @@ msgstr ""
 msgid "RepairHub – Home"
 msgstr ""
 
-#: app/web/templates/base.html:26
+#: app/web/templates/base.html:23 app/web/templates/devices/detail.html:5
+#: app/web/templates/devices/form.html:5 app/web/templates/devices/index.html:2
+#: app/web/templates/devices/index.html:5 app/web/templates/index.html:15
+msgid "Your devices"
+msgstr ""
+
+#: app/web/templates/base.html:27
 msgid "Log out"
 msgstr ""
 
-#: app/web/templates/base.html:29 app/web/templates/index.html:11
-#: app/web/templates/security/login_user.html:3
+#: app/web/templates/base.html:30 app/web/templates/devices/form.html:23
+#: app/web/templates/index.html:11 app/web/templates/security/login_user.html:3
 #: app/web/templates/security/login_user.html:6
 #: app/web/templates/security/register_user.html:9
 msgid "Log in"
 msgstr ""
 
-#: app/web/templates/base.html:30
+#: app/web/templates/base.html:31
 #: app/web/templates/security/register_user.html:3
 msgid "Register"
 msgstr ""
 
-#: app/web/templates/base.html:39
+#: app/web/templates/base.html:40
 msgid "Dismiss message"
 msgstr ""
 
-#: app/web/templates/base.html:45
+#: app/web/templates/base.html:46
 #: app/web/templates/security/email/_base.html:44
 msgid "Made for a repair-first mindset."
 msgstr ""
 
-#: app/web/templates/base.html:45 app/web/templates/security/_layout.html:9
+#: app/web/templates/base.html:46 app/web/templates/security/_layout.html:9
 #: app/web/templates/security/email/_footer.txt:4
 msgid "Keep. Repair. Repeat."
 msgstr ""
@@ -159,7 +201,7 @@ msgstr ""
 msgid "Your personal repair workshop"
 msgstr ""
 
-#: app/web/templates/index.html:6
+#: app/web/templates/devices/index.html:5 app/web/templates/index.html:6
 #: app/web/templates/security/email/reset_notice.html:4
 msgid "YOUR PERSONAL REPAIR WORKSHOP"
 msgstr ""
@@ -195,72 +237,183 @@ msgstr ""
 msgid "You are logged in as %(username)s."
 msgstr ""
 
-#: app/web/templates/index.html:15
+#: app/web/templates/index.html:16
 msgid "Your account is ready. A new chapter for your things starts here."
 msgstr ""
 
-#: app/web/templates/index.html:19
+#: app/web/templates/index.html:20
 msgid "THE REPAIR MINDSET"
 msgstr ""
 
-#: app/web/templates/index.html:19
+#: app/web/templates/index.html:20
 msgid "FIG. 01"
 msgstr ""
 
-#: app/web/templates/index.html:21
+#: app/web/templates/index.html:22
 msgid "Worth keeping."
 msgstr ""
 
-#: app/web/templates/index.html:21
+#: app/web/templates/index.html:22
 msgid "Worth fixing."
 msgstr ""
 
-#: app/web/templates/index.html:21
+#: app/web/templates/index.html:22
 msgid "REPAIR"
 msgstr ""
 
-#: app/web/templates/index.html:21
+#: app/web/templates/index.html:22
 msgid "REPEAT"
 msgstr ""
 
-#: app/web/templates/index.html:25
+#: app/web/templates/index.html:26
 msgid "A LITTLE STRUCTURE. A LOT MORE POSSIBILITY."
 msgstr ""
 
-#: app/web/templates/index.html:25
+#: app/web/templates/index.html:26
 msgid "Manage your personal repairs."
 msgstr ""
 
-#: app/web/templates/index.html:25
+#: app/web/templates/index.html:26
 msgid "COMING NEXT"
 msgstr ""
 
-#: app/web/templates/index.html:26
-msgid "Accounts are ready. Device and repair management is not available yet."
+#: app/web/templates/index.html:27
+msgid "Device management is ready. Repair tracking and costs are coming next."
 msgstr ""
 
-#: app/web/templates/index.html:28
+#: app/web/templates/index.html:29
 msgid "Know your devices"
 msgstr ""
 
-#: app/web/templates/index.html:28
+#: app/web/templates/index.html:29
 msgid "A home for the details that matter, from the model to its repair history."
 msgstr ""
 
-#: app/web/templates/index.html:29
+#: app/web/templates/index.html:30
 msgid "Follow the repair"
 msgstr ""
 
-#: app/web/templates/index.html:29
+#: app/web/templates/index.html:30
 msgid "Keep the problem, the next steps and your progress together."
 msgstr ""
 
-#: app/web/templates/index.html:30
+#: app/web/templates/index.html:31
 msgid "See the full picture"
 msgstr ""
 
-#: app/web/templates/index.html:30
+#: app/web/templates/index.html:31
 msgid "Bring parts, time and costs into one clear view."
+msgstr ""
+
+#: app/web/templates/devices/detail.html:2
+msgid "Device details"
+msgstr ""
+
+#: app/web/templates/devices/detail.html:6
+msgid "WORTH KEEPING"
+msgstr ""
+
+#: app/web/templates/devices/detail.html:9
+#: app/web/templates/devices/form.html:2 app/web/templates/devices/form.html:7
+#: app/web/templates/devices/index.html:4
+#: app/web/templates/devices/index.html:12
+msgid "Edit device"
+msgstr ""
+
+#: app/web/templates/devices/form.html:2 app/web/templates/devices/form.html:7
+#: app/web/templates/devices/index.html:5
+msgid "Add device"
+msgstr ""
+
+#: app/web/templates/devices/form.html:6
+msgid "THE DETAILS THAT MATTER"
+msgstr ""
+
+#: app/web/templates/devices/form.html:8
+msgid "Give your device a name you will recognise."
+msgstr ""
+
+#: app/web/templates/devices/form.html:9
+msgid "Looking for suggestions…"
+msgstr ""
+
+#: app/web/templates/devices/form.html:9
+msgid "Suggestions from your devices. Keep typing to enter a new value."
+msgstr ""
+
+#: app/web/templates/devices/form.html:9
+msgid "No suggestions. You can enter a new value."
+msgstr ""
+
+#: app/web/templates/devices/form.html:9
+msgid "Suggestions are unavailable. You can still enter a value."
+msgstr ""
+
+#: app/web/templates/devices/form.html:9
+msgid "Could not save the device. Your entries are still here. Please retry."
+msgstr ""
+
+#: app/web/templates/devices/form.html:20
+msgid "Save device"
+msgstr ""
+
+#: app/web/templates/devices/form.html:20
+msgid "Cancel"
+msgstr ""
+
+#: app/web/templates/devices/form.html:22
+msgid "View device"
+msgstr ""
+
+#: app/web/templates/devices/index.html:4
+msgid "Loading devices…"
+msgstr ""
+
+#: app/web/templates/devices/index.html:4
+msgid "Could not load devices. Please retry."
+msgstr ""
+
+#: app/web/templates/devices/index.html:5
+msgid "A place for the things worth keeping."
+msgstr ""
+
+#: app/web/templates/devices/index.html:6
+#, python-format
+msgid "%(count)s devices"
+msgstr ""
+
+#: app/web/templates/devices/index.html:7
+msgid "Start with your first device."
+msgstr ""
+
+#: app/web/templates/devices/index.html:7
+msgid ""
+"Add its name, manufacturer and model. Keep the details ready for its next"
+" repair."
+msgstr ""
+
+#: app/web/templates/devices/index.html:8
+msgid "Device list"
+msgstr ""
+
+#: app/web/templates/devices/index.html:12
+msgid "Edit"
+msgstr ""
+
+#: app/web/templates/devices/index.html:17
+msgid "Retry"
+msgstr ""
+
+#: app/web/templates/devices/index.html:18
+msgid "Device pages"
+msgstr ""
+
+#: app/web/templates/devices/index.html:19
+msgid "Previous devices"
+msgstr ""
+
+#: app/web/templates/devices/index.html:20
+msgid "Next devices"
 msgstr ""
 
 #: app/web/templates/partials/metadata.html:5
@@ -287,24 +440,24 @@ msgstr ""
 msgid "Please check the highlighted fields."
 msgstr ""
 
-#: app/web/templates/security/_form.html:17
+#: app/web/templates/security/_form.html:19
 msgid "8–128 characters. Spaces and special characters welcome."
 msgstr ""
 
-#: app/web/templates/security/_form.html:20
+#: app/web/templates/security/_form.html:22
 msgid "Enter your email address."
 msgstr ""
 
-#: app/web/templates/security/_form.html:21
+#: app/web/templates/security/_form.html:23
 msgid "Enter a valid email address, for example name@example.org."
 msgstr ""
 
-#: app/web/templates/security/_form.html:24
+#: app/web/templates/security/_form.html:26
 #, python-format
 msgid "Use at least %(minimum)s characters."
 msgstr ""
 
-#: app/web/templates/security/_form.html:27
+#: app/web/templates/security/_form.html:29
 msgid "Passwords must match."
 msgstr ""
 

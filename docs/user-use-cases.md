@@ -90,7 +90,12 @@ Alle Identitätsseiten erhalten `Cache-Control: no-store` und
 Lokale Entwicklungsanwendung neu geladen. Keine Produktionsbereitstellung,
 keine neue Ansible-Abnahme; Bibliotheks-DeprecationWarnings bleiben sichtbar.
 
-### Sicherheitsabnahme noch offen: ZAP
+### Historischer ZAP-Befund vor der Scannerkorrektur
+
+Nachtrag: Die nachfolgend dokumentierten Formular-/Browserprobleme wurden
+anschliessend reproduziert und in der Scannersteuerung behoben. Ursachen,
+unveränderte Befundgrenzen und aktive Nachprüfungen: [DAST-Nachweis](dast.md).
+Die folgenden Absätze beschreiben den früheren Prüfstand.
 
 Zwei aktive Läufe des ersten Refactoring-Images (`artifacts/user-use-cases`)
 blockierten mit Regel [40018 – SQL Injection](https://www.zaproxy.org/docs/alerts/40018/)

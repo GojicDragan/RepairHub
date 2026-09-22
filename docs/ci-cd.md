@@ -239,6 +239,14 @@ Statistikprüfungen verlangen tatsächlich gefundene URLs sowie einen gestartete
 und abgeschlossenen aktiven Scan ohne vorzeitigen Abbruch. Ein äusseres Limit
 von 20 Minuten bricht als Fehler ab; es erzeugt keinen grünen Teilscan.
 
+Die Formularprüfung verwendet sitzungsgebundene CSRF-Aktualisierung und eine
+eng begrenzte Normalisierung der zeitabhängigen CSRF-Metadaten für SQL-Vergleiche.
+Erfolgreiche POST-Prüfungen aller vier Benutzerformulare sowie tatsächlich
+ausgeführte und abgeschlossene DOM-XSS-Browserprüfungen sind verpflichtend.
+Firefox erhält einen schreibbaren temporären Cache; ein übersprungener Browser
+blockiert auch bei Scanner-Exitcode 0. Ursachen, Grenzen und Regressionstests:
+[DAST-Nachweis](dast.md).
+
 MEDIUM- und HIGH-Befunde blockieren unabhängig vom Konfidenzwert; LOW und INFO
 bleiben sichtbar. Scanner-Exitcodes, ungültige oder fehlende Berichte, falscher
 Zielbereich und Aufräumfehler blockieren ebenfalls. Die native Fehlerauswertung
@@ -252,6 +260,8 @@ Anzahl. Regeln lassen sich unter `https://www.zaproxy.org/docs/alerts/<Regel-ID>
 nachlesen. HTTP-Antworten, Angriffspayloads, Cookies und rohe Scannerlogs werden
 nicht als Workflow-Artefakte veröffentlicht. Temporäre Scanberichte, Container
 und Netze werden nach dem Lauf entfernt, auch bei einem Scanfehler.
+Zusätzlich enthält `coverage` die Anzahl der SQL-Testanfragen und den
+Abschlussnachweis der DOM-XSS-Regel, ohne vertrauliche Request-/Response-Daten.
 
 Lokal mit bereits gebauten Archiven ausführen:
 

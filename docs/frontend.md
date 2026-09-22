@@ -164,3 +164,20 @@ Unicode-Zeichen, erneutes Kürzen und Kombination mit Passwortwiederholung wurde
 lokal auf Deutsch/Englisch im Browser geprüft. Der vorhandene Reset-E2E-Test
 wurde um dieselbe Mindestlängenprüfung erweitert, aber nicht erneut als vollständiger
 Containerlauf ausgeführt. Ruff, Formatierung und `git diff --check` bestanden.
+
+## T06: AJAX-Geräteformulare und virtuelle Liste
+
+Auf Benutzerwunsch werden Erfassung und Bearbeitung per Fetch ohne Neuladen des
+Dokuments ausgeführt. Die erste Liste rendert 20 Geräte serverseitig. Danach
+hält der virtuelle Scrollbereich höchstens 60 Zeilen im DOM; Fenster werden auch
+beim Zurückscrollen über AJAX nachgeladen. DOM-freie Presenter steuern Speicher-
+und Anfragezustände; kleine Views übernehmen DOM und Fetch. Progressive Erweiterung,
+CSRF und gettext bleiben erhalten. Details und Grenzen: [Geräteverwaltung](devices.md).
+
+### Autocomplete aus eigenen Geräten
+
+Die Gerätefelder verwenden eine markeneigene Combobox mit weiterhin freier Eingabe.
+`DeviceSuggestionsPresenter` koordiniert Eingabepause, Auswahl, Tastatur und veraltete
+Antworten; `device-suggestions-view.mjs` kapselt ausschliesslich DOM, Timer und Fetch.
+Die serverseitige Eigentumsprüfung und Eingabevalidierung bleiben im Geräte-Slice.
+Umfang, Rückfallverhalten und Datenschutz: [Geräteverwaltung](devices.md).

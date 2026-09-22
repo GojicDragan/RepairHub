@@ -204,3 +204,18 @@ rufen diese tatsächlich auf; Flask-Security liefert die technische Implementier
 im injizierten Adapter. Details und Grenzen: [Benutzeranwendungsfälle](user-use-cases.md).
 Neue Benutzerfunktionen müssen diesen Aufrufweg beibehalten; das Vorhandensein
 eines unbenutzten Domain-Wrappers genügt nicht.
+
+## T06: Geräte-Slices und Browser-AJAX
+
+`register_device`, `list_devices`, `get_device` und `update_device` bestimmen
+Ports, Validierung und die minimale Gerätepersistenz. AJAX verwendet diese selben
+Handler innerhalb der Webkomponente; es schafft keine zusätzliche schreibende
+REST-API. Gemeinsame Eigentumsabfragen liegen im Datenzugriff. Einzelne atomare
+Speicheroperationen werden vom jeweiligen Repository-Port gekapselt.
+Details: [Geräteverwaltung](devices.md).
+
+Der ergänzende Geräte-Slice `suggest_device_values` besitzt seinen eigenen
+Repository-Port und Query-DTO. Er liefert ausschliesslich eigene gespeicherte
+Gerätewerte für Autocomplete. Der konkrete Datenadapter kennt keine Handler;
+Verdrahtung erfolgt in `app.bootstrap`. Keine Slice-Querverbindungen und kein
+externer Produktkatalog; bestehende Architekturgrenzen bleiben unverändert.

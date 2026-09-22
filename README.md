@@ -4,8 +4,10 @@ RepairHub wird eine Webanwendung zur Verwaltung privater Reparaturfälle für
 Haushaltsgeräte und Elektronik. Der aktuelle Stand enthält
 Flask mit PostgreSQL-Bereitschaftsprüfung, Docker Compose und eine
 Pipeline für Test → Build → Security → Deploy über GitHub Actions und Ansible.
-T04 ergänzt Registrierung und E-Mail-Verifikation über Flask-Security. Geräte,
-Reparaturfälle und die fachliche API folgen in den weiteren Funktionstasks.
+Registrierung, E-Mail-Verifikation, Anmeldung und Passwort-Recovery verwenden
+Flask-Security. T06 ergänzt eigene Geräte unter `/devices`: AJAX-Erfassung und
+Bearbeitung, serverseitiger Listenstart und virtuelle AJAX-Liste. Reparaturfälle
+und die fachliche API folgen in den weiteren Funktionstasks.
 Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für aktive
 DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
 für Abhängigkeiten, Geheimnisse und Container.
@@ -114,6 +116,7 @@ bleibt eine reine Berechnungskomponente. Die technische Bereitschaftsprüfung
 verwendet eine gekapselte Diagnoseschnittstelle.
 
 - [Pipeline, Secrets-Namen, Branchregeln und Betrieb](docs/ci-cd.md)
+- [ZAP-Formularprüfung, Browserabdeckung und DAST-Nachweis](docs/dast.md)
 - [Tatsächliche T02-Prüfergebnisse und offene externe Abnahme](docs/t02-validation.md)
 - [Isolierter lokaler Ansible-Testhost](tests/deployment/README.md)
 
@@ -206,3 +209,18 @@ Gestaltregeln: [Design-System](docs/design-system.md).
 
 Die Benutzerabläufe verwenden injizierte Domain-Handler und Flask-Security als
 technischen Adapter: [Aufrufwege und Grenzen](docs/user-use-cases.md).
+
+
+## Geräteverwaltung (T06)
+
+Nach Anmeldung führt **Your devices / Deine Geräte** zur Geräteübersicht. Name,
+Hersteller und Modell sind erforderlich. Erfassung und Bearbeitung speichern per
+AJAX; Listen starten mit 20 serverseitigen Zeilen und behalten danach höchstens
+60 Gerätezeilen im DOM. Ohne JavaScript bleiben Formulare und Seitenlinks nutzbar.
+Details: [Geräteverwaltung](docs/devices.md), [Abnahme](docs/t06-validation.md).
+
+Vor dem Produktionsrelease die Nginx-CSP mit `connect-src 'self'` über
+`deploy/ansible/infrastructure.yml` und den bisher laufenden App-Digest ausrollen.
+Danach liefert `deploy.yml` den neuen App-Digest und Migration `0002_devices` aus.
+Keine neuen Environment-Variablen oder Secrets. Offene Security-Abnahmen bleiben
+im T06-Nachweis ausdrücklich ausgewiesen.

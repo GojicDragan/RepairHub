@@ -12,6 +12,7 @@
     {% else %}
     <h1 id="home-heading">{{ _('Welcome to your workshop.') }}</h1>
     <p class="hero-description">{{ _('You are logged in as %(username)s.', username=viewer.username) }}</p>
+    <a class="btn btn-primary" href="{{ url_for('devices.index') }}">{{ _('Your devices') }}</a>
     <div class="account-ready"><span class="status-dot" aria-hidden="true"></span>{{ _('Your account is ready. A new chapter for your things starts here.') }}</div>
     {% endif %}
   </div>
@@ -23,7 +24,7 @@
 </section>
 <section class="workshop-roadmap" aria-labelledby="roadmap-heading">
   <div class="section-heading"><div><p class="eyebrow">{{ _('A LITTLE STRUCTURE. A LOT MORE POSSIBILITY.') }}</p><h2 id="roadmap-heading">{{ _('Manage your personal repairs.') }}</h2></div><span class="coming-label">{{ _('COMING NEXT') }}</span></div>
-  <p class="roadmap-note">{{ _('Accounts are ready. Device and repair management is not available yet.') }}</p>
+  <p class="roadmap-note">{{ _('Device management is ready. Repair tracking and costs are coming next.') }}</p>
   <div class="row g-0 roadmap-grid">
     <article class="col-md-4 roadmap-item"><span class="step-number" aria-hidden="true">01 /</span><h3>{{ _('Know your devices') }}</h3><p>{{ _('A home for the details that matter, from the model to its repair history.') }}</p></article>
     <article class="col-md-4 roadmap-item"><span class="step-number" aria-hidden="true">02 /</span><h3>{{ _('Follow the repair') }}</h3><p>{{ _('Keep the problem, the next steps and your progress together.') }}</p></article>

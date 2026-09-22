@@ -48,6 +48,16 @@ def automation_plan() -> dict:
         },
         "jobs": [
             {
+                "type": "script",
+                "parameters": {
+                    "action": "add",
+                    "type": "httpsender",
+                    "engine": "Graal.js",
+                    "name": "repairhub-forms",
+                    "source": "/zap/wrk/forms.js",
+                },
+            },
+            {
                 "type": "passiveScan-config",
                 "parameters": {"scanOnlyInScope": True},
             },
@@ -60,7 +70,15 @@ def automation_plan() -> dict:
             },
             {
                 "type": "spider",
-                "parameters": {"context": "repairhub-ci", "url": TARGET + "/", "maxDuration": 0},
+                "parameters": {
+                    "context": "repairhub-ci",
+                    "url": TARGET + "/",
+                    "maxDuration": 0,
+                    # Parallel erstmals besuchte Formulare erzeugen sonst mehrere
+                    # anonyme Sitzungen, deren Cookies und CSRF-Tokens sich mischen.
+                    "threadCount": 1,
+                    "acceptCookies": True,
+                },
                 "tests": [
                     {
                         "type": "stats",
@@ -78,6 +96,8 @@ def automation_plan() -> dict:
                     "threadPerHost": 2,
                     "addQueryParam": True,
                     "scanHeadersAllRequests": True,
+                    "handleAntiCSRFTokens": True,
+                    "injectPluginIdInHeader": True,
                     # Ein äusseres Timeout ist ein Fehler, kein verkürzter grüner Scan.
                     "maxScanDurationInMins": 0,
                     "maxRuleDurationInMins": 0,
@@ -96,6 +116,16 @@ def automation_plan() -> dict:
                         ("stats.ascan.urls", ">", 0),
                         ("stats.ascan.time", ">", 0),
                         ("stats.ascan.stopped", "==", 0),
+                        # scan.count steigt schon vor dem Browserstart; gets.count
+                        # belegt dagegen tatsächlich ausgeführte Browserangriffe.
+                        ("domxss.gets.count", ">", 0),
+                        ("repairhub.csrf.normalized", ">", 0),
+                        ("repairhub.csrf.refreshed", ">", 0),
+                        ("repairhub.csrf.errors", "==", 0),
+                        *(
+                            ("repairhub.csrf.post." + path, ">", 0)
+                            for path in ("register", "login", "confirm", "reset")
+                        ),
                     )
                 ],
             },
@@ -158,6 +188,7 @@ def assess_report(report: object, returncode: int) -> dict:
                 "instances": len(alert["instances"]),
             }
         )
+    # Auch niedrige Scanner-Konfidenz ist keine genehmigte Ausnahme für Medium/High.
     blocked = any(finding["risk"] >= 2 for finding in findings)
     category = "scanner_failed" if returncode else "blocking_findings" if blocked else None
     return {
@@ -174,6 +205,7 @@ def scan(network: str) -> dict:
         directory = Path(temporary)
         # JSON ist gültiges YAML und hält diesen Runner frei von weiteren Paketen.
         (directory / "plan.yaml").write_text(json.dumps(automation_plan()))
+        (directory / "forms.js").write_text(Path(__file__).with_name("zap_forms.js").read_text())
         command = [
             "docker",
             "run",
@@ -194,6 +226,10 @@ def scan(network: str) -> dict:
             f"type=bind,src={directory},dst=/zap/wrk",
             "--env",
             "_JAVA_OPTIONS=-Djava.util.prefs.userRoot=/zap/wrk/prefs",
+            # Firefox benötigt auch mit einem temporären Selenium-Profil einen
+            # schreibbaren Cache. Das übrige Container-Dateisystem bleibt read-only.
+            "--env",
+            "XDG_CACHE_HOME=/zap/wrk/browser-cache",
             ZAP_IMAGE,
             "zap.sh",
             "-Xmx1024m",
@@ -218,7 +254,46 @@ def scan(network: str) -> dict:
                 command, capture_output=True, timeout=SCAN_TIMEOUT_SECONDS, check=False
             )
             report = json.loads((directory / "raw-report.json").read_text())
-            return assess_report(report, completed.returncode)
+            result = assess_report(report, completed.returncode)
+            # Nur bekannte Prüfnamen übernehmen. Die übrige Konsolenausgabe kann
+            # Formulardaten enthalten und darf nicht ins Workflow-Artefakt gelangen.
+            output = completed.stdout.decode("utf-8", errors="replace")
+            failed_checks = [
+                test["statistic"]
+                for job in automation_plan()["jobs"]
+                for test in job.get("tests", [])
+                if re.search(
+                    r"^\s*Job [a-zA-Z]+ test of type stats failed: [a-zA-Z]+/stats/"
+                    + re.escape(test["statistic"])
+                    + r" \[",
+                    output,
+                    re.MULTILINE,
+                )
+            ]
+            # ZAP kann eine Browserregel überspringen und trotzdem Exit 0 liefern.
+            # Zusätzlich zu den AF-Statistiken die vollständig beendeten Regeln
+            # nachweisen. Nur Zahlen/Booleans verlassen die temporäre Umgebung.
+            log = (directory / "home" / "zap.log").read_text()
+            sql = re.search(
+                r"completed host/plugin https://nginx:8443 \| SqlInjectionScanRule "
+                r"in [0-9.]+s with ([1-9][0-9]*) message\(s\) sent",
+                log,
+            )
+            browser = "completed host/plugin https://nginx:8443 | DomXssScanRule " in log
+            browser_failed = "DomXssScanRule - Skipping scanner" in log
+            coverage = {
+                "sql_injection_requests": int(sql[1]) if sql else 0,
+                "dom_xss_completed": browser and not browser_failed,
+            }
+            complete = bool(sql) and coverage["dom_xss_completed"] and not failed_checks
+            return {
+                **result,
+                "coverage": coverage,
+                "failed_checks": failed_checks,
+                "passed": result["passed"] and complete,
+                "error_category": result["error_category"]
+                or (None if complete else "incomplete_active_scan"),
+            }
         except subprocess.TimeoutExpired:
             return {"passed": False, "findings": [], "error_category": "scanner_timeout"}
         except (OSError, ValueError):

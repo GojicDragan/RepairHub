@@ -1,0 +1,1 @@
+"""Formularadapter der Weboberfläche."""

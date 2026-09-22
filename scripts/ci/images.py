@@ -40,6 +40,7 @@ def archived_image_metadata(path: Path) -> dict:
             member = archive.getmember(name)
             if not member.isfile():
                 raise ValueError("Docker-Metadaten sind keine reguläre Datei.")
+            # Nur den Inhalt lesen, nie Archivpfade ins Runner-Dateisystem entpacken.
             stream = archive.extractfile(member)
             if stream is None:
                 raise ValueError("Docker-Metadaten fehlen.")

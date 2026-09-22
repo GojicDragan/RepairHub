@@ -157,3 +157,15 @@ negative Tests falsche Passwörter, unbekannte/leere Identität und den bestehen
 Bestätigungsschutz. PostgreSQL-Integrationssuite inklusive Migration/Schemaabgleich
 erfolgreich; Katalog-, Ruff- und Architekturprüfung bestanden. Feldreihenfolge
 und Sichtbarkeit lokal bei 390 px in Englisch/Deutsch ohne JavaScript geprüft.
+
+## Scrollbar der Geräteliste
+
+Die native Scrollbar verwendet Rostorange auf der warmen Grundfläche. Ihre
+Systembreite sowie Tastatur- und Touchbedienung bleiben erhalten; ein stabiler
+Scrollbarrand verhindert seitliche Layoutsprünge. Für ältere WebKit-Browser
+besteht ein CSS-Fallback mit abgerundetem Griff. Im erzwungenen Kontrastmodus
+gelten Systemfarben. Keine JavaScript-Scrollbar und keine neue Abhängigkeit.
+
+Am 22. September 2026 mit dem echten Stylesheet in Chromium geprüft: berechnete
+Markenfarben, Scrollfunktion und Systemfarben im Kontrastmodus. WebKit-Fallback
+nicht separat im Browser geprüft.

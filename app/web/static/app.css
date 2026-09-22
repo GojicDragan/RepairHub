@@ -153,3 +153,55 @@ h1, h2, h3 { letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
 /* Validierungsmeldungen übernehmen die Akzentfarbe und die bestehenden Feldabstände. */
 .field-validation { color: var(--rh-accent); font-size: .8rem; line-height: 1.5; }
 .form-control.has-field-error { border-color: var(--rh-accent); }
+
+/* Feste Zeilenhöhe ist der Vertrag zwischen virtueller Liste und DOM-Adapter. */
+.device-viewport.is-virtual { max-height: min(560px, 65vh); overflow-y: auto; overflow-anchor: none; }
+/* Native Scrollbars behalten Tastatur-/Touchbedienung und die Systembreite. */
+.device-viewport.is-virtual {
+  scrollbar-color: var(--rh-accent) var(--rh-paper);
+  scrollbar-gutter: stable;
+}
+/* Ältere WebKit-Browser ohne standardisierte Scrollbar-Farben. */
+@supports not (scrollbar-color: auto) {
+  .device-viewport.is-virtual::-webkit-scrollbar { width: 14px; }
+  .device-viewport.is-virtual::-webkit-scrollbar-track { background: var(--rh-paper); }
+  .device-viewport.is-virtual::-webkit-scrollbar-thumb {
+    background: var(--rh-accent);
+    border: 3px solid var(--rh-paper);
+    border-radius: 999px;
+  }
+  .device-viewport.is-virtual::-webkit-scrollbar-thumb:hover { background: var(--rh-ink); }
+}
+/* Im Kontrastmodus entscheidet die Systempalette über die Sichtbarkeit. */
+@media (forced-colors: active) {
+  .device-viewport.is-virtual { scrollbar-color: auto; }
+}
+.device-rows { list-style: none; padding: 0; margin: 0; }
+.device-row { height: 112px; box-sizing: border-box; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--rh-line); padding: 16px 8px; }
+.device-row-copy { min-width: 0; flex: 1; }
+.device-name { color: var(--rh-ink); font-weight: 700; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.device-row p { margin: 6px 0 0; color: var(--rh-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.device-empty { padding: 40px 24px; border: 1px dashed var(--rh-line); border-radius: 12px; }
+.device-editor { max-width: 640px; margin-inline: auto; }
+.device-details { margin-block: 32px; padding: 24px; background: #fff; border: 1px solid var(--rh-line); border-radius: 12px; overflow-wrap: anywhere; }
+.device-details dt { color: var(--rh-muted); font-size: .85rem; }
+.device-details dd { font-size: 1.2rem; margin-bottom: 20px; }
+.device-pagination { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px; margin-block: 20px; }
+.device-heading { flex-wrap: wrap; }
+
+/* Gerätezugang, Benutzername und Abmeldung bleiben auch mit langen Übersetzungen erreichbar. */
+@media (max-width: 767px) {
+  .brand-nav { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 16px; }
+  .nav-actions { flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+  .account-name { max-width: 9rem; }
+}
+
+/* Vorschläge gehören optisch zum Feld; die Freitexteingabe bleibt unverändert. */
+.device-suggestion-input { position: relative; }
+/* Das Popup verschiebt beim Schliessen weder Felder noch den Speichern-Button. */
+.device-suggestion-popup { position: absolute; z-index: 10; top: 100%; inset-inline: 0; margin-top: 4px; border: 1px solid var(--rh-line); border-radius: .45rem; background: var(--rh-paper); box-shadow: 0 8px 20px #243b3520; }
+.device-suggestion-popup .field-hint { margin: 8px 12px; }
+.device-suggestions { list-style: none; padding: 4px; margin: 0; max-height: 240px; overflow-y: auto; }
+.device-suggestions [role="option"] { padding: 10px 12px; border-radius: .3rem; cursor: pointer; overflow-wrap: anywhere; }
+.device-suggestions [role="option"]:hover, .device-suggestions [aria-selected="true"] { background: var(--rh-ink); color: var(--rh-paper); }
+[data-suggestion-status]:empty { display: none; }

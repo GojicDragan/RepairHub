@@ -236,3 +236,12 @@ Acht gezielte PostgreSQL-Nachprüfungen bestätigten keine Injection; Scannerbef
 bleiben dennoch offen. ZAP-DOM-XSS wurde wegen eines Firefox-Startfehlers nicht
 geprüft. Keine Ausnahme und keine vollständige Sicherheitsfreigabe. Einzelheiten
 und tatsächlich geprüfte Image-Stände stehen in `docs/user-use-cases.md`.
+
+
+### Nachtrag: ZAP-Korrektur
+
+Die oben dokumentierten Formularbefunde und der Firefox-Startfehler wurden
+anschliessend gezielt untersucht. Der korrigierte aktive Scanner bestand den
+Nachlauf; Herkunft der Fehlmeldungen, unveränderte Befundgrenzen und Grenzen
+der Abdeckung sind in [docs/dast.md](dast.md) dokumentiert. Dies ersetzt keinen
+authentifizierten Geräte-/API-Scan und keine Produktionsabnahme.

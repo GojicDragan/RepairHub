@@ -82,6 +82,7 @@ def main() -> None:
     }
     paths = {
         "vars.json": json.dumps(values),
+        # Passwort authentifiziert den Benutzer, der Hostschlüssel dagegen den Server.
         "known_hosts": required("DEPLOY_SSH_KNOWN_HOSTS") + "\n",
     }
     for name, content in paths.items():

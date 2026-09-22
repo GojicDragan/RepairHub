@@ -1,5 +1,5 @@
 """Geräteverwaltung: frameworkfreie Fachlogik mit injizierten Ports.
 
-Ports und DTOs werden mit den jeweiligen Anwendungsfällen ergänzt.
+Erfassen, Auflisten, Anzeigen und Bearbeiten besitzen eigene Handler, Ports und DTOs.
 Keine Flask-, ORM- oder konkreten Adapter-Abhängigkeiten.
 """
