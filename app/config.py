@@ -45,7 +45,12 @@ def load_config(environment: str | None = None) -> dict[str, Any]:
         "REMEMBER_COOKIE_SECURE": environment != "development",
         "REMEMBER_COOKIE_HTTPONLY": True,
         "REMEMBER_COOKIE_SAMESITE": "Lax",
-        "MAX_CONTENT_LENGTH": 1024 * 1024,
+        "MAX_CONTENT_LENGTH": 11 * 1024 * 1024,
+        "S3_ENDPOINT": os.environ.get("S3_ENDPOINT", "http://garage:3900"),
+        "S3_REGION": os.environ.get("S3_REGION", "garage"),
+        "S3_BUCKET": os.environ.get("S3_BUCKET", "repairhub"),
+        "S3_ACCESS_KEY_ID": os.environ.get("S3_ACCESS_KEY_ID", ""),
+        "S3_SECRET_ACCESS_KEY": os.environ.get("S3_SECRET_ACCESS_KEY", ""),
         # PUBLIC_URL liefert die öffentliche Adresse für absolute Links, etwa in Mails.
         # Die interne Containeradresse darf nicht beim Empfänger landen.
         "SERVER_NAME": public_url.netloc or None,

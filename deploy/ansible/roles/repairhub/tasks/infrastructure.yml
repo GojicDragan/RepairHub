@@ -42,6 +42,7 @@
     dest: "{{ repairhub_install_dir }}/infrastructure-pending.json"
     content: >-
       {{ {'fingerprint': repairhub_infrastructure_fingerprint,
+          'storage_fingerprint': repairhub_storage_fingerprint,
           'database_contract': repairhub_infrastructure.database_contract,
           'database_configuration_fingerprint': repairhub_database_configuration_fingerprint} | to_json }}
     mode: "0600"
@@ -52,7 +53,7 @@
     path: "{{ repairhub_infrastructure_dir }}/{{ item }}"
     state: directory
     mode: "0700"
-  loop: ["", nginx, tls]
+  loop: ["", nginx, tls, garage]
 
 - name: Öffentlich lesbare statische Dateiverzeichnisse anlegen
   ansible.builtin.file:
@@ -89,5 +90,26 @@
       content: "{{ repairhub_tls_private_key }}"
   when: item.path == 'database.env' or repairhub_tls_mode == 'provided'
   register: repairhub_infrastructure_secrets
+  no_log: true
+  diff: false
+
+
+- name: Stabile Garage-Konfiguration bereitstellen
+  ansible.builtin.copy:
+    src: "{{ repairhub_repo_root }}/deploy/garage/garage.toml"
+    dest: "{{ repairhub_infrastructure_dir }}/garage/garage.toml"
+    mode: "0644"
+  register: repairhub_garage_configuration
+
+- name: Getrennte private Speicherzugänge bereitstellen
+  ansible.builtin.copy:
+    dest: "{{ repairhub_infrastructure_dir }}/{{ item.path }}"
+    content: "{{ item.content }}"
+    mode: "0600"
+  loop:
+    - path: garage.env
+      content: "{{ repairhub_garage_env }}"
+    - path: storage.env
+      content: "{{ repairhub_storage_env }}"
   no_log: true
   diff: false

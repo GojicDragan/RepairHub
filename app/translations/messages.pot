@@ -1,14 +1,14 @@
-# Translations template for RepairHub.
-# Copyright (C) 2026 RepairHub
-# This file is distributed under the same license as the RepairHub project.
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: RepairHub VERSION\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 19:00+0200\n"
+"POT-Creation-Date: 2026-09-22 19:53+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,89 +17,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:216
+#: app/bootstrap.py:312
 msgid "Invalid request: untrusted host."
 msgstr ""
 
-#: app/bootstrap.py:221
+#: app/bootstrap.py:317
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:222 app/web/routes/devices.py:52
-#: app/web/routes/repairs.py:81
+#: app/bootstrap.py:318 app/web/routes/devices.py:52
+#: app/web/routes/images.py:100 app/web/routes/repairs.py:82
 msgid "Please reload the page and check your input."
 msgstr ""
 
-#: app/bootstrap.py:224
+#: app/bootstrap.py:320
 msgid "Login required"
 msgstr ""
 
-#: app/bootstrap.py:224
+#: app/bootstrap.py:320
 msgid "Please log in to access this resource."
 msgstr ""
 
-#: app/bootstrap.py:225
+#: app/bootstrap.py:321
 msgid "Access denied"
 msgstr ""
 
-#: app/bootstrap.py:225
+#: app/bootstrap.py:321
 msgid "This action is not allowed."
 msgstr ""
 
-#: app/bootstrap.py:226
+#: app/bootstrap.py:322
 msgid "Page not found"
 msgstr ""
 
-#: app/bootstrap.py:226
+#: app/bootstrap.py:322
 msgid "The requested resource was not found."
 msgstr ""
 
-#: app/bootstrap.py:227
+#: app/bootstrap.py:323
 msgid "Method not allowed"
 msgstr ""
 
-#: app/bootstrap.py:227
+#: app/bootstrap.py:323
 msgid "This request method is not supported here."
 msgstr ""
 
-#: app/bootstrap.py:229
+#: app/bootstrap.py:325
 msgid "Unable to register"
 msgstr ""
 
-#: app/bootstrap.py:230
+#: app/bootstrap.py:326
 msgid "This username or email address is already in use."
 msgstr ""
 
-#: app/bootstrap.py:232
+#: app/bootstrap.py:328
 msgid "Temporarily unavailable"
 msgstr ""
 
-#: app/bootstrap.py:232
+#: app/bootstrap.py:328
 msgid "Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:233
+#: app/bootstrap.py:329
 msgid "Request too large"
 msgstr ""
 
-#: app/bootstrap.py:233
+#: app/bootstrap.py:329
 msgid "The submitted data exceeds the allowed size."
 msgstr ""
 
-#: app/bootstrap.py:235
+#: app/bootstrap.py:331
 msgid "Internal error"
 msgstr ""
 
-#: app/bootstrap.py:236
+#: app/bootstrap.py:332
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:242 app/web/routes/devices.py:63
-#: app/web/routes/repairs.py:85
+#: app/bootstrap.py:338 app/web/routes/devices.py:63
+#: app/web/routes/images.py:89 app/web/routes/repairs.py:86
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:243 app/web/routes/devices.py:56
+#: app/bootstrap.py:339 app/web/routes/devices.py:56
 msgid "The request could not be processed."
 msgstr ""
 
@@ -128,15 +128,15 @@ msgstr ""
 msgid "Repair status"
 msgstr ""
 
-#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:108
+#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:109
 msgid "Open"
 msgstr ""
 
-#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:108
+#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:109
 msgid "In progress"
 msgstr ""
 
-#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:108
+#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:109
 msgid "Completed"
 msgstr ""
 
@@ -168,8 +168,10 @@ msgstr ""
 msgid "Quantity"
 msgstr ""
 
-#: app/web/routes/devices.py:53 app/web/routes/repairs.py:79
-#: app/web/templates/devices/form.html:9 app/web/templates/repairs/page.html:4
+#: app/web/routes/devices.py:53 app/web/routes/images.py:95
+#: app/web/routes/repairs.py:80 app/web/templates/devices/form.html:9
+#: app/web/templates/images/_gallery.html:1
+#: app/web/templates/repairs/page.html:4
 msgid "Your session has expired. Please log in again."
 msgstr ""
 
@@ -177,71 +179,97 @@ msgstr ""
 msgid "Device not found."
 msgstr ""
 
-#: app/web/routes/devices.py:138 app/web/routes/repairs.py:176
+#: app/web/routes/devices.py:140 app/web/routes/repairs.py:177
 msgid "This field is required."
 msgstr ""
 
-#: app/web/routes/devices.py:139
+#: app/web/routes/devices.py:141
 msgid "Use at most 120 characters."
 msgstr ""
 
-#: app/web/routes/devices.py:140 app/web/routes/repairs.py:178
+#: app/web/routes/devices.py:142 app/web/routes/repairs.py:179
 msgid "Use text without control characters."
 msgstr ""
 
-#: app/web/routes/devices.py:150
+#: app/web/routes/devices.py:152
 msgid "Device saved."
 msgstr ""
 
-#: app/web/routes/repairs.py:80
+#: app/web/routes/images.py:83
+msgid "Image storage is currently unavailable. Please try again."
+msgstr ""
+
+#: app/web/routes/images.py:96
+msgid "Image not found."
+msgstr ""
+
+#: app/web/routes/images.py:97
+msgid "Choose an image of at most 10 MiB."
+msgstr ""
+
+#: app/web/routes/images.py:124
+msgid ""
+"Choose a valid, non-animated JPEG, PNG or WebP image: at most 10 MiB and "
+"20 megapixels."
+msgstr ""
+
+#: app/web/routes/images.py:132
+msgid "Image uploaded."
+msgstr ""
+
+#: app/web/routes/images.py:145
+msgid "Image deleted."
+msgstr ""
+
+#: app/web/routes/repairs.py:81
 msgid "Repair not found."
 msgstr ""
 
-#: app/web/routes/repairs.py:177
+#: app/web/routes/repairs.py:178
 #, python-format
 msgid "Use at most %(count)s characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:179
+#: app/web/routes/repairs.py:180
 msgid "Choose a valid repair status."
 msgstr ""
 
-#: app/web/routes/repairs.py:180
+#: app/web/routes/repairs.py:181
 msgid "Choose a valid completion state."
 msgstr ""
 
-#: app/web/routes/repairs.py:182
+#: app/web/routes/repairs.py:183
 msgid ""
 "Enter a nonnegative amount with at most two decimal places within the "
 "displayed limit."
 msgstr ""
 
-#: app/web/routes/repairs.py:185
+#: app/web/routes/repairs.py:186
 msgid "Enter a whole quantity between 1 and 2147483647."
 msgstr ""
 
-#: app/web/routes/repairs.py:186
+#: app/web/routes/repairs.py:187
 msgid "Use at most 200 characters without control characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:221 app/web/templates/repairs/_detail.html:6
+#: app/web/routes/repairs.py:222 app/web/templates/repairs/_detail.html:6
 #: app/web/templates/repairs/index.html:30
 #, python-format
 msgid "Repair #%(id)s"
 msgstr ""
 
-#: app/web/routes/repairs.py:259 app/web/routes/repairs.py:262
+#: app/web/routes/repairs.py:260 app/web/routes/repairs.py:263
 #: app/web/templates/devices/detail.html:10
 #: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
 msgid "New repair"
 msgstr ""
 
-#: app/web/routes/repairs.py:266 app/web/routes/repairs.py:297
-#: app/web/routes/repairs.py:326 app/web/routes/repairs.py:384
+#: app/web/routes/repairs.py:270 app/web/routes/repairs.py:303
+#: app/web/routes/repairs.py:332 app/web/routes/repairs.py:390
 msgid "Repair details"
 msgstr ""
 
-#: app/web/routes/repairs.py:296 app/web/routes/repairs.py:299
+#: app/web/routes/repairs.py:302 app/web/routes/repairs.py:305
 msgid "Repair saved."
 msgstr ""
 
@@ -564,6 +592,88 @@ msgstr ""
 
 #: app/web/templates/devices/index.html:24
 msgid "Next devices"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:1
+msgid "Could not upload the image. Please try again."
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:1
+msgid "Could not delete the image. Please try again."
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:2
+msgid "THE DETAILS MATTER"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:2
+#: app/web/templates/images/page.html:2
+msgid "Images"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:2
+#, python-format
+msgid "%(count)s images"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:5
+msgid "Add an image"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:6
+msgid "Upload image"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:7
+msgid ""
+"JPEG, PNG or WebP · up to 10 MiB and 20 megapixels. Images are optimised "
+"and location metadata is removed."
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:10
+msgid "No images yet. Add a photo of the device or the fault."
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:11
+msgid "Image gallery"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:14
+#, python-format
+msgid "Open image: %(name)s"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:19
+#, python-format
+msgid "Delete image: %(name)s"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:19
+msgid "Delete"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:22
+msgid "Delete this image?"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:23
+msgid "Delete image"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:29
+msgid "Image pages"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:30
+msgid "Previous images"
+msgstr ""
+
+#: app/web/templates/images/_gallery.html:31
+msgid "Next images"
+msgstr ""
+
+#: app/web/templates/images/page.html:4
+msgid "Back to details"
 msgstr ""
 
 #: app/web/templates/partials/metadata.html:5

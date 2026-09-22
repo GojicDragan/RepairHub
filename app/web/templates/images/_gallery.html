@@ -1,0 +1,33 @@
+<section id="images" class="repair-panel image-section mt-4" aria-labelledby="images-heading" data-image-gallery data-failure="{{ _('Could not upload the image. Please try again.') }}" data-delete-failure="{{ _('Could not delete the image. Please try again.') }}" data-expired="{{ _('Your session has expired. Please log in again.') }}">
+  <div class="section-heading"><div><p class="eyebrow">{{ _('THE DETAILS MATTER') }}</p><h2 id="images-heading">{{ _('Images') }}</h2></div><span class="text-muted">{{ _('%(count)s images', count=page.total) }}</span></div>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for(images_endpoint + '.gallery', parent_id=parent_id) }}" data-image-form>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label class="form-label" for="image-file">{{ _('Add an image') }}</label>
+    <div class="d-flex gap-3 flex-wrap align-items-start"><input class="form-control image-file" id="image-file" name="image" type="file" accept="image/jpeg,image/png,image/webp" required aria-describedby="image-hint image-error"><button class="btn btn-primary" type="submit">{{ _('Upload image') }}</button></div>
+    <p class="form-text" id="image-hint">{{ _('JPEG, PNG or WebP · up to 10 MiB and 20 megapixels. Images are optimised and location metadata is removed.') }}</p>
+    <p id="image-error" class="field-validation" role="status" data-image-message>{{ error }}</p>
+  </form>
+  {% if not page.total %}<p class="image-empty">{{ _('No images yet. Add a photo of the device or the fault.') }}</p>{% endif %}
+  <ul class="image-mosaic" aria-label="{{ _('Image gallery') }}">
+    {% for image in page.items %}
+    <li class="image-tile {% if image.height > image.width %}image-tile-portrait{% elif image.width > image.height * 1.5 %}image-tile-wide{% endif %}">
+      <a href="{{ url_for(images_endpoint + '.content', parent_id=parent_id, image_id=image.id) }}" target="_blank" rel="noopener" aria-label="{{ _('Open image: %(name)s', name=image.filename) }}">
+        <img src="{{ url_for(images_endpoint + '.content', parent_id=parent_id, image_id=image.id, thumbnail=1) }}" width="{{ image.width }}" height="{{ image.height }}" loading="lazy" decoding="async" alt="{{ image.filename }}">
+        <span>{{ image.filename }}</span>
+      </a>
+      <details class="image-delete">
+        <summary class="btn btn-sm btn-light" aria-label="{{ _('Delete image: %(name)s', name=image.filename) }}">{{ _('Delete') }}</summary>
+        <form method="post" action="{{ url_for(images_endpoint + '.remove', parent_id=parent_id, image_id=image.id) }}" data-image-delete>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <p>{{ _('Delete this image?') }}</p>
+          <button class="btn btn-sm btn-danger" type="submit">{{ _('Delete image') }}</button>
+        </form>
+      </details>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if page.total > 24 %}<nav class="device-pagination" aria-label="{{ _('Image pages') }}">
+    {% if page.offset %}<a data-image-page href="{{ url_for(images_endpoint + '.gallery', parent_id=parent_id, image_offset=[page.offset-24, 0]|max) }}">{{ _('Previous images') }}</a>{% endif %}
+    {% if page.offset+24 < page.total %}<a data-image-page href="{{ url_for(images_endpoint + '.gallery', parent_id=parent_id, image_offset=page.offset+24) }}">{{ _('Next images') }}</a>{% endif %}
+  </nav>{% endif %}
+</section>

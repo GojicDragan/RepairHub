@@ -292,6 +292,9 @@ jobs:
           MAIL_USE_SSL: ${{ vars.MAIL_USE_SSL || 'false' }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          GARAGE_ACCESS_KEY_ID: ${{ secrets.GARAGE_ACCESS_KEY_ID }}
+          GARAGE_SECRET_ACCESS_KEY: ${{ secrets.GARAGE_SECRET_ACCESS_KEY }}
+          GARAGE_RPC_SECRET: ${{ secrets.GARAGE_RPC_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           ACME_EMAIL: ${{ vars.ACME_EMAIL }}
           DEPLOY_BECOME_PASSWORD: ${{ secrets.DEPLOY_BECOME_PASSWORD }}
@@ -320,12 +323,12 @@ jobs:
           uv run --locked --group ci ansible-playbook \
             -i deploy/ansible/inventories/production/hosts.yml \
             deploy/ansible/deploy.yml --extra-vars "@$DEPLOY_INPUT_DIR/vars.json"
-      - name: Encrypt database backups even after deployment failure
+      - name: Encrypt database and file backups even after deployment failure
         if: always()
         env:
           BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: python scripts/ci/encrypt_backups.py "$RUNNER_TEMP/repairhub-deploy/backups" "$RUNNER_TEMP/repairhub-encrypted-backups"
-      - name: Retain encrypted database backups
+      - name: Retain encrypted database and file backups
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:

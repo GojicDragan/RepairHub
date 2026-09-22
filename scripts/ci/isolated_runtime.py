@@ -180,6 +180,47 @@ def isolated_runtime(
                 containers.append(name)
                 docker("start", name, capture=True)
 
+            access, storage_secret = "GK" + secrets.token_hex(16), secrets.token_hex(32)
+            _write_private(
+                temporary_path / "garage.env",
+                f"GARAGE_RPC_SECRET={secrets.token_hex(32)}\nGARAGE_DEFAULT_ACCESS_KEY={access}\n"
+                f"GARAGE_DEFAULT_SECRET_KEY={storage_secret}\nGARAGE_DEFAULT_BUCKET=repairhub\n",
+            )
+            with (temporary_path / "app.env").open("a") as stream:
+                stream.write(
+                    f"S3_ACCESS_KEY_ID={access}\nS3_SECRET_ACCESS_KEY={storage_secret}\n"
+                    "S3_ENDPOINT=http://garage:3900\nS3_BUCKET=repairhub\n"
+                )
+            garage_name = prefix + "-garage"
+            start(
+                garage_name,
+                [
+                    "--network",
+                    prefix,
+                    "--network-alias",
+                    "garage",
+                    "--env-file",
+                    str(temporary_path / "garage.env"),
+                    "--mount",
+                    f"type=bind,src={Path('deploy/garage/garage.toml').resolve()},dst=/etc/garage.toml,readonly",
+                    "--read-only",
+                    "--tmpfs",
+                    "/var/lib/garage:rw,size=256m",
+                    "--tmpfs",
+                    "/tmp:rw,size=16m",  # nosec B108: isoliertes Container-tmpfs, kein Hostpfad
+                    "--cap-drop",
+                    "ALL",
+                    "--security-opt",
+                    "no-new-privileges:true",
+                    images["garage"]["reference"],
+                    "/garage",
+                    "server",
+                    "--single-node",
+                    "--default-bucket",
+                ],
+            )
+            ready(garage_name, ["/garage", "status"])
+
             if receive_mail:
                 # Derselbe App-Interpreter, aber Testwerkzeuge nur als read-only Mount.
                 # Kein SMTP-Paket oder Postfach gelangt dadurch ins Produktionsimage.

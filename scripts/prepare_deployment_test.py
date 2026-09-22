@@ -232,11 +232,22 @@ def prepare(directory: Path, artifacts: Path, commit: str) -> None:
     infrastructure = {
         **manifest["infrastructure"],
         "nginx_image": refs["nginx"],
+        "garage_image": refs["garage"],
         "postgres_image": refs["db"],
     }
     infrastructure_path = directory / "infrastructure.json"
     write_private(infrastructure_path, json.dumps(infrastructure, indent=2) + "\n")
+    access, storage_secret = "GK" + secrets.token_hex(16), secrets.token_hex(32)
     values = {
+        "repairhub_storage_env": (
+            f"S3_ACCESS_KEY_ID={access}\nS3_SECRET_ACCESS_KEY={storage_secret}\n"
+            "S3_BUCKET=repairhub\nS3_REGION=garage\nS3_ENDPOINT=http://garage:3900\n"
+        ),
+        "repairhub_garage_env": (
+            f"GARAGE_RPC_SECRET={secrets.token_hex(32)}\n"
+            f"GARAGE_DEFAULT_ACCESS_KEY={access}\nGARAGE_DEFAULT_SECRET_KEY={storage_secret}\n"
+            "GARAGE_DEFAULT_BUCKET=repairhub\n"
+        ),
         "repairhub_repo_root": str(Path.cwd()),
         "repairhub_app_image": refs["app"],
         "repairhub_infrastructure_file": str(infrastructure_path),

@@ -79,3 +79,7 @@ Thumbs.db
 /docs/requirements.md
 /docs/work-log.md
 /tests/README.md
+
+# Lokale Zugangsdaten für den privaten Objektspeicher.
+/garage.env
+/storage.env

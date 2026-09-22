@@ -68,7 +68,28 @@ def main() -> None:
     # Anwendung und HTTPS-Abnahme müssen denselben Systemschlüssel verwenden.
     # Beide Werte gelangen nur in die geschützten Ansible-Eingaben.
     runtime_env += f"API_SMOKE_KEY={system_key}\n"
+    storage_access = required("GARAGE_ACCESS_KEY_ID")
+    storage_secret = required("GARAGE_SECRET_ACCESS_KEY")
+    storage_rpc = required("GARAGE_RPC_SECRET")
+    if (
+        not re.fullmatch(r"GK[a-f0-9]{32}", storage_access)
+        or not re.fullmatch(r"[a-f0-9]{64}", storage_secret)
+        or not re.fullmatch(r"[a-f0-9]{64}", storage_rpc)
+    ):
+        raise ValueError(
+            "Garage benötigt GK + 32 Hexzeichen sowie zwei getrennte 64-Hex-Geheimnisse."
+        )
+    storage_env = (
+        f"S3_ACCESS_KEY_ID={storage_access}\nS3_SECRET_ACCESS_KEY={storage_secret}\n"
+        "S3_BUCKET=repairhub\nS3_REGION=garage\nS3_ENDPOINT=http://garage:3900\n"
+    )
+    garage_env = (
+        f"GARAGE_RPC_SECRET={storage_rpc}\nGARAGE_DEFAULT_ACCESS_KEY={storage_access}\n"
+        f"GARAGE_DEFAULT_SECRET_KEY={storage_secret}\nGARAGE_DEFAULT_BUCKET=repairhub\n"
+    )
     values = {
+        "repairhub_storage_env": storage_env,
+        "repairhub_garage_env": garage_env,
         "repairhub_api_smoke_key": system_key,
         "ansible_password": ssh_password,
         "repairhub_app_image": required("APP_IMAGE"),

@@ -24,3 +24,18 @@ class DevicePage:
     total: int
     snapshot: int
     offset: int
+
+
+@dataclass(frozen=True)
+class Image:
+    id: str
+    filename: str
+    width: int
+    height: int
+
+
+@dataclass(frozen=True)
+class ImagePage:
+    items: tuple[Image, ...]
+    total: int
+    offset: int

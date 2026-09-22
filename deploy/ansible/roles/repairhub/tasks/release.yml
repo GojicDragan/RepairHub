@@ -8,6 +8,7 @@
     that:
       - repairhub_infrastructure.schema_version == 1
       - repairhub_infrastructure.nginx_image is match('^[a-z0-9][a-z0-9.:/_-]+@sha256:[a-f0-9]{64}$')
+      - repairhub_infrastructure.garage_image is match('^[a-z0-9][a-z0-9.:/_-]+@sha256:[a-f0-9]{64}$')
       - repairhub_infrastructure.postgres_image is match('^[a-z0-9][a-z0-9.:/_-]+@sha256:[a-f0-9]{64}$')
       - repairhub_infrastructure.database_contract is match('^[a-zA-Z0-9@.:_+/-]{8,512}$')
     fail_msg: >-
@@ -114,19 +115,37 @@
       {{ lookup('ansible.builtin.file', repairhub_smoke_ca_path)
          if repairhub_smoke_ca_path | length > 0 else '' }}
 
+- name: Speicherzugänge an den bestehenden Datenbestand binden
+  ansible.builtin.set_fact:
+    repairhub_storage_fingerprint: "{{ [repairhub_garage_env, repairhub_storage_env] | to_json | hash('sha256') }}"
+  no_log: true
+
+- name: Ungeplante Speicher-Schlüsselrotation verhindern
+  ansible.builtin.assert:
+    that:
+      - >-
+        not repairhub_installed_infrastructure.storage_fingerprint | default('') or
+        repairhub_installed_infrastructure.storage_fingerprint == repairhub_storage_fingerprint
+      - >-
+        not repairhub_pending_infrastructure.storage_fingerprint | default('') or
+        repairhub_pending_infrastructure.storage_fingerprint == repairhub_storage_fingerprint
+    fail_msg: Garage-Zugangsdaten sind an den gespeicherten Bestand gebunden; eine Rotation benötigt einen geprüften Wartungsablauf.
+  no_log: true
+
 - name: Infrastruktur-Konfiguration unabhängig vom App-Release bestimmen
   ansible.builtin.set_fact:
     repairhub_database_configuration_fingerprint: >-
       {{ [repairhub_database_env, repairhub_postgres_user, repairhub_postgres_db] | to_json | hash('sha256') }}
     repairhub_infrastructure_fingerprint: >-
-      {{ [repairhub_infrastructure, repairhub_database_env,
+      {{ [repairhub_infrastructure, repairhub_database_env, repairhub_garage_env, repairhub_storage_env,
           ([repairhub_tls_mode, repairhub_acme_email] if repairhub_tls_mode == 'acme'
            else [repairhub_tls_certificate, repairhub_tls_private_key]),
           repairhub_postgres_user, repairhub_postgres_db, repairhub_https_port,
           repairhub_public_url, repairhub_smoke_ca_pem,
           lookup('ansible.builtin.file', repairhub_repo_root + '/compose.yaml'),
           lookup('ansible.builtin.file', repairhub_repo_root + '/compose.production.yaml'),
-          lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/nginx/nginx.conf')]
+          lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/nginx/nginx.conf'),
+          lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/garage/garage.toml')]
          | to_json | hash('sha256') }}
   no_log: true
 
@@ -230,6 +249,10 @@
         mode: "0600"
         content: |
           REPAIRHUB_APP_IMAGE={{ repairhub_app_image }}
+          REPAIRHUB_GARAGE_IMAGE={{ repairhub_infrastructure.garage_image }}
+          GARAGE_CONFIG_FILE={{ repairhub_infrastructure_dir }}/garage/garage.toml
+          GARAGE_ENV_FILE={{ repairhub_infrastructure_dir }}/garage.env
+          STORAGE_ENV_FILE={{ repairhub_infrastructure_dir }}/storage.env
           REPAIRHUB_NGINX_IMAGE={{ repairhub_infrastructure.nginx_image }}
           REPAIRHUB_POSTGRES_IMAGE={{ repairhub_infrastructure.postgres_image }}
           APP_ENV_FILE={{ repairhub_release_dir }}/runtime.env
@@ -312,6 +335,7 @@
         content: >-
           {{ repairhub_infrastructure | combine({
               'fingerprint': repairhub_infrastructure_fingerprint,
+              'storage_fingerprint': repairhub_storage_fingerprint,
               'database_configuration_fingerprint': repairhub_database_configuration_fingerprint}) | to_nice_json }}
         mode: "0600"
 

@@ -55,6 +55,13 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
 
     db.init_app(app)
     migrate.init_app(app, db)
+
+    @app.before_request
+    def request_size_limit():
+        # Flask-WTF liest Formulardaten; Grenze deshalb vor dessen CSRF-Hook setzen.
+        is_image_upload = (request.endpoint or "").endswith("_images.gallery")
+        request.max_content_length = (11 if is_image_upload else 1) * 1024 * 1024
+
     csrf.init_app(app)
     # Nur Nginx erreicht Gunicorn; Nginx überschreibt diese beiden Header.
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
@@ -99,21 +106,109 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     identity = FlaskSecurityIdentity()
     app.extensions["identity_provider"] = identity
 
+    import uuid
+
     from app.data.devices.get_device import GetDeviceRepository
     from app.data.devices.list_devices import ListDevicesRepository
     from app.data.devices.register_device import RegisterDeviceRepository
     from app.data.devices.suggest_device_values import SuggestDeviceValuesRepository
     from app.data.devices.update_device import UpdateDeviceRepository
+    from app.data.files.images import ImageProcessor
+    from app.data.files.storage import ObjectStorage
     from app.domains.devices.get_device.handler import GetDevice
     from app.domains.devices.list_devices.handler import ListDevices
     from app.domains.devices.register_device.handler import RegisterDevice
     from app.domains.devices.suggest_device_values.handler import SuggestDeviceValues
     from app.domains.devices.update_device.handler import UpdateDevice
     from app.web.routes.devices import create_device_blueprint
+    from app.web.routes.images import create_image_blueprint
+
+    storage = ObjectStorage(
+        *(
+            app.config[key]
+            for key in (
+                "S3_ENDPOINT",
+                "S3_REGION",
+                "S3_BUCKET",
+                "S3_ACCESS_KEY_ID",
+                "S3_SECRET_ACCESS_KEY",
+            )
+        )
+    )
+    processor = ImageProcessor()
+
+    import click
+
+    from app.data.files.backup import backup as backup_files
+
+    @app.cli.command("files-backup")
+    @click.argument("destination")
+    def files_backup(destination):
+        """Privaten Objektbestand für die verschlüsselte Deployment-Sicherung exportieren."""
+        try:
+            backup_files(storage, destination)
+        except Exception:
+            raise click.ClickException("Dateisicherung fehlgeschlagen.") from None
+        click.echo("Dateisicherung abgeschlossen.")
+
+    from app.data.devices.images import ImageRepository as DeviceImages
+    from app.domains.devices.delete_image.dto import Command as DeleteDeviceImageCommand
+    from app.domains.devices.delete_image.handler import DeleteImage as DeleteDeviceImage
+    from app.domains.devices.get_image.dto import Command as GetDeviceImageCommand
+    from app.domains.devices.get_image.handler import GetImage as GetDeviceImage
+    from app.domains.devices.list_images.dto import Command as ListDeviceImagesCommand
+    from app.domains.devices.list_images.handler import ListImages as ListDeviceImages
+    from app.domains.devices.upload_image.dto import Command as UploadDeviceImageCommand
+    from app.domains.devices.upload_image.handler import UploadImage as UploadDeviceImage
+
+    device_image_blueprint, device_gallery = create_image_blueprint(
+        name="devices_images",
+        prefix="/devices/<int:parent_id>/images",
+        identity=identity,
+        upload=UploadDeviceImage(DeviceImages(), processor, storage, lambda: uuid.uuid4().hex),
+        listing=ListDeviceImages(DeviceImages()),
+        get=GetDeviceImage(DeviceImages(), storage),
+        delete=DeleteDeviceImage(DeviceImages()),
+        delete_command=DeleteDeviceImageCommand,
+        upload_command=UploadDeviceImageCommand,
+        list_command=ListDeviceImagesCommand,
+        get_command=GetDeviceImageCommand,
+        detail_endpoint="devices.detail",
+        parent_arg="device_id",
+    )
+    app.register_blueprint(device_image_blueprint)
+
+    from app.data.repairs.images import ImageRepository as RepairImages
+    from app.domains.repairs.delete_image.dto import Command as DeleteRepairImageCommand
+    from app.domains.repairs.delete_image.handler import DeleteImage as DeleteRepairImage
+    from app.domains.repairs.get_image.dto import Command as GetRepairImageCommand
+    from app.domains.repairs.get_image.handler import GetImage as GetRepairImage
+    from app.domains.repairs.list_images.dto import Command as ListRepairImagesCommand
+    from app.domains.repairs.list_images.handler import ListImages as ListRepairImages
+    from app.domains.repairs.upload_image.dto import Command as UploadRepairImageCommand
+    from app.domains.repairs.upload_image.handler import UploadImage as UploadRepairImage
+
+    repair_image_blueprint, repair_gallery = create_image_blueprint(
+        name="repairs_images",
+        prefix="/repairs/<int:parent_id>/images",
+        identity=identity,
+        upload=UploadRepairImage(RepairImages(), processor, storage, lambda: uuid.uuid4().hex),
+        listing=ListRepairImages(RepairImages()),
+        get=GetRepairImage(RepairImages(), storage),
+        delete=DeleteRepairImage(RepairImages()),
+        delete_command=DeleteRepairImageCommand,
+        upload_command=UploadRepairImageCommand,
+        list_command=ListRepairImagesCommand,
+        get_command=GetRepairImageCommand,
+        detail_endpoint="repairs.show",
+        parent_arg="repair_id",
+    )
+    app.register_blueprint(repair_image_blueprint)
 
     app.register_blueprint(
         create_device_blueprint(
             identity=identity,
+            gallery=device_gallery,
             register=RegisterDevice(RegisterDeviceRepository()),
             update=UpdateDevice(UpdateDeviceRepository()),
             get=GetDevice(GetDeviceRepository()),
@@ -151,6 +246,7 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     app.register_blueprint(
         create_repair_blueprint(
             identity=identity,
+            gallery=repair_gallery,
             device_reader=GetDevice(GetDeviceRepository()),
             overview=GetStatusOverview(GetStatusOverviewRepository()),
             create=CreateRepair(CreateRepairRepository(), lambda: datetime.now(UTC)),

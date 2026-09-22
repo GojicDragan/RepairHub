@@ -19,3 +19,6 @@ mountRepairForms(document);
 
 import { mountRepairLists } from './repair-list-view.mjs';
 mountRepairLists(document);
+
+import { mountImageUploads } from './image-upload-view.mjs';
+mountImageUploads(document);

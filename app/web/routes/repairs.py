@@ -28,6 +28,7 @@ from app.web.forms.repairs import DescriptionForm, PartForm, StatusForm, StepFor
 def create_repair_blueprint(
     *,
     identity,
+    gallery,
     device_reader,
     overview,
     create,
@@ -263,7 +264,12 @@ def create_repair_blueprint(
 
     @blueprint.get("/repairs/<int:repair_id>")
     def show(repair_id):
-        return page(workspace(load(repair_id)), _("Repair details"))
+        return render_template(
+            "repairs/page.html",
+            content=workspace(load(repair_id)),
+            title=_("Repair details"),
+            gallery=gallery(repair_id),
+        )
 
     def saved(repair_id, *, show_last_step=False, show_last_part=False):
         data = load(repair_id)

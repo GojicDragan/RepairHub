@@ -8,7 +8,7 @@ from pathlib import Path
 
 
 def encrypt(source: Path, destination: Path, passphrase: str) -> None:
-    backups = sorted(source.glob("*/*.dump"))
+    backups = sorted([*source.glob("*/*.dump"), *source.glob("*/*.files.tar")])
     if not backups:
         return
     if len(passphrase) < 32 or any(char in passphrase for char in "\r\n\0"):

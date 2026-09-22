@@ -17,7 +17,7 @@ from app.domains.devices.update_device.dto import Command as Update
 from app.web.forms.devices import DeviceForm
 
 
-def create_device_blueprint(*, identity, register, update, get, listing, suggestions):
+def create_device_blueprint(*, identity, gallery, register, update, get, listing, suggestions):
     blueprint = Blueprint("devices", __name__, url_prefix="/devices")
 
     @blueprint.context_processor
@@ -113,7 +113,9 @@ def create_device_blueprint(*, identity, register, update, get, listing, suggest
 
     @blueprint.get("/<int:device_id>")
     def detail(device_id):
-        return render_template("devices/detail.html", device=find(device_id))
+        return render_template(
+            "devices/detail.html", device=find(device_id), gallery=gallery(device_id)
+        )
 
     def editor(device_id=None):
         device = find(device_id) if device_id is not None else None

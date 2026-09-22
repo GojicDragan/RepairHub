@@ -11,6 +11,7 @@ from scripts.ci import images, infrastructure
 def configuration():
     return {
         "schema_version": 1,
+        "garage_image": "dxflrs/garage:v2.4.1@sha256:" + "d" * 64,
         "nginx_image": "nginx:synthetic@sha256:" + "a" * 64,
         "postgres_image": "example/db@sha256:" + "b" * 64,
         "database_contract": "synthetic-contract",
@@ -30,7 +31,7 @@ def test_missing_database_pin_blocks_normal_build_without_fallback(
     assert not (tmp_path / "artifacts").exists()
 
 
-@pytest.mark.parametrize("field", ["nginx_image", "postgres_image"])
+@pytest.mark.parametrize("field", ["nginx_image", "postgres_image", "garage_image"])
 @pytest.mark.parametrize(
     "reference", [None, "", "nginx:latest", "example/db:17.11", "bad@sha256:123"]
 )

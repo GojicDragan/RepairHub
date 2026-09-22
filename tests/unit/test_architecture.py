@@ -195,3 +195,13 @@ def test_identity_adapter_may_use_domain_contract():
 @pytest.mark.parametrize("module", ["app.web.routes.users", "app.adapters.users.registration"])
 def test_library_http_views_cannot_bypass_user_use_cases(module):
     assert check_source("from flask_security.views import register", module)
+
+
+@pytest.mark.parametrize("domain", ["devices", "repairs"])
+def test_image_slices_keep_storage_and_decoder_outside_domain(domain):
+    module = f"app.domains.{domain}.upload_image.handler"
+    assert check_source("import boto3", module)
+    assert check_source("from PIL import Image", module)
+    assert check_source("from app.data.files.storage import ObjectStorage", module)
+    assert check_source(f"from app.domains.{domain}.list_images.handler import ListImages", module)
+    assert not check_source("from .ports import Storage", module)
