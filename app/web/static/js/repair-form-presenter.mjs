@@ -28,6 +28,7 @@ export class RepairFormPresenter {
     try {
       const result = await this.source.save(values);
       if (result.ok) this.view.saved(result.body);
+      else if (result.status === 401) this.view.expired();
       else if (result.status === 422) this.view.errors(result.body.errors);
       else this.view.failed(result.body?.error);
     } catch {

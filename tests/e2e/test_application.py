@@ -1,5 +1,7 @@
 """Browser → HTTPS/Nginx → Gunicorn/Flask → PostgreSQL, ohne Anwendungs-Mocks."""
 
+import pytest
+
 from scripts.ci.images import docker
 from scripts.ci.isolated_runtime import ready
 
@@ -54,14 +56,19 @@ def test_database_outage_is_reported_without_internal_details(page, live_applica
     assert page.goto("/health/ready").status == 200
 
 
+@pytest.mark.parametrize("page", [True, {"javascript": False, "locale": "de-CH"}], indirect=True)
 def test_error_page_shares_navigation_and_returns_home(page):
     response = page.goto("/not-found")
     assert response.status == 404
-    assert page.get_by_role("heading", name="Page not found").is_visible()
-    page.get_by_role("link", name="Back to home", exact=True).click()
+    german = page.locator("html").get_attribute("lang").startswith("de")
     assert page.get_by_role(
-        "heading", name="Good things deserve a second life.", exact=True
+        "heading", name="Seite nicht gefunden" if german else "Page not found"
     ).is_visible()
+    page.get_by_role(
+        "link", name="Zur Startseite" if german else "Back to home", exact=True
+    ).click()
+    assert page.url.endswith("/")
+    assert page.locator("#home-heading").is_visible()
 
 
 def test_unknown_api_route_returns_json_through_nginx(page):

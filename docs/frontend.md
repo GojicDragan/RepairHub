@@ -227,3 +227,23 @@ Msgids und deutsche Übersetzungen. Erzeugen/Ersetzen und Widerrufen sind
 sitzungsgebundene CSRF-geschützte Formulare, vollständig ohne JavaScript nutzbar.
 Der Klartext wird nur in der unmittelbaren POST-Antwort angezeigt; keine
 Speicherung in Flash, Session oder Local Storage.
+
+
+## T10: durchgängige Bedienung und Fehlerpfade
+
+Die Hauptnavigation markiert den aktuellen Fachbereich mit `aria-current`;
+Geräte- und Reparaturdetails bleiben ihrem Bereich zugeordnet. Die Startseite
+beschreibt die inzwischen vorhandenen Funktionen ohne Ankündigung als Zukunftsplan.
+Beim Blättern durch Reparaturschritte bleiben Gerätefilter und Teilefenster erhalten.
+
+Reparaturformulare fokussieren nach AJAX-Validierungsfehlern das erste betroffene
+Feld. Zahlenfelder tragen auch in serverseitigen Fehlerantworten `aria-invalid`.
+Bei HTTP 401 entscheidet der DOM-freie Presenter über den Anmeldehinweis; die View
+zeigt die übersetzte Meldung und den Login-Link, ohne Entwürfe automatisch zu
+verwerfen oder weiterzuleiten. Fachvalidierung und Berechtigungen bleiben serverseitig.
+
+Der Registrierungs-E2E-Ablauf führt jetzt nach der echten E-Mail-Bestätigung über
+sichtbare Navigation bis zu Geräten, Reparaturschritten, Status und CHF-Kosten.
+Englisch/Deutsch, mit/ohne JS, negative Zahleneingaben, erhaltene Formularwerte,
+Abmeldung und mobile Ansichten gehören zur Abnahme. Ein absichtlich unterbrochener Request prüft Netzwerkfehler; eine tatsächlich
+entfernte Browsersitzung prüft die UI-Reaktion auf 401 einschliesslich verfallenem CSRF-Wert. Ergebnisse: [T10](t10-validation.md).

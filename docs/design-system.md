@@ -37,8 +37,9 @@ Bilder, Fonts, CDNs, neuen Bibliotheken oder JavaScript-Frameworks.
 - **Ausrichtung und Fortsetzung:** Ein gemeinsames Raster verbindet Kopfzeile,
   Inhalte und Fusszeile. Desktop-Spalten wechseln mobil in eine eindeutige Lesereihenfolge.
 
-Die Startseite benennt geplante Geräte-/Reparaturfunktionen ausdrücklich als
-«Coming next». Sie zeigt keine erfundenen Falldaten oder funktionslosen Aktionsbuttons.
+Die Startseite beschreibt die verfügbaren Geräte-, Reparatur- und Kostenfunktionen.
+Seit T10 ist die überholte Ankündigung «Coming next» entfernt. Sie zeigt keine
+erfundenen Falldaten oder funktionslosen Aktionsbuttons.
 Die Illustration und ihr Siegel sind dekorativ und nicht interaktiv.
 
 ## Bedienbarkeit und Architektur

@@ -4,7 +4,8 @@ from dataclasses import asdict
 
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_babel import gettext as _
-from werkzeug.exceptions import HTTPException
+from flask_wtf.csrf import CSRFError
+from werkzeug.exceptions import HTTPException, Unauthorized
 
 from app.domains.devices.dto import DeviceValues
 from app.domains.devices.errors import DeviceNotFound, InvalidDevice
@@ -39,6 +40,10 @@ def create_device_blueprint(*, identity, register, update, get, listing, suggest
 
     @blueprint.errorhandler(HTTPException)
     def http_error(error):
+        # Eine abgelaufene Sitzung verliert auch ihren CSRF-Wert. Der Schreibzugriff
+        # bleibt abgewiesen; Fetch benötigt hier den Anmeldehinweis statt eines 400.
+        if isinstance(error, CSRFError) and wants_json() and identity.current() is None:
+            error = Unauthorized()
         messages = {
             400: _("Please reload the page and check your input."),
             401: _("Your session has expired. Please log in again."),

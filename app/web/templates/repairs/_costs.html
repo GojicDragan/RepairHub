@@ -3,9 +3,9 @@
 <div class="mb-3">
   <label class="form-label" for="{{ id }}">{{ field.label.text }}</label>
   {% if numeric %}
-    {{ field(id=id, class_='form-control', type='number', min=minimum, max=maximum, step=step, required=true, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error') }}
+    {{ field(id=id, class_='form-control', type='number', min=minimum, max=maximum, step=step, required=true, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error', aria_invalid='true' if field.errors else 'false') }}
   {% else %}
-    {{ field(id=id, class_='form-control', maxlength=200, required=true, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error') }}
+    {{ field(id=id, class_='form-control', maxlength=200, required=true, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error', aria_invalid='true' if field.errors else 'false') }}
   {% endif %}
   <p id="{{ id }}-error" class="field-validation" data-error-for="{{ field.name }}" aria-live="polite">{{ field.errors|join(' ') }}</p>
 </div>

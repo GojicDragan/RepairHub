@@ -4,7 +4,7 @@ import { RepairFormPresenter } from '../../../app/web/static/js/repair-form-pres
 
 function setup(response, original = null) {
   const events = [];
-  const view = Object.fromEntries(['busy', 'errors', 'failed', 'saved'].map(name => [name, value => events.push([name, value])]));
+  const view = Object.fromEntries(['busy', 'errors', 'failed', 'saved', 'expired'].map(name => [name, value => events.push([name, value])]));
   const source = {async save() { if (response instanceof Error) throw response; return response; }};
   return {presenter: new RepairFormPresenter(view, source, original), events};
 }
@@ -37,4 +37,13 @@ test('Validation and network failures preserve retry capability', async () => {
     assert.equal(presenter.canSubmit({description:'Cable'}), true);
     assert.equal(events.at(-2)[0], response instanceof Error ? 'failed' : 'errors');
   }
+});
+
+
+test('Expired sessions offer authentication without discarding the draft', async () => {
+  const {presenter, events} = setup({ok:false,status:401,body:{error:'Expired'}});
+  await presenter.submit({description:'Keep this draft'});
+  assert.equal(events.at(-2)[0], 'expired');
+  assert.equal(events.at(-1)[0], 'busy');
+  assert.equal(presenter.canSubmit({description:'Keep this draft'}), true);
 });
