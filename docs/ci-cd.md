@@ -615,9 +615,9 @@ Ab vorhandenem Schema sind eine ausdrückliche Entscheidung
 `repairhub_backup_fetch_dir` ausserhalb des Hosts erforderlich. Der neue
 App-Container führt die Migration einmalig aus; Alembic verhindert erneutes
 fachliches Anwenden vorhandener Revisionen. Ein flüchtiger Actions-Runner allein
-ist keine dauerhafte Offhost-Sicherung. Ab T04/T11 müssen die langfristige
-Aufbewahrung und echte Restore-Tests ergänzt werden. Diese Prüfungen sind im
-schemafreien T02-Stand nicht als bestanden anzusehen.
+ist keine dauerhafte Offhost-Sicherung. Die Aufbewahrung und ihre Grenzen beschreibt die [Betriebsanleitung](operations.md).
+Gemäss T11-Benutzerentscheidung wird keine tatsächliche Datenbankwiederherstellung
+durchgeführt; sie ist nicht als bestanden anzusehen.
 
 Bei fehlgeschlagener App-Abnahme stellt Ansible das vorherige App-Image samt
 App-Konfiguration und statischen Dateien nur bei unveränderter Infrastruktur
@@ -682,11 +682,12 @@ dem Upload kann diese externe Kopie verhindern; die Hostkopie bleibt erhalten.
 Die Passphrase wird über Standard-Eingabe übergeben, nicht als Befehlsargument.
 Grundlage: [GnuPG-Batch-Optionen](https://www.gnupg.org/documentation/manuals/gnupg/GPG-Esoteric-Options.html).
 Wiederherstellung: Artefakt herunterladen, lokal `gpg --output database.dump --decrypt
-BACKUP.dump.gpg` ausführen (Passphrase interaktiv) und den bestehenden kontrollierten
-`pg_restore`-Ablauf nutzen. Niemals ungeprüft über aktuelle Produktionsdaten schreiben.
+BACKUP.dump.gpg` ausführen (Passphrase interaktiv) und das dokumentierte
+[Wiederherstellungsverfahren](operations.md) beachten. Niemals ungeprüft über aktuelle Produktionsdaten schreiben.
 
 Der lokale Test prüft Verschlüsselung und Entschlüsselung sowie Ablehnung einer
-falschen Passphrase. Ein vollständiger Produktions-Restore bleibt separat zu prüfen.
+falschen Passphrase. Eine tatsächliche Datenbankwiederherstellung wurde für T11 bewusst nicht ausgeführt;
+sie bleibt ungetestet. Siehe [T11-Nachweis](t11-validation.md).
 
 T04 ändert ausserdem die Nginx-Konfiguration (Bestätigungstokens im Zugriffslog
 maskieren und den Host-Port beim Weiterleiten erhalten). Auch auf einer bestehenden
