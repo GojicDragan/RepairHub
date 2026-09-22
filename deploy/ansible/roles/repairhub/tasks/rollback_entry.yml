@@ -37,7 +37,7 @@
       ansible.builtin.assert:
         that:
           - not repairhub_rollback_pending.stat.exists
-        fail_msg: Zuerst die unvollständige Infrastrukturwartung abschliessen.
+        fail_msg: Zuerst den unterbrochenen Deploy mit denselben Release-Eingaben abschliessen.
     - name: Gemeinsame Wiederherstellungslogik verwenden
       ansible.builtin.include_tasks: restore.yml
   always:

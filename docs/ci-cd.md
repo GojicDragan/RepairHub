@@ -111,15 +111,15 @@ nicht vorausgesetzt. Der Layoutvertrag lautet
 andere Datenlayouts, ersetzt aber keine Prüfung einer Datenübernahme.
 
 Zur Einrichtung den Host einmalig mit `bootstrap.yml` vorbereiten. Der erste
-App-Release über `deploy.yml` richtet alle drei Compose-Dienste ein. Danach
-aktualisieren normale Releases nur die App. Für PostgreSQL ist keine eigene
+App-Release über `deploy.yml` richtet alle drei Compose-Dienste ein. Jeder weitere
+Release gleicht den gesamten Sollzustand idempotent ab; unveränderte Dienste
+werden nicht neu erstellt. Für PostgreSQL ist keine eigene
 Veröffentlichung und kein manuelles Kopieren eines GHCR-Digests mehr erforderlich.
 
 Bei späteren Infrastruktur-Updates werden die offiziellen Image-Pins
-gezielt geändert und erneut geprüft. Auf einem bereits eingerichteten Host
-verlangt eine Infrastrukturänderung den ausdrücklichen Wartungsaufruf
-`infrastructure.yml`. Normale App-Deployments weisen ungeplante Änderungen an
-Infrastruktur-Pins oder -Konfiguration ab. Ein geänderter Datenbankvertrag
+gezielt geändert und erneut geprüft. Auch auf einem bereits eingerichteten Host übernimmt `deploy.yml` diese
+Änderungen automatisch. Ein zusätzlicher Wartungsaufruf oder Freigabe-Tag ist
+nicht erforderlich. Ein geänderter Datenbankvertrag
 benötigt weiterhin einen separat geprüften Datenübernahme-/Migrationsplan.
 
 Lokale isolierte Prüfungen können eine eigene Pin-Datei über
@@ -527,7 +527,7 @@ geschützten JSON-Variablendatei einschliesslich `ansible_password`:
 ```bash
 uv run --locked --group ci ansible-playbook -i deploy/ansible/inventories/production/hosts.yml deploy/ansible/bootstrap.yml --ask-pass --ask-become-pass
 uv run --locked --group ci ansible-playbook -i deploy/ansible/inventories/production/hosts.yml deploy/ansible/deploy.yml --extra-vars @/geschuetzt/release.json
-# Ausschliesslich bei einer geprüften Infrastrukturänderung:
+# Optionaler reiner Infrastrukturabgleich mit dem laufenden App-Digest:
 uv run --locked --group ci ansible-playbook -i deploy/ansible/inventories/production/hosts.yml deploy/ansible/infrastructure.yml --extra-vars @/geschuetzt/release.json
 ```
 
@@ -595,8 +595,8 @@ statische Dateien sind releasegebunden; `www/current` verweist auf die aktive
 statische Version. `current.json` und `previous.json` sichern den erfolgreichen
 Stand und seinen Vorgänger. Gleiche Eingaben ergeben denselben Release-Pfad.
 Normale Updates ändern den App-Dienst und den Asset-Verweis; unveränderte
-Nginx-/Datenbankcontainer bleiben bestehen. Erstinstallation und ausdrückliche
-Infrastrukturwartung gleichen auch diese Dienste ab.
+Nginx-/Datenbankcontainer bleiben bestehen. Jeder Deploy gleicht auch diese
+Dienste und die Konfigurationsdateien mit dem freigegebenen Sollzustand ab.
 Die Reihenfolge bleibt Image-Pull → Datenbankbereitschaft → erforderliche
 Sicherung/Migration → App/Assets → externe HTTPS-/gegebenenfalls API-Prüfung.
 
@@ -685,7 +685,50 @@ Der lokale Test prüft Verschlüsselung und Entschlüsselung sowie Ablehnung ein
 falschen Passphrase. Ein vollständiger Produktions-Restore bleibt separat zu prüfen.
 
 T04 ändert ausserdem die Nginx-Konfiguration (Bestätigungstokens im Zugriffslog
-maskieren und den Host-Port beim Weiterleiten erhalten). Auf einer bestehenden
-T03-Installation deshalb vor dem App-Release den dokumentierten
-`infrastructure.yml`-Wartungslauf mit den geprüften Eingaben ausführen. Ein normaler
-Release soll diese Infrastrukturänderung weiterhin nicht stillschweigend vornehmen.
+maskieren und den Host-Port beim Weiterleiten erhalten). Auch auf einer bestehenden
+T03-Installation übernimmt der normale Deploy diese Änderungen automatisch.
+Die Migration wird erst mit dem neuen, migrationsfähigen App-Image ausgeführt.
+
+### Automatischer, idempotenter Infrastrukturabgleich
+
+Auf Benutzerwunsch übernimmt der normale `deploy.yml`-Aufruf auch Änderungen an
+Compose, Nginx, TLS und den geprüften Infrastruktur-Pins. Die früher vorgeschlagene
+Variable `INFRASTRUCTURE_MAINTENANCE_TAG` und der vorbereitende Wartungsschritt
+entfallen. Falls die Variable bereits angelegt wurde, ist sie wirkungslos und
+kann entfernt werden. Es sind keine neuen Variablen oder Secrets erforderlich.
+
+Der gesamte Abgleich läuft unter derselben Hostsperre und der bestehenden
+Workflow-Serialisierung. Ansible vergleicht Dateien und Compose-Dienste mit dem
+Sollzustand, statt Änderungen lediglich anhand eines gespeicherten Fingerprints
+abzuweisen. Damit werden auch manuell veränderte Dateien sowie fehlende oder
+gestoppte Dienste korrigiert. Unveränderte Container werden nicht neu erstellt;
+Nginx wird nur bei tatsächlich geänderter Konfiguration nach erfolgreichem
+`nginx -t` neu geladen.
+
+Die Reihenfolge bleibt kontrolliert: bisherigen Stand sichern, Infrastrukturdateien
+abgleichen, gepinnte Images bereitstellen, Datenbankbereitschaft prüfen, bei Bedarf
+Backup/Migration im **neuen** App-Image, App und statische Dateien aktivieren,
+Nginx abgleichen und externes HTTPS prüfen. Die laufende alte App wird nicht für
+Migrationen verwendet. Für den optionalen reinen `infrastructure.yml`-Aufruf mit
+dem bisherigen Digest bleiben dessen gespeicherte Fähigkeiten massgeblich und
+Migrationen deaktiviert; dieser Aufruf ist für normale Releases nicht nötig.
+
+Identische Eingaben ergeben denselben Release-Pfad. Eine Wiederholung benötigt
+weder erneute Migration noch Container-Neustart. Nach einem unterbrochenen
+Infrastrukturabgleich kann derselbe normale Deploy erneut ausgeführt werden;
+`infrastructure-pending.json` erzwingt keinen manuellen Wartungsmodus mehr.
+Die ursprüngliche Infrastruktur-Sicherung bleibt erhalten. Ein fehlgeschlagener
+Lauf bleibt fehlgeschlagen; App-Rollback erfolgt weiterhin nur bei kompatiblem
+Schema und gleicher Infrastruktur, niemals durch blindes Datenbank-Downgrade.
+
+Geänderte Datenbanknamen, Benutzer, Passwörter oder inkompatible Datenverträge
+bleiben vor Hoständerungen gesperrt. Compose kann bestehende Datenbankzugänge
+nicht durch Änderung einer Environment-Datei migrieren. Veraltete Release-Sequenzen,
+Digest-Vorgaben, SSH-Hostprüfung und Geheimnisschutz bleiben ebenfalls erhalten.
+
+Die Korrektur muss einmalig in `main` übernommen und mit einem neuen Tag/Release
+veröffentlicht werden. Danach funktioniert derselbe Ablauf für weitere Releases
+ohne manuelle Sonderfreigabe. Ein Retry des alten Tags v0.5 würde weiterhin den
+alten Workflow und das alte Playbook verwenden. Bestehende Tags nicht verschieben.
+
+Prüfnachweis: [Automatisches Infrastruktur-Upgrade](infrastructure-upgrade-validation.md).

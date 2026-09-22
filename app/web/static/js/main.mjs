@@ -13,3 +13,9 @@ mountDeviceForms(document);
 
 import { mountDeviceSuggestions } from './device-suggestions-view.mjs';
 mountDeviceSuggestions(document);
+
+import { mountRepairForms } from './repair-form-view.mjs';
+mountRepairForms(document);
+
+import { mountRepairLists } from './repair-list-view.mjs';
+mountRepairLists(document);

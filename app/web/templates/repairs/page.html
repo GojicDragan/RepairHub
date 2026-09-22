@@ -1,0 +1,7 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} | RepairHub{% endblock %}
+{% block content %}
+<div data-repair-content data-failure="{{ _('Could not save the repair. Your entries are still here. Please retry.') }}">
+  {{ content|safe }}
+</div>
+{% endblock %}

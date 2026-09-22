@@ -45,9 +45,32 @@
     repairhub_pending_infrastructure: >-
       {{ (repairhub_saved_files.results[3].content | b64decode | from_json)
          if repairhub_saved_files.results[3].content is defined else {} }}
-    repairhub_has_migrations: "{{ (lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json') | from_json).schema_migrations }}"
-    repairhub_has_api: "{{ (lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json') | from_json).authenticated_api }}"
     repairhub_database_contract: "{{ repairhub_infrastructure.database_contract }}"
+
+# Wartung läuft mit dem bisherigen Image: Neue Fähigkeiten gehören erst zum App-Release.
+- name: Vorhandenen App-Release für Infrastrukturwartung verlangen
+  ansible.builtin.assert:
+    that:
+      - repairhub_previous | length > 0
+  when: repairhub_infrastructure_maintenance
+
+- name: Fähigkeiten der laufenden Anwendung lesen
+  ansible.builtin.slurp:
+    src: "{{ repairhub_previous.release_dir }}/capabilities.json"
+  register: repairhub_running_capabilities
+  when: repairhub_infrastructure_maintenance
+
+- name: Fähigkeiten des tatsächlich verwendeten Images bestimmen
+  ansible.builtin.set_fact:
+    repairhub_release_capabilities_text: >-
+      {{ (repairhub_running_capabilities.content | b64decode | trim)
+         if repairhub_infrastructure_maintenance else
+         lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json') }}
+
+- name: Prüfumfang an das tatsächliche Image binden
+  ansible.builtin.set_fact:
+    repairhub_has_migrations: "{{ (repairhub_release_capabilities_text | from_json).schema_migrations }}"
+    repairhub_has_api: "{{ (repairhub_release_capabilities_text | from_json).authenticated_api }}"
 
 - name: Veraltete Läufe und ungeprüfte Datenbank-Upgrades abweisen
   ansible.builtin.assert:
@@ -65,11 +88,8 @@
       - >-
         not repairhub_infrastructure_maintenance or not repairhub_previous or
         repairhub_app_image == repairhub_previous.app_image
-      - >-
-        not repairhub_previous or not repairhub_state_files.results[3].stat.exists or
-        repairhub_infrastructure_maintenance
     fail_msg: >-
-      Veralteter Lauf, ungeprüfter Datenbankvertrag oder unvollständige Infrastrukturwartung.
+      Veralteter Lauf oder ungeprüfter Datenbankvertrag.
       infrastructure.yml darf keinen gleichzeitigen App-Image-Wechsel durchführen;
       Datenbank-Vertragswechsel benötigen einen gesonderten geprüften Migrationsplan.
 
@@ -112,46 +132,33 @@
          | to_json | hash('sha256') }}
   no_log: true
 
-- name: Ungeplante Infrastrukturänderung bei App-Releases verhindern
+# POSTGRES_* initialisiert nur ein leeres Volume. Geänderte Containerwerte
+# ändern bestehende Datenbankkonten nicht und wären daher kein Passwortwechsel.
+- name: Ungeprüfte Änderungen der Datenbankkonfiguration abweisen
   ansible.builtin.assert:
     that:
-      - >-
-        not repairhub_previous or repairhub_infrastructure_maintenance or
-        repairhub_installed_infrastructure.fingerprint | default('') == repairhub_infrastructure_fingerprint
       - >-
         not repairhub_installed_infrastructure or
         repairhub_installed_infrastructure.database_configuration_fingerprint | default('') == repairhub_database_configuration_fingerprint
       - >-
-        not repairhub_pending_infrastructure or repairhub_infrastructure_maintenance or
-        repairhub_pending_infrastructure.fingerprint == repairhub_infrastructure_fingerprint
-      - >-
         not repairhub_pending_infrastructure or
         repairhub_pending_infrastructure.database_configuration_fingerprint | default('') == repairhub_database_configuration_fingerprint
     fail_msg: >-
-      Infrastruktur-Pins, Compose, Nginx, TLS oder Datenbankkonfiguration wurden geändert.
-      Zuerst infrastructure.yml mit dem aktuell laufenden App-Digest ausführen. Änderungen von
-      Datenbankname, Benutzer oder Passwort benötigen einen gesonderten geprüften Datenbank-Wartungsplan.
+      Änderungen von Datenbankname, Benutzer oder Passwort benötigen einen gesonderten
+      geprüften Datenbank-Wartungsplan; ein Compose-Abgleich kann bestehende Zugangsdaten nicht migrieren.
 
 - name: Zertifikat unabhängig vom App-Image verwalten
   ansible.builtin.include_tasks: tls.yml
   when: repairhub_tls_mode == 'acme'
 
-- name: Bestehende Infrastruktur vor normalen App-Releases prüfen
-  ansible.builtin.include_tasks: verify_infrastructure.yml
-  when:
-    - repairhub_previous | length > 0
-    - not repairhub_infrastructure_maintenance
-
 # Der Commit allein genügt nicht: Auch geänderte Laufzeitwerte erzeugen einen
 # neuen Release. Identische Eingaben behalten denselben Pfad und vermeiden Neustarts.
 - name: Konfigurationsgebundene App-Release-Kennung berechnen
   ansible.builtin.set_fact:
-    repairhub_manage_infrastructure: >-
-      {{ not repairhub_previous or repairhub_infrastructure_maintenance }}
     repairhub_config_fingerprint: >-
       {{ [repairhub_app_image, repairhub_infrastructure_fingerprint, repairhub_runtime_env,
           repairhub_api_smoke_username, repairhub_api_smoke_password, repairhub_api_smoke_repair_id,
-          lookup('ansible.builtin.file', repairhub_repo_root + '/deploy/capabilities.json')]
+          repairhub_release_capabilities_text]
          | to_json | hash('sha256') }}
   no_log: true
 
@@ -185,7 +192,7 @@
 
 - name: Versionierte Fähigkeiten zum App-Release sichern
   ansible.builtin.copy:
-    src: "{{ repairhub_repo_root }}/deploy/capabilities.json"
+    content: "{{ repairhub_release_capabilities_text }}\n"
     dest: "{{ repairhub_release_dir }}/capabilities.json"
     mode: "0600"
 
@@ -211,13 +218,14 @@
 - name: Lesenden Registry-Zugang vorbereiten
   ansible.builtin.include_tasks: registry.yml
 
-- name: Anwendung unter unveränderter Infrastruktur ausliefern
+- name: Infrastruktur und Anwendung mit dem freigegebenen Sollzustand abgleichen
   environment:
     DOCKER_CONFIG: "{{ repairhub_registry_config.path | default(omit) }}"
   block:
-    - name: Erstinstallation oder ausdrückliche Infrastrukturwartung vorbereiten
+    # Module vergleichen den tatsächlichen Zustand: Auch Drift und fehlende Dienste
+    # werden repariert, ohne unveränderte Container neu zu erstellen.
+    - name: Infrastrukturkonfiguration idempotent abgleichen
       ansible.builtin.include_tasks: infrastructure.yml
-      when: repairhub_manage_infrastructure
 
     - name: Releasebezogene Compose-Werte sichern
       ansible.builtin.copy:
@@ -252,9 +260,8 @@
         policy: missing
       no_log: true
 
-    - name: Infrastruktur nur bei Erstinstallation oder Wartung starten
+    - name: Infrastrukturimages und Datenbank idempotent abgleichen
       ansible.builtin.include_tasks: infrastructure_start.yml
-      when: repairhub_manage_infrastructure
 
     - name: Bestehende Datenbank auf Bereitschaft prüfen
       community.docker.docker_compose_v2_exec:
@@ -273,6 +280,7 @@
       ansible.builtin.include_tasks: migrate.yml
       when:
         - repairhub_has_migrations
+        - not repairhub_infrastructure_maintenance
         - repairhub_previous.release_dir | default('') != repairhub_release_dir
 
     - name: Ausschliesslich die Anwendung ausrollen
@@ -294,9 +302,8 @@
       vars:
         repairhub_static_release_key: "{{ repairhub_release_key }}"
 
-    - name: Nginx ausschliesslich bei Erstinstallation oder Wartung verwalten
+    - name: Nginx idempotent abgleichen
       ansible.builtin.include_tasks: nginx.yml
-      when: repairhub_manage_infrastructure
 
     - name: Externe HTTPS- und gegebenenfalls API-Abnahme durchführen
       ansible.builtin.include_tasks: smoke.yml
@@ -309,7 +316,6 @@
               'fingerprint': repairhub_infrastructure_fingerprint,
               'database_configuration_fingerprint': repairhub_database_configuration_fingerprint}) | to_nice_json }}
         mode: "0600"
-      when: repairhub_manage_infrastructure
 
     # Erst nach externer Abnahme gilt der neue Stand als erfolgreich. Vorher bleibt
     # current.json die Referenz für einen kompatiblen Rückweg.
@@ -317,7 +323,8 @@
       ansible.builtin.copy:
         dest: "{{ repairhub_install_dir }}/current.json"
         content: >-
-          {{ {'commit': repairhub_release_commit, 'sequence': repairhub_release_sequence | int,
+          {{ {'commit': (repairhub_previous.commit if repairhub_infrastructure_maintenance else repairhub_release_commit),
+              'sequence': repairhub_release_sequence | int,
               'release_dir': repairhub_release_dir, 'release_key': repairhub_release_key,
               'app_image': repairhub_app_image,
               'infrastructure_fingerprint': repairhub_infrastructure_fingerprint,
@@ -327,12 +334,13 @@
               'schema_compatible': not repairhub_has_migrations or repairhub_migration_mode == 'compatible'}
              | to_nice_json }}
         mode: "0600"
-    - name: Abgeschlossene Infrastrukturwartung vermerken
+    - name: Abgeschlossenen Infrastrukturabgleich vermerken
       ansible.builtin.file:
         path: "{{ repairhub_install_dir }}/infrastructure-pending.json"
         state: absent
-      when: repairhub_manage_infrastructure
 
+  # Ein App-Rollback repariert weder Schema noch Infrastruktur. Nur wenn beides
+  # zur vorherigen Anwendung passt, ist dieser automatische Rückweg zulässig.
   rescue:
     - name: Vorherige Anwendung nur bei kompatiblem Schema und gleicher Infrastruktur wiederherstellen
       ansible.builtin.include_tasks: restore.yml
@@ -344,6 +352,6 @@
       ansible.builtin.fail:
         msg: >-
           Release-Abnahme fehlgeschlagen. Eine vorherige kompatible Anwendung mit identischer
-          Infrastruktur wurde soweit möglich wiederhergestellt. Fehlgeschlagene Infrastrukturwartung
-          benötigt einen kontrollierten erneuten Wartungslauf; kein automatisches Datenbank-Downgrade,
+          Infrastruktur wurde soweit möglich wiederhergestellt. Ein fehlgeschlagener Infrastrukturabgleich
+          kann mit denselben Release-Eingaben erneut ausgeführt werden; kein automatisches Datenbank-Downgrade,
           kein Zurückspielen von Daten und kein automatischer Infrastruktur-Rollback.

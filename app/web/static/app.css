@@ -205,3 +205,37 @@ h1, h2, h3 { letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
 .device-suggestions [role="option"] { padding: 10px 12px; border-radius: .3rem; cursor: pointer; overflow-wrap: anywhere; }
 .device-suggestions [role="option"]:hover, .device-suggestions [aria-selected="true"] { background: var(--rh-ink); color: var(--rh-paper); }
 [data-suggestion-status]:empty { display: none; }
+
+/* Fall, Zustand und Schritte sind eigene Regionen innerhalb derselben Werkstatt. */
+.repair-editor { max-width: 720px; margin-inline: auto; }
+.repair-workspace { max-width: 1040px; margin-inline: auto; }
+.repair-breadcrumb { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; margin-bottom: 32px; }
+.repair-heading { margin-bottom: 24px; flex-wrap: wrap; }
+.repair-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 24px; }
+.repair-panel { background: #fff; border: 1px solid var(--rh-line); border-radius: 12px; padding: 24px; margin-bottom: 24px; min-width: 0; }
+.repair-panel h2 { font-size: 1.35rem; margin-bottom: 20px; }
+.repair-panel h3 { font-size: 1.1rem; }
+.repair-status { display: inline-block; flex-shrink: 0; border: 1px solid var(--rh-line); border-radius: 999px; padding: 6px 12px; font-weight: 650; font-size: .8rem; background: var(--rh-paper); color: var(--rh-ink); }
+.repair-status-in_progress { background: #fff0e9; color: #953218; border-color: #e8b8a8; }
+.repair-status-completed { background: var(--rh-ink); color: var(--rh-paper); }
+.repair-step-list { padding-left: 24px; }
+.repair-step { padding: 16px 0; border-bottom: 1px solid var(--rh-line); }
+.repair-step::marker { color: var(--rh-muted); font-weight: 700; }
+.repair-step.is-completed { border-bottom-color: var(--rh-ink); }
+.repair-cards { list-style: none; padding: 0; }
+.repair-card { display: flex; align-items: center; justify-content: space-between; gap: 24px; color: var(--rh-ink); text-decoration: none; padding: 24px; margin-block: 16px; background: #fff; border: 1px solid var(--rh-line); border-radius: 12px; }
+.repair-card:hover { color: var(--rh-ink); border-color: var(--rh-accent); }
+.repair-card h2 { font-size: 1.2rem; margin: 8px 0 0; overflow-wrap: anywhere; }
+@media (max-width: 767px) {
+  .repair-grid { grid-template-columns: 1fr; gap: 0; }
+  .repair-card { flex-direction: column; align-items: start; gap: 16px; padding: 16px; }
+  .repair-panel { padding: 16px; }
+}
+
+/* Dieselbe feste Zeilenhöhe und derselbe Scrollbereich wie bei Geräten. */
+.repair-row { padding: 0; }
+.repair-row .repair-card { width: 100%; height: 100%; margin: 0; padding: 16px 8px; border: 0; border-radius: 0; background: transparent; flex-direction: row; align-items: center; gap: 12px; }
+.repair-row .repair-card:hover { background: var(--rh-paper); }
+.repair-row .repair-card h2 { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.repair-row .field-hint { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.repair-row .repair-status { flex-shrink: 0; }

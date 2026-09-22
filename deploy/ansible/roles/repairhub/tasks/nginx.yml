@@ -1,5 +1,5 @@
 ---
-- name: Nginx ausschliesslich bei Erstinstallation oder Wartung bereitstellen
+- name: Nginx ohne erzwungene Neuerstellung bereitstellen
   community.docker.docker_compose_v2:
     project_src: "{{ repairhub_infrastructure_dir }}"
     project_name: "{{ repairhub_project_name }}"
@@ -24,7 +24,7 @@
   when: repairhub_nginx_config.changed or repairhub_infrastructure_secrets.changed
   no_log: true
 
-- name: Ausschliesslich ausdrücklich geänderte Nginx-Konfiguration neu laden
+- name: Ausschliesslich geänderte Nginx-Konfiguration neu laden
   community.docker.docker_compose_v2_exec:
     project_src: "{{ repairhub_infrastructure_dir }}"
     project_name: "{{ repairhub_project_name }}"

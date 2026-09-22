@@ -219,3 +219,23 @@ Repository-Port und Query-DTO. Er liefert ausschliesslich eigene gespeicherte
 Gerätewerte für Autocomplete. Der konkrete Datenadapter kennt keine Handler;
 Verdrahtung erfolgt in `app.bootstrap`. Keine Slice-Querverbindungen und kein
 externer Produktkatalog; bestehende Architekturgrenzen bleiben unverändert.
+
+## T07: Reparaturfälle und Schritte
+
+Die sieben Reparatur-Slices `create_repair`, `list_repairs`, `get_repair`,
+`update_description`, `change_status`, `add_step` und `update_step` besitzen
+jeweils eigene Commands und Repository-Ports. Gemeinsame DTOs und Regeln bleiben
+sliceunabhängig. Die injizierte Uhr gehört zur Fallerstellung. Datenadapter prüfen
+Eigentum über Gerät und Fall und kapseln atomare Schreiboperationen; Handler
+importieren keine Geräteslices. Die Webkomponente darf für die Formularanzeige
+zusätzlich den vorhandenen Geräte-Handler verwenden. Composition Root bleibt
+`app.bootstrap`. AJAX und normales HTML benutzen dieselben Anwendungsfälle.
+Keine neuen Fachabhängigkeiten; Kosten und Teile folgen in T08.
+Details: [Reparaturverwaltung](repairs.md).
+
+
+Der Reparatur-Slice `list_repairs` akzeptiert nun ein begrenztes Fenster und eine
+obere Fall-ID für virtuelle Listen. Der Eigentumsfilter gilt auch für Maximum,
+Gesamtzahl und jedes AJAX-Fenster. Diese Erweiterung verwendet weiterhin nur den
+eigenen Repository-Port; keine Abhängigkeit zur Geräte-Domäne. Das gemeinsame
+Scrollverhalten liegt ausschliesslich in der Präsentation.

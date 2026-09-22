@@ -66,7 +66,8 @@ def main() -> None:
         "repairhub_app_image": required("APP_IMAGE"),
         "repairhub_release_commit": required("GITHUB_SHA"),
         "repairhub_release_sequence": int(required("GITHUB_RUN_NUMBER")),
-        # T04 fügt nur Tabellen hinzu und bleibt zum bisherigen Image kompatibel.
+        # Die bisherigen Migrationen ergänzen Tabellen und bleiben abwärtskompatibel.
+        # Vor künftig inkompatiblen Änderungen muss dieser Modus neu beurteilt werden.
         "repairhub_migration_mode": "compatible",
         "repairhub_backup_fetch_dir": str(directory / "backups"),
         "repairhub_public_url": required("PUBLIC_URL"),

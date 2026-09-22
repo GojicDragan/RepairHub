@@ -189,3 +189,20 @@ Absenden ohne DOM. Browserprüfungen verwenden je 240 eigene Geräte, prüfen zu
 20 Zeilen im gelieferten HTML und danach höchstens 60 Zeilen im DOM. AJAX-Speichern,
 Fehlererhalt und der Betrieb ohne JavaScript werden auf Englisch/Deutsch geprüft.
 Ergebnisse und Releasehinweise: [T06-Abnahme](t06-validation.md).
+
+## T07: Reparaturfälle und Schritte
+
+- `tests/unit/domains/repairs/test_repairs.py`: frameworkfreie Regeln und alle
+  sieben Slices mit Fakes, einschliesslich unzulässiger Identitäten/Zuordnungen.
+- `tests/integration/repairs/test_repairs.py`: PostgreSQL-Persistenz, Migration
+  ab T06, Eigentum, HTML/JSON, CSRF, Validierung, DB-Constraints und Rollback.
+- `tests/unit/frontend/repair-form-presenter.test.mjs`: Formzustand, expliziter
+  Erledigungszustand, leere Entwürfe, paralleles Absenden und Fehler.
+- `tests/e2e/test_repairs.py`: Anlage, Beschreibung, Status einschliesslich
+  Wiederaufnahme, Schritte, Entwurfserhalt und Netzwerkfehler. Deutsch/Englisch,
+  mit und ohne JavaScript, mobile Darstellung. AJAX wird ausdrücklich anhand
+  der Testkonfiguration erwartet; ein Ladefehler kann nicht als HTML-Fallback
+  einen grünen AJAX-Test erzeugen.
+
+Die bestehenden Befehle für die vollständigen Unit-, Integrations- und E2E-Suiten
+schliessen diese Tests ein. Ergebnisse: [T07-Abnahme](t07-validation.md).

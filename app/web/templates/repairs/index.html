@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Your repairs') }} | RepairHub{% endblock %}
+{% block content %}
+<section aria-labelledby="repairs-heading" data-repair-list data-owner="{{ viewer.id }}" data-url="{{ url_for('repairs.index', device_id=device_id) }}" data-offset="{{ page.offset }}" data-total="{{ page.total }}" data-snapshot="{{ page.snapshot }}" data-loading="{{ _('Loading repairs…') }}" data-failure="{{ _('Could not load repairs. Please retry.') }}">
+<div class="section-heading device-heading"><div><p class="eyebrow">{{ _('KEEP THE REPAIR MOVING') }}</p><h1 id="repairs-heading">{{ _('Your repairs') }}</h1><p>{{ _('Faults, progress and the next small step.') }}</p></div><a class="btn btn-primary" href="{{ url_for('repairs.new', device_id=device_id) if device_id else url_for('devices.index') }}">{{ _('New repair') if device_id else _('Choose a device to start') }}</a></div>
+<p class="text-muted">{{ _('%(count)s repairs', count=page.total) }}</p>
+{% if not page.total %}<div class="device-empty"><h2>{{ _('No repairs yet.') }}</h2><p>{{ _('Open a device to start its first repair.') }}</p></div>{% endif %}
+<div data-list-viewport class="device-viewport" {% if not page.total %}hidden{% endif %} role="region" aria-label="{{ _('Repair list') }}" tabindex="0">
+<div data-spacer-before aria-hidden="true"></div>
+<ul data-repair-rows class="device-rows">
+{% for repair in page.items %}
+<li class="device-row repair-row" data-repair-id="{{ repair.id }}"><a class="repair-card" data-action="view" href="{{ url_for('repairs.show', repair_id=repair.id, device_id=device_id) }}"><div class="device-row-copy"><span class="field-hint">{{ _('Repair #%(id)s', id=repair.id) }} · {{ repair.device_name }}</span><h2 title="{{ repair.description }}">{{ repair.description }}</h2></div><span class="repair-status repair-status-{{ repair.status }}">{{ status_labels[repair.status] }}</span></a></li>
+{% endfor %}
+</ul>
+<div data-spacer-after aria-hidden="true"></div>
+</div>
+<p data-list-status role="status" aria-live="polite"></p><button data-list-retry class="btn btn-outline-secondary" type="button" hidden>{{ _('Retry') }}</button>
+<nav data-list-pagination class="device-pagination" aria-label="{{ _('Repair pages') }}">
+{% if page.offset > 0 %}<a href="{{ url_for('repairs.index', device_id=device_id, snapshot=page.snapshot, offset=[0, page.offset-20]|max) }}">{{ _('Previous repairs') }}</a>{% endif %}
+{% if page.offset + 20 < page.total %}<a href="{{ url_for('repairs.index', device_id=device_id, snapshot=page.snapshot, offset=page.offset+20) }}">{{ _('Next repairs') }}</a>{% endif %}
+</nav>
+</section>
+{% endblock %}
