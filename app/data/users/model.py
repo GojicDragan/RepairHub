@@ -50,6 +50,9 @@ class User(db.Model, UserMixin):
     # ersetzen und damit bestehende Sitzungen ungültig machen.
     fs_uniquifier: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    api_key_hash: Mapped[str | None] = mapped_column(String(64), unique=True)
+    api_key_identity: Mapped[str | None] = mapped_column(String(64))
+    api_key_created_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     roles: Mapped[list[Role]] = relationship(secondary=roles_users, lazy="selectin")
 
 

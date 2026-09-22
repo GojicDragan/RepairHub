@@ -27,6 +27,7 @@ def deployment_environment(tmp_path, monkeypatch):
         "GITHUB_SHA": "d" * 40,
         "GITHUB_RUN_NUMBER": "1",
         "BACKUP_PASSPHRASE": "synthetic-backup-value-at-least-32-characters",
+        "API_SMOKE_KEY": "rh_" + "a" * 43,
         "MAIL_SERVER": "smtp.example.org",
         "MAIL_PORT": "587",
         "MAIL_DEFAULT_SENDER": "noreply@example.org",
@@ -63,6 +64,7 @@ def test_secrets_are_protected_and_url_encoded(deployment_environment, capsys):
     assert {file.name for file in directory.iterdir()} == {"vars.json", "known_hosts"}
     lines = dict(line.split("=", 1) for line in payload["repairhub_runtime_env"].splitlines())
     assert set(lines) == {
+        "API_SMOKE_KEY",
         "SECRET_KEY",
         "DATABASE_URL",
         "MAIL_SERVER",
@@ -157,4 +159,29 @@ def test_askpass_control_characters_are_rejected_without_logging_password(
 def test_mail_env_line_injection_is_rejected(deployment_environment, monkeypatch, name):
     monkeypatch.setenv(name, "synthetic\nMAIL_USE_TLS=false")
     with pytest.raises(ValueError, match="Zeilenumbrüche"):
+        deployment_input.main()
+
+
+@pytest.mark.parametrize("name", ["API_SMOKE_KEY"])
+def test_api_smoke_inputs_are_required(deployment_environment, monkeypatch, name):
+    monkeypatch.delenv(name)
+    with pytest.raises(ValueError, match=name):
+        deployment_input.main()
+
+
+def test_system_key_is_in_protected_runtime(deployment_environment):
+    deployment_input.main()
+    values = json.loads(
+        (Path(deployment_environment["DEPLOY_INPUT_DIR"]) / "vars.json").read_text()
+    )
+    key = deployment_environment["API_SMOKE_KEY"]
+    assert values["repairhub_api_smoke_key"] == key
+    assert f"API_SMOKE_KEY={key}\n" in values["repairhub_runtime_env"]
+    assert "repairhub_api_smoke_username" not in values
+
+
+@pytest.mark.parametrize("key", ["short", "rh_" + "a" * 42, "rh_" + "a" * 43 + "\n"])
+def test_invalid_system_key_is_rejected(deployment_environment, monkeypatch, key):
+    monkeypatch.setenv("API_SMOKE_KEY", key)
+    with pytest.raises(ValueError, match="API_SMOKE_KEY"):
         deployment_input.main()

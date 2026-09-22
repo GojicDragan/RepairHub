@@ -7,6 +7,7 @@ export class RepairFormPresenter {
 
   canSubmit(values) {
     const names = Object.keys(values);
+    // false ist ein gültiger Erledigungszustand, kein leeres Pflichtfeld.
     return !this.busy && names.length > 0 && names.every(name =>
       typeof values[name] === 'boolean' || String(values[name]).trim().length > 0
     ) && (this.original === null || this.hasChanges(values));

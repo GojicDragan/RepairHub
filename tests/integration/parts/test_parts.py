@@ -146,12 +146,10 @@ def test_upgrade_preserves_existing_repairs(identity_app):
     from app.data.users.model import User
 
     with identity_app.app_context():
-        store = identity_app.extensions["security"].datastore
-        user = store.create_user(
-            username="Migration", email="migration@example.org", password="unused"
-        )
-        db.session.flush()
-        device = Device(owner_id=user.id, name="Radio", manufacturer="Maker", model="One")
+        from tests.support.legacy_user import seed_user
+
+        user_id = seed_user("Migration")
+        device = Device(owner_id=user_id, name="Radio", manufacturer="Maker", model="One")
         db.session.add(device)
         db.session.flush()
         rid = db.session.scalar(

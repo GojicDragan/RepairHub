@@ -19,6 +19,7 @@ def load_config(environment: str | None = None) -> dict[str, Any]:
         trusted_hosts = ["localhost", "127.0.0.1"]
     return {
         "REPAIRHUB_ENV": environment,
+        "API_SMOKE_KEY": os.environ.get("API_SMOKE_KEY", ""),
         "SECRET_KEY": os.environ.get("SECRET_KEY", ""),
         "SQLALCHEMY_DATABASE_URI": os.environ.get("DATABASE_URL", ""),
         "SQLALCHEMY_TRACK_MODIFICATIONS": False,

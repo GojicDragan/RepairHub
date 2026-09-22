@@ -1,3 +1,4 @@
+from app.domains.repairs.dto import SystemReadAccess
 from app.domains.repairs.errors import RepairNotFound
 from app.domains.repairs.model import (
     offset,
@@ -14,10 +15,14 @@ class ListRepairs:
         self.repository = repository
 
     def execute(self, command: Command):
-        require_owner(command.owner_id)
+        if command.owner_id is not SystemReadAccess.ALL_REPAIRS:
+            require_owner(command.owner_id)
         if command.device_id is not None:
             require_id(command.device_id)
-            if not self.repository.owns_device(command.owner_id, command.device_id):
+            if (
+                command.owner_id is not SystemReadAccess.ALL_REPAIRS
+                and not self.repository.owns_device(command.owner_id, command.device_id)
+            ):
                 raise RepairNotFound()
         # Das AJAX-Fenster bleibt begrenzt; die obere ID stabilisiert die Liste bei Neuanlagen.
         if type(command.limit) is not int or not 1 <= command.limit <= 60:

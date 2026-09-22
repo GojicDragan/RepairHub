@@ -43,6 +43,7 @@ def command(**overrides):
             "completed": True,
             "offset": 0,
             "part_offset": 0,
+            "complete": False,
             "limit": 20,
             "snapshot": None,
             **overrides,
@@ -179,3 +180,34 @@ def test_repair_list_forwards_bounded_window_and_snapshot():
     repository = Mock()
     ListRepairs(repository).execute(command(offset=40, limit=60, snapshot=120))
     repository.list.assert_called_once_with(1, 2, 40, 60, 120)
+
+
+def test_api_complete_detail_preserves_all_parts_and_steps():
+    from decimal import Decimal
+
+    from app.domains.repairs.dto import PartPosition, RepairDetails
+    from app.domains.repairs.get_repair.dto import Command
+
+    repository = Mock()
+    repository.get.return_value = RepairDetails(
+        Mock(),
+        (),
+        0,
+        0,
+        parts=tuple(PartPosition(i, "Cable", Decimal("0.10"), 3) for i in range(25)),
+    )
+    result = GetRepair(repository).execute(Command(1, 3, complete=True))
+    repository.get.assert_called_once_with(1, 3, 0, None)
+    assert len(result.parts) == 25 and result.total_cost == Decimal("7.50")
+
+
+@pytest.mark.parametrize(
+    "handler", [CreateRepair, UpdateDescription, ChangeStatus, AddStep, UpdateStep]
+)
+def test_system_read_access_never_authorizes_writes(handler):
+    from app.domains.repairs.dto import SystemReadAccess
+
+    repository = Mock()
+    with pytest.raises(AuthenticationRequired):
+        make(handler, repository).execute(command(owner_id=SystemReadAccess.ALL_REPAIRS))
+    assert repository.mock_calls == []

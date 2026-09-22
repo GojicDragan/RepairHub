@@ -18,36 +18,55 @@
   delegate_to: localhost
   become: false
 
-- name: API-Prüftoken mit separatem Prüfkonto beziehen
+- name: Systemweite Reparaturliste über API-Key prüfen
   ansible.builtin.uri:
-    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/auth/token"
-    method: POST
-    body_format: json
-    body:
-      username: "{{ repairhub_check_username | default(repairhub_api_smoke_username) }}"
-      password: "{{ repairhub_check_password | default(repairhub_api_smoke_password) }}"
+    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/repairs?limit=1"
+    headers:
+      Authorization: "Bearer {{ repairhub_check_key | default(repairhub_api_smoke_key) }}"
     status_code: 200
     return_content: true
     validate_certs: true
     ca_path: "{{ (repairhub_check_ca | default(repairhub_smoke_ca_path)) or omit }}"
     follow_redirects: none
-  register: repairhub_api_token
+  register: repairhub_api_list
   when: repairhub_has_api | default(false)
   delegate_to: localhost
   become: false
   no_log: true
 
-- name: Eigenen API-Prüffall authentifiziert lesen
+- name: Begrenztes API-Listenfenster kontrollieren
+  ansible.builtin.assert:
+    that:
+      - repairhub_api_list.json['items'] | length <= 1
+      - repairhub_api_list.json.total | int >= 0
+  when: repairhub_has_api | default(false)
+  no_log: true
+
+# Eine leere Installation ist gültig. Sobald Fälle existieren, wird zusätzlich
+# ein Detail aus der authentifizierten Liste geprüft; keine feste Fall-ID nötig.
+- name: Ersten verfügbaren API-Fall authentifiziert lesen
   ansible.builtin.uri:
-    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/repairs/{{ repairhub_check_repair_id | default(repairhub_api_smoke_repair_id) }}"
+    url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/repairs/{{ repairhub_api_list.json['items'][0].id }}"
     method: GET
     headers:
-      Authorization: "Bearer {{ repairhub_api_token.json.access_token }}"
+      Authorization: "Bearer {{ repairhub_check_key | default(repairhub_api_smoke_key) }}"
     status_code: 200
+    return_content: true
     validate_certs: true
     ca_path: "{{ (repairhub_check_ca | default(repairhub_smoke_ca_path)) or omit }}"
     follow_redirects: none
-  when: repairhub_has_api | default(false)
+  register: repairhub_api_case
+  when: repairhub_has_api | default(false) and repairhub_api_list.json['items'] | length > 0
   delegate_to: localhost
   become: false
+  no_log: true
+
+- name: API-Antwort und berechnete CHF-Kosten prüfen
+  ansible.builtin.assert:
+    that:
+      - repairhub_api_case.json.id | int == (repairhub_api_list.json['items'][0].id) | int
+      - repairhub_api_case.json.costs.currency == 'CHF'
+      - repairhub_api_case.json.costs.total is string
+      - repairhub_api_case.json.costs.total is match('^[0-9]+[.][0-9]{2}$')
+  when: repairhub_has_api | default(false) and repairhub_api_list.json['items'] | length > 0
   no_log: true

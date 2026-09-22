@@ -2,6 +2,7 @@ from dataclasses import replace
 from decimal import Decimal
 
 from app.domains.costs.model import calculate
+from app.domains.repairs.dto import SystemReadAccess
 from app.domains.repairs.errors import RepairNotFound
 from app.domains.repairs.model import (
     offset,
@@ -18,11 +19,15 @@ class GetRepair:
         self.repository = repository
 
     def execute(self, command: Command):
-        require_owner(command.owner_id)
+        if command.owner_id is not SystemReadAccess.ALL_REPAIRS:
+            require_owner(command.owner_id)
         require_id(command.repair_id)
-        part_offset = offset(command.part_offset)
+        # Der API-Einzelfall enthält alle Schritte und Teile. Nur die Browseransicht
+        # nutzt Teilfenster; die Berechtigungs- und Kostenregeln bleiben dieselben.
+        part_offset = 0 if command.complete else offset(command.part_offset)
+        step_offset = 0 if command.complete else offset(command.offset)
         result = self.repository.get(
-            command.owner_id, command.repair_id, offset(command.offset), 20
+            command.owner_id, command.repair_id, step_offset, None if command.complete else 20
         )
         if result is None:
             raise RepairNotFound()
@@ -33,7 +38,7 @@ class GetRepair:
             replace(
                 part, total=calculate(Decimal(0), Decimal(0), [(part.unit_price, part.quantity)])
             )
-            for part in result.parts[part_offset : part_offset + 20]
+            for part in result.parts[part_offset : None if command.complete else part_offset + 20]
         )
         return replace(
             result,

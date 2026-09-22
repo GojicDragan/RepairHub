@@ -220,13 +220,25 @@ def test_storage_constraints_and_transaction_rollback(owner, identity_app):
 
 
 @pytest.mark.parametrize("identity_app", ["0002_devices"], indirect=True)
-def test_migration_preserves_users_and_devices(owner, identity_app):
-    device_id = save(owner).json["device"]["id"]
+def test_migration_preserves_users_and_devices(identity_app):
+    from tests.support.legacy_user import seed_user
+
     with identity_app.app_context():
+        user_id = seed_user()
+        device_id = db.session.scalar(
+            text(
+                "INSERT INTO devices(owner_id,name,manufacturer,model) "
+                "VALUES (:owner,'Radio','Maker','One') RETURNING id"
+            ),
+            {"owner": user_id},
+        )
+        db.session.commit()
         upgrade()
         assert db.session.scalar(select(func.count()).select_from(Repair)) == 0
-    assert owner.get(f"/devices/{device_id}").status_code == 200
-    create(owner, device_id)
+    client = identity_app.test_client()
+    submit(client, "/login", identity="Lea", password=PASSWORD)
+    assert client.get(f"/devices/{device_id}").status_code == 200
+    create(client, device_id)
 
 
 def test_virtual_list_bounds_snapshot_filter_and_ownership(owner, identity_app):

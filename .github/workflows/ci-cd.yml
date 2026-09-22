@@ -21,8 +21,29 @@ env:
   PYTHON_VERSION: '3.13.15'
 
 jobs:
+  select:
+    name: Select CI run
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      run_checks: ${{ steps.select.outputs.run_checks }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Prefer PR checks over duplicate branch pushes
+        id: select
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -m scripts.ci.select_run
+
   test:
     name: Test
+    needs: select
+    if: needs.select.outputs.run_checks == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     services:
@@ -53,7 +74,7 @@ jobs:
       - name: Install locked tools and collections
         run: |
           uv sync --locked --group ci
-          uv run --locked --group ci ansible-galaxy collection install -r deploy/ansible/requirements.yml
+          uv run --locked --group ci python -m scripts.ci.install_collections
           mkdir -p reports/test
           echo "SECRET_KEY=$(python -c 'import secrets; print(secrets.token_hex(32))')" >> "$GITHUB_ENV"
       - name: Validate workflow
@@ -250,7 +271,7 @@ jobs:
       - name: Install locked Ansible
         run: |
           uv sync --locked --group ci
-          uv run --locked --group ci ansible-galaxy collection install -r deploy/ansible/requirements.yml
+          uv run --locked --group ci python -m scripts.ci.install_collections
       - name: Verify current production commit and release tag
         env:
           GH_TOKEN: ${{ github.token }}
@@ -263,6 +284,7 @@ jobs:
           POSTGRES_DB: ${{ vars.POSTGRES_DB || 'repairhub' }}
           POSTGRES_USER: ${{ vars.POSTGRES_USER || 'repairhub' }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          API_SMOKE_KEY: ${{ secrets.API_SMOKE_KEY }}
           MAIL_SERVER: ${{ vars.MAIL_SERVER }}
           MAIL_PORT: ${{ vars.MAIL_PORT }}
           MAIL_DEFAULT_SENDER: ${{ vars.MAIL_DEFAULT_SENDER }}

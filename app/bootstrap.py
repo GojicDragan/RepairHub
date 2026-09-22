@@ -48,6 +48,9 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
         response.headers["Content-Language"] = str(get_locale()).replace("_", "-")
         # Caches müssen deutsche und englische Antworten getrennt behandeln.
         response.vary.add("Accept-Language")
+        if request.path == "/api" or request.path.startswith("/api/"):
+            # Auch Routingfehler (404/405) erreichen keinen Blueprint-Hook.
+            response.headers["Cache-Control"] = "no-store"
         return response
 
     db.init_app(app)
@@ -165,11 +168,35 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
         # Eigene Vorlagen erhalten nur einen Wert, kein nachladendes ORM-Objekt.
         return {"viewer": identity.current(), "locale": str(get_locale()).replace("_", "-")}
 
-    from app.api import blueprint as api_blueprint
+    from app.adapters.users.api_keys import ApiKeys
+    from app.api import create_api_blueprint
+    from app.domains.users.authenticate_api_key.handler import AuthenticateApiKey
+    from app.domains.users.create_api_key.handler import CreateApiKey
+    from app.domains.users.get_api_key.handler import GetApiKey
+    from app.domains.users.revoke_api_key.handler import RevokeApiKey
     from app.web import blueprint as web_blueprint
+    from app.web.routes.api_keys import create_api_key_blueprint
 
+    # Persönliche Keys und System-Key nutzen dieselbe Authentifizierungsgrenze.
+    # Die Browserverwaltung erhält weiterhin ausschliesslich kontogebundene Commands.
+    keys = ApiKeys(datastore, app.config["API_SMOKE_KEY"])
     app.register_blueprint(web_blueprint)
-    app.register_blueprint(api_blueprint, url_prefix="/api")
+    app.register_blueprint(
+        create_api_key_blueprint(
+            identity=identity,
+            create=CreateApiKey(keys),
+            revoke=RevokeApiKey(keys),
+            status=GetApiKey(keys),
+        )
+    )
+    app.register_blueprint(
+        create_api_blueprint(
+            authenticate=AuthenticateApiKey(keys),
+            detail=GetRepair(GetRepairRepository()),
+            listing=ListRepairs(ListRepairsRepository()),
+        ),
+        url_prefix="/api",
+    )
 
     from app.api.errors import render_error as api_error
     from app.web.errors import render_error as web_error

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RepairHub VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 13:52+0200\n"
+"POT-Creation-Date: 2026-09-22 14:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,89 +17,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:186
+#: app/bootstrap.py:216
 msgid "Invalid request: untrusted host."
 msgstr ""
 
-#: app/bootstrap.py:191
+#: app/bootstrap.py:221
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:192 app/web/routes/devices.py:43
+#: app/bootstrap.py:222 app/web/routes/devices.py:43
 #: app/web/routes/repairs.py:74
 msgid "Please reload the page and check your input."
 msgstr ""
 
-#: app/bootstrap.py:194
+#: app/bootstrap.py:224
 msgid "Login required"
 msgstr ""
 
-#: app/bootstrap.py:194
+#: app/bootstrap.py:224
 msgid "Please log in to access this resource."
 msgstr ""
 
-#: app/bootstrap.py:195
+#: app/bootstrap.py:225
 msgid "Access denied"
 msgstr ""
 
-#: app/bootstrap.py:195
+#: app/bootstrap.py:225
 msgid "This action is not allowed."
 msgstr ""
 
-#: app/bootstrap.py:196
+#: app/bootstrap.py:226
 msgid "Page not found"
 msgstr ""
 
-#: app/bootstrap.py:196
+#: app/bootstrap.py:226
 msgid "The requested resource was not found."
 msgstr ""
 
-#: app/bootstrap.py:197
+#: app/bootstrap.py:227
 msgid "Method not allowed"
 msgstr ""
 
-#: app/bootstrap.py:197
+#: app/bootstrap.py:227
 msgid "This request method is not supported here."
 msgstr ""
 
-#: app/bootstrap.py:199
+#: app/bootstrap.py:229
 msgid "Unable to register"
 msgstr ""
 
-#: app/bootstrap.py:200
+#: app/bootstrap.py:230
 msgid "This username or email address is already in use."
 msgstr ""
 
-#: app/bootstrap.py:202
+#: app/bootstrap.py:232
 msgid "Temporarily unavailable"
 msgstr ""
 
-#: app/bootstrap.py:202
+#: app/bootstrap.py:232
 msgid "Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:203
+#: app/bootstrap.py:233
 msgid "Request too large"
 msgstr ""
 
-#: app/bootstrap.py:203
+#: app/bootstrap.py:233
 msgid "The submitted data exceeds the allowed size."
 msgstr ""
 
-#: app/bootstrap.py:205
+#: app/bootstrap.py:235
 msgid "Internal error"
 msgstr ""
 
-#: app/bootstrap.py:206
+#: app/bootstrap.py:236
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:212 app/web/routes/devices.py:54
+#: app/bootstrap.py:242 app/web/routes/devices.py:54
 #: app/web/routes/repairs.py:79
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:213 app/web/routes/devices.py:47
+#: app/bootstrap.py:243 app/web/routes/devices.py:47
 msgid "The request could not be processed."
 msgstr ""
 
@@ -268,32 +268,37 @@ msgstr ""
 msgid "Your repairs"
 msgstr ""
 
-#: app/web/templates/base.html:28
+#: app/web/templates/base.html:25 app/web/templates/users/api_key.html:2
+#: app/web/templates/users/api_key.html:6
+msgid "API access"
+msgstr ""
+
+#: app/web/templates/base.html:29
 msgid "Log out"
 msgstr ""
 
-#: app/web/templates/base.html:31 app/web/templates/devices/form.html:27
+#: app/web/templates/base.html:32 app/web/templates/devices/form.html:27
 #: app/web/templates/index.html:11 app/web/templates/security/login_user.html:3
 #: app/web/templates/security/login_user.html:6
 #: app/web/templates/security/register_user.html:9
 msgid "Log in"
 msgstr ""
 
-#: app/web/templates/base.html:32
+#: app/web/templates/base.html:33
 #: app/web/templates/security/register_user.html:3
 msgid "Register"
 msgstr ""
 
-#: app/web/templates/base.html:41
+#: app/web/templates/base.html:42
 msgid "Dismiss message"
 msgstr ""
 
-#: app/web/templates/base.html:47
+#: app/web/templates/base.html:48
 #: app/web/templates/security/email/_base.html:44
 msgid "Made for a repair-first mindset."
 msgstr ""
 
-#: app/web/templates/base.html:47 app/web/templates/security/_layout.html:9
+#: app/web/templates/base.html:48 app/web/templates/security/_layout.html:9
 #: app/web/templates/security/email/_footer.txt:4
 msgid "Keep. Repair. Repeat."
 msgstr ""
@@ -1010,5 +1015,69 @@ msgstr ""
 msgid ""
 "An account already uses these details. Visit the login page to sign in, "
 "reset your password or request a confirmation email."
+msgstr ""
+
+#: app/web/templates/users/api_key.html:5
+msgid "YOUR WORKSHOP, CONNECTED"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:7
+msgid "Read your repairs from another application with a personal API key."
+msgstr ""
+
+#: app/web/templates/users/api_key.html:10
+msgid "Your new API key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:11
+msgid "Copy this key now. It is shown only once. Keep it private."
+msgstr ""
+
+#: app/web/templates/users/api_key.html:12
+msgid "API key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:17
+msgid "Personal key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:19
+msgid ""
+"An API key is active. Replacing or revoking it immediately stops access "
+"with the old key."
+msgstr ""
+
+#: app/web/templates/users/api_key.html:21
+msgid "No API key is active."
+msgstr ""
+
+#: app/web/templates/users/api_key.html:26
+msgid "Replace API key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:26
+msgid "Generate API key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:31
+msgid "Revoke API key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:37
+msgid "Use your key"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:38
+msgid ""
+"Send your key in the Authorization header. No username or password is "
+"needed."
+msgstr ""
+
+#: app/web/templates/users/api_key.html:40
+msgid "List your repairs:"
+msgstr ""
+
+#: app/web/templates/users/api_key.html:41
+msgid "Read one repair:"
 msgstr ""
 

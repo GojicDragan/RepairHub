@@ -219,3 +219,11 @@ AJAX-Implementierung und keine clientseitige Kostenformel. Die Serverantwort
 aktualisiert den gesamten Arbeitsbereich samt Kosten und erhält andere Entwürfe.
 Teilepositionen werden wie Schritte in 20er-Seiten angezeigt. Details:
 [Teile und Kosten](parts-and-costs.md).
+
+## Persönlicher API-Key
+
+`/account/api-key` verwendet das bestehende Bootstrap-/Markensystem, englische
+Msgids und deutsche Übersetzungen. Erzeugen/Ersetzen und Widerrufen sind
+sitzungsgebundene CSRF-geschützte Formulare, vollständig ohne JavaScript nutzbar.
+Der Klartext wird nur in der unmittelbaren POST-Antwort angezeigt; keine
+Speicherung in Flash, Session oder Local Storage.

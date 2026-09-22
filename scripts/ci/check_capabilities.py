@@ -9,7 +9,7 @@ from pathlib import Path
 def validate(capabilities: dict, migration_files: list[Path], routes: set[str]) -> None:
     expected = {
         "schema_migrations": bool(migration_files),
-        "authenticated_api": "/api/auth/token" in routes,
+        "authenticated_api": "/api/repairs" in routes,
     }
     if capabilities != expected:
         raise ValueError("deploy/capabilities.json stimmt nicht mit Schema und API überein.")
