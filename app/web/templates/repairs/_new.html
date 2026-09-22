@@ -1,0 +1,13 @@
+{% from 'repairs/_forms.html' import description, result %}
+<article class="repair-editor">
+  <a href="{{ url_for('devices.detail', device_id=device.id) }}">← {{ device.name }}</a>
+  <p class="eyebrow mt-4">{{ _('A SECOND LIFE STARTS HERE') }}</p>
+  <h1 tabindex="-1">{{ _('New repair') }}</h1>
+  <p>{{ _('Describe what is wrong with %(device)s. You can plan the next steps afterwards.', device=device.name) }}</p>
+  <form method="post" action="{{ url_for('repairs.new', device_id=device.id) }}" data-repair-form>
+    {{ form.hidden_tag() }}
+    {{ description(form.description, 'new-description', 10000) }}
+    <button class="btn btn-primary" type="submit">{{ _('Create repair') }}</button>
+    {{ result() }}
+  </form>
+</article>

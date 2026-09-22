@@ -1,14 +1,14 @@
-# Translations template for RepairHub.
-# Copyright (C) 2026 RepairHub
-# This file is distributed under the same license as the RepairHub project.
+# Translations template for PROJECT.
+# Copyright (C) 2026 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: RepairHub VERSION\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 08:32+0200\n"
+"POT-Creation-Date: 2026-09-22 10:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,87 +17,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:145
+#: app/bootstrap.py:177
 msgid "Invalid request: untrusted host."
 msgstr ""
 
-#: app/bootstrap.py:150
+#: app/bootstrap.py:182
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:151 app/web/routes/devices.py:42
+#: app/bootstrap.py:183 app/web/routes/devices.py:43
+#: app/web/routes/repairs.py:57
 msgid "Please reload the page and check your input."
 msgstr ""
 
-#: app/bootstrap.py:153
+#: app/bootstrap.py:185
 msgid "Login required"
 msgstr ""
 
-#: app/bootstrap.py:153
+#: app/bootstrap.py:185
 msgid "Please log in to access this resource."
 msgstr ""
 
-#: app/bootstrap.py:154
+#: app/bootstrap.py:186
 msgid "Access denied"
 msgstr ""
 
-#: app/bootstrap.py:154
+#: app/bootstrap.py:186
 msgid "This action is not allowed."
 msgstr ""
 
-#: app/bootstrap.py:155
+#: app/bootstrap.py:187
 msgid "Page not found"
 msgstr ""
 
-#: app/bootstrap.py:155
+#: app/bootstrap.py:187
 msgid "The requested resource was not found."
 msgstr ""
 
-#: app/bootstrap.py:156
+#: app/bootstrap.py:188
 msgid "Method not allowed"
 msgstr ""
 
-#: app/bootstrap.py:156
+#: app/bootstrap.py:188
 msgid "This request method is not supported here."
 msgstr ""
 
-#: app/bootstrap.py:158
+#: app/bootstrap.py:190
 msgid "Unable to register"
 msgstr ""
 
-#: app/bootstrap.py:159
+#: app/bootstrap.py:191
 msgid "This username or email address is already in use."
 msgstr ""
 
-#: app/bootstrap.py:161
+#: app/bootstrap.py:193
 msgid "Temporarily unavailable"
 msgstr ""
 
-#: app/bootstrap.py:161
+#: app/bootstrap.py:193
 msgid "Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:162
+#: app/bootstrap.py:194
 msgid "Request too large"
 msgstr ""
 
-#: app/bootstrap.py:162
+#: app/bootstrap.py:194
 msgid "The submitted data exceeds the allowed size."
 msgstr ""
 
-#: app/bootstrap.py:164
+#: app/bootstrap.py:196
 msgid "Internal error"
 msgstr ""
 
-#: app/bootstrap.py:165
+#: app/bootstrap.py:197
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:171 app/web/routes/devices.py:53
+#: app/bootstrap.py:203 app/web/routes/devices.py:54
+#: app/web/routes/repairs.py:62
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:172 app/web/routes/devices.py:46
+#: app/bootstrap.py:204 app/web/routes/devices.py:47
 msgid "The request could not be processed."
 msgstr ""
 
@@ -117,28 +119,95 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
-#: app/web/routes/devices.py:43 app/web/templates/devices/form.html:9
+#: app/web/forms/repairs.py:7 app/web/templates/repairs/_detail.html:10
+msgid "Fault description"
+msgstr ""
+
+#: app/web/forms/repairs.py:12 app/web/templates/repairs/_detail.html:19
+#: app/web/templates/repairs/_detail.html:23
+msgid "Repair status"
+msgstr ""
+
+#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:80
+msgid "Open"
+msgstr ""
+
+#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:80
+msgid "In progress"
+msgstr ""
+
+#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:80
+msgid "Completed"
+msgstr ""
+
+#: app/web/forms/repairs.py:22
+msgid "Step description"
+msgstr ""
+
+#: app/web/forms/repairs.py:23 app/web/templates/repairs/_detail.html:43
+msgid "Done"
+msgstr ""
+
+#: app/web/routes/devices.py:44 app/web/templates/devices/form.html:9
 msgid "Your session has expired. Please log in again."
 msgstr ""
 
-#: app/web/routes/devices.py:44
+#: app/web/routes/devices.py:45
 msgid "Device not found."
 msgstr ""
 
-#: app/web/routes/devices.py:118
+#: app/web/routes/devices.py:123 app/web/routes/repairs.py:119
 msgid "This field is required."
 msgstr ""
 
-#: app/web/routes/devices.py:119
+#: app/web/routes/devices.py:124
 msgid "Use at most 120 characters."
 msgstr ""
 
-#: app/web/routes/devices.py:120
+#: app/web/routes/devices.py:125 app/web/routes/repairs.py:121
 msgid "Use text without control characters."
 msgstr ""
 
-#: app/web/routes/devices.py:130
+#: app/web/routes/devices.py:135
 msgid "Device saved."
+msgstr ""
+
+#: app/web/routes/repairs.py:55
+msgid "Repair not found."
+msgstr ""
+
+#: app/web/routes/repairs.py:120
+#, python-format
+msgid "Use at most %(count)s characters."
+msgstr ""
+
+#: app/web/routes/repairs.py:122
+msgid "Choose a valid repair status."
+msgstr ""
+
+#: app/web/routes/repairs.py:123
+msgid "Choose a valid completion state."
+msgstr ""
+
+#: app/web/routes/repairs.py:156 app/web/templates/repairs/_detail.html:6
+#: app/web/templates/repairs/index.html:12
+#, python-format
+msgid "Repair #%(id)s"
+msgstr ""
+
+#: app/web/routes/repairs.py:186 app/web/routes/repairs.py:189
+#: app/web/templates/devices/detail.html:10
+#: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
+msgid "New repair"
+msgstr ""
+
+#: app/web/routes/repairs.py:193 app/web/routes/repairs.py:211
+#: app/web/routes/repairs.py:238
+msgid "Repair details"
+msgstr ""
+
+#: app/web/routes/repairs.py:210 app/web/routes/repairs.py:213
+msgid "Repair saved."
 msgstr ""
 
 #: app/web/templates/base.html:15
@@ -159,32 +228,38 @@ msgstr ""
 msgid "Your devices"
 msgstr ""
 
-#: app/web/templates/base.html:27
+#: app/web/templates/base.html:24 app/web/templates/repairs/_detail.html:5
+#: app/web/templates/repairs/index.html:2
+#: app/web/templates/repairs/index.html:5
+msgid "Your repairs"
+msgstr ""
+
+#: app/web/templates/base.html:28
 msgid "Log out"
 msgstr ""
 
-#: app/web/templates/base.html:30 app/web/templates/devices/form.html:23
+#: app/web/templates/base.html:31 app/web/templates/devices/form.html:27
 #: app/web/templates/index.html:11 app/web/templates/security/login_user.html:3
 #: app/web/templates/security/login_user.html:6
 #: app/web/templates/security/register_user.html:9
 msgid "Log in"
 msgstr ""
 
-#: app/web/templates/base.html:31
+#: app/web/templates/base.html:32
 #: app/web/templates/security/register_user.html:3
 msgid "Register"
 msgstr ""
 
-#: app/web/templates/base.html:40
+#: app/web/templates/base.html:41
 msgid "Dismiss message"
 msgstr ""
 
-#: app/web/templates/base.html:46
+#: app/web/templates/base.html:47
 #: app/web/templates/security/email/_base.html:44
 msgid "Made for a repair-first mindset."
 msgstr ""
 
-#: app/web/templates/base.html:46 app/web/templates/security/_layout.html:9
+#: app/web/templates/base.html:47 app/web/templates/security/_layout.html:9
 #: app/web/templates/security/email/_footer.txt:4
 msgid "Keep. Repair. Repeat."
 msgstr ""
@@ -278,7 +353,7 @@ msgid "COMING NEXT"
 msgstr ""
 
 #: app/web/templates/index.html:27
-msgid "Device management is ready. Repair tracking and costs are coming next."
+msgid "Devices and repair tracking are ready. Parts and costs are coming next."
 msgstr ""
 
 #: app/web/templates/index.html:29
@@ -320,6 +395,14 @@ msgstr ""
 msgid "Edit device"
 msgstr ""
 
+#: app/web/templates/devices/detail.html:10
+msgid "Repairs for this device"
+msgstr ""
+
+#: app/web/templates/devices/detail.html:10
+msgid "View repairs"
+msgstr ""
+
 #: app/web/templates/devices/form.html:2 app/web/templates/devices/form.html:7
 #: app/web/templates/devices/index.html:5
 msgid "Add device"
@@ -353,15 +436,15 @@ msgstr ""
 msgid "Could not save the device. Your entries are still here. Please retry."
 msgstr ""
 
-#: app/web/templates/devices/form.html:20
+#: app/web/templates/devices/form.html:24
 msgid "Save device"
 msgstr ""
 
-#: app/web/templates/devices/form.html:20
+#: app/web/templates/devices/form.html:24
 msgid "Cancel"
 msgstr ""
 
-#: app/web/templates/devices/form.html:22
+#: app/web/templates/devices/form.html:26
 msgid "View device"
 msgstr ""
 
@@ -401,6 +484,7 @@ msgid "Edit"
 msgstr ""
 
 #: app/web/templates/devices/index.html:17
+#: app/web/templates/repairs/index.html:17
 msgid "Retry"
 msgstr ""
 
@@ -434,6 +518,128 @@ msgstr ""
 msgid ""
 "A personal workshop for the things you care about. Start your repair "
 "journey with RepairHub."
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:6
+#: app/web/templates/repairs/index.html:5
+msgid "KEEP THE REPAIR MOVING"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:14
+msgid "Save description"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:20
+msgid "You can reopen a completed repair at any time."
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:26
+msgid "Save status"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:29
+msgid "Created"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:33
+msgid "Repair steps"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:33
+#, python-format
+msgid "%(count)s steps"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:34
+msgid "No steps yet. Add the first action for this repair."
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:44
+msgid "Save step"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:52
+msgid "Step pages"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:53
+msgid "Previous steps"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:54
+msgid "Next steps"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:56
+msgid "Add a step"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:60
+msgid "Add step"
+msgstr ""
+
+#: app/web/templates/repairs/_new.html:4
+msgid "A SECOND LIFE STARTS HERE"
+msgstr ""
+
+#: app/web/templates/repairs/_new.html:6
+#, python-format
+msgid ""
+"Describe what is wrong with %(device)s. You can plan the next steps "
+"afterwards."
+msgstr ""
+
+#: app/web/templates/repairs/_new.html:10
+msgid "Create repair"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:4
+msgid "Loading repairs…"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:4
+msgid "Could not load repairs. Please retry."
+msgstr ""
+
+#: app/web/templates/repairs/index.html:5
+msgid "Faults, progress and the next small step."
+msgstr ""
+
+#: app/web/templates/repairs/index.html:5
+msgid "Choose a device to start"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:6
+#, python-format
+msgid "%(count)s repairs"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:7
+msgid "No repairs yet."
+msgstr ""
+
+#: app/web/templates/repairs/index.html:7
+msgid "Open a device to start its first repair."
+msgstr ""
+
+#: app/web/templates/repairs/index.html:8
+msgid "Repair list"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:18
+msgid "Repair pages"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:19
+msgid "Previous repairs"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:20
+msgid "Next repairs"
+msgstr ""
+
+#: app/web/templates/repairs/page.html:4
+msgid "Could not save the repair. Your entries are still here. Please retry."
 msgstr ""
 
 #: app/web/templates/security/_form.html:3

@@ -1,5 +1,5 @@
 ---
-- name: Separat freigegebene Infrastruktur-Images herunterladen
+- name: Gepinnte Infrastruktur-Images bei Bedarf herunterladen
   community.docker.docker_compose_v2_pull:
     project_src: "{{ repairhub_infrastructure_dir }}"
     project_name: "{{ repairhub_project_name }}"
@@ -35,7 +35,7 @@
       - repairhub_infrastructure.database_contract == 'postgres-17-alpine-uid70-pgdata-v1'
     fail_msg: Das gezogene PostgreSQL-Image entspricht nicht dem freigegebenen Digest, der Version oder dem Datenverzeichnisvertrag.
 
-- name: Datenbank ausschliesslich bei Erstinstallation oder Wartung bereitstellen
+- name: Datenbank ohne erzwungene Neuerstellung bereitstellen
   community.docker.docker_compose_v2:
     project_src: "{{ repairhub_infrastructure_dir }}"
     project_name: "{{ repairhub_project_name }}"

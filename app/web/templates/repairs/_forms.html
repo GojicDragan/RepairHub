@@ -1,0 +1,8 @@
+{% macro description(field, id, maximum, original='', label=none) %}
+<div class="form-field">
+  <label for="{{ id }}" class="form-label">{{ label or field.label.text }}</label>
+  {{ field(id=id, class_='form-control', rows=3, required=true, maxlength=maximum, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error', aria_invalid='true' if field.errors else 'false') }}
+  <p id="{{ id }}-error" data-error-for="description" class="field-validation" aria-live="polite">{{ field.errors|join(' ') }}</p>
+</div>
+{% endmacro %}
+{% macro result() %}<p data-repair-form-status class="field-validation" role="status" aria-live="polite"></p>{% endmacro %}

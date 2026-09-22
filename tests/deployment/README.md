@@ -63,8 +63,8 @@ Für die Wiederholungsprüfung denselben Ansible-Aufruf erneut ausführen und
 Container-IDs sowie `State.StartedAt` im isolierten Daemon vergleichen. Bei einem
 App-Update müssen Nginx und DB unverändert bleiben; statische Dateien müssen
 aus dem neuen App-Image kommen und beim Rollback zur alten App passen.
-Infrastrukturänderungen sind im normalen Deploy abzuweisen und über
-`deploy/ansible/infrastructure.yml` ausdrücklich zu prüfen. Weitere Abnahmefälle
+Infrastrukturänderungen werden im normalen Deploy automatisch abgeglichen;
+identische Eingaben dürfen keine Container neu starten. Weitere Abnahmefälle
 sind absichtlicher App-Abnahmefehler mit kompatiblem Rollback, veraltete
 Release-Sequenz und falscher SSH-Hostschlüssel.
 Die tatsächlich geprüften Fälle stehen in `docs/t02-validation.md`.
@@ -79,3 +79,35 @@ Dies entfernt ausschliesslich den wegwerfbaren Testhost samt seinen anonymen
 Fixture-Volumes und dem darin isolierten Datenbestand. Es ist kein
 Betriebsverfahren für RepairHub. Lokale Testschlüssel und Berichte anschliessend
 gezielt entfernen; keine pauschale Docker-Bereinigung durchführen.
+
+## Regression: automatisches Upgrade und Idempotenz
+
+Eine Fixture zunächst mit einem archivierten migrationsfreien T03-Prüfimage und
+den Compose-/Nginx-/Capability-Dateien aus v0.3 bereitstellen. Die geschützten
+bisherigen Eingaben liegen als `old.json`, die neuen Release-Eingaben als
+`vars.json` im Fixture-Verzeichnis. Die neue Release-Sequenz muss höher sein;
+alle Registry-Digests stammen weiterhin ausschliesslich aus der lokalen Fixture.
+Dann mit dem geladenen `controller.env` aus dem Repository-Stamm ausführen:
+
+```bash
+source .qa/FIXTURE/controller.env
+uv run --locked --group ci python tests/deployment/check_automatic_deployment.py .qa/FIXTURE
+```
+
+Das Prüfskript verlangt Namen und Label eines isolierten Deployment-Testhosts.
+Es wiederholt zunächst den alten Stand, legt einen Datenerhalt-Prüfwert an und
+führt anschliessend den neuen Release mit geändertem Nginx und Migrationen durch.
+Dafür wird ausschliesslich das normale `deploy.yml` verwendet, ohne zusätzliche
+Variablen, vorbereitenden Wartungslauf oder Freigabe-Tag.
+
+Geprüft werden Migration, Datenerhalt, `changed=0` bei Wiederholung sowie die
+Identität **und Startzeit** aller Container. Danach verändert der Test eine
+Nginx-Datei auf dem Host und entfernt den Nginx-Container: Der normale Deploy muss
+beides reparieren und anschliessend wieder unverändert durchlaufen. Manipulierte
+Datenbank-Zugangsdaten, inkompatible Datenverträge und veraltete Releases müssen
+weiterhin ohne Hoständerung scheitern. Ein simulierter Abbruch vor dem Entfernen
+des Infrastruktur-Pending-Markers wird mit demselben Deploy abgeschlossen;
+die anschliessende Wiederholung muss wieder `changed=0` ergeben. Der Test erzeugt Logs ausschliesslich im geschützten Fixture-Verzeichnis;
+keine vollständigen Konfigurationsdateien oder Laufzeitwerte ausgeben.
+
+Konkrete Ergebnisse: [Automatisches Infrastruktur-Upgrade](../../docs/infrastructure-upgrade-validation.md).

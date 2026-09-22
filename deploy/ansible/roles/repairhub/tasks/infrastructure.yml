@@ -35,6 +35,8 @@
         content: "{{ repairhub_installed_infrastructure.fingerprint }}\n"
         mode: "0600"
 
+# Der Marker überlebt einen Abbruch. Ein Wiederholungslauf prüft damit auch den
+# begonnenen Datenbankvertrag, bevor er den Sollzustand erneut abgleicht.
 - name: Unvollständige Infrastrukturänderung bis zur erfolgreichen Abnahme kennzeichnen
   ansible.builtin.copy:
     dest: "{{ repairhub_install_dir }}/infrastructure-pending.json"

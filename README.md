@@ -6,8 +6,10 @@ Flask mit PostgreSQL-Bereitschaftsprüfung, Docker Compose und eine
 Pipeline für Test → Build → Security → Deploy über GitHub Actions und Ansible.
 Registrierung, E-Mail-Verifikation, Anmeldung und Passwort-Recovery verwenden
 Flask-Security. T06 ergänzt eigene Geräte unter `/devices`: AJAX-Erfassung und
-Bearbeitung, serverseitiger Listenstart und virtuelle AJAX-Liste. Reparaturfälle
-und die fachliche API folgen in den weiteren Funktionstasks.
+Bearbeitung, serverseitiger Listenstart und virtuelle AJAX-Liste. T07 ergänzt
+Reparaturfälle, Fehlerbeschreibungen, Schritte und Statuswechsel mit Wiederaufnahme.
+Details: [Reparaturverwaltung](docs/repairs.md) und [T07-Abnahme](docs/t07-validation.md).
+Ersatzteile, Kosten und die fachliche API folgen in den weiteren Funktionstasks.
 Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für aktive
 DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
 für Abhängigkeiten, Geheimnisse und Container.
@@ -140,7 +142,7 @@ Das in T03 vervollständigte Grundgerüst verwendet eine gemeinsame englische
 Seitenvorlage sowie getrennte HTML- und JSON-Fehlerantworten. Konfiguration,
 Fehlervertrag, Komponentengrenzen und Abnahme stehen in
 [docs/t03-validation.md](docs/t03-validation.md). Registrierung und E-Mail-Verifikation sind mit T04 umgesetzt;
-Reparaturfunktionen folgen mit den nächsten Tasks.
+Geräte und Reparaturfälle sind mit T06 und T07 umgesetzt.
 
 Das Frontend verwendet lokal eingebundenes Bootstrap und JavaScript mit kleinen
 DOM-Adaptern nach dem Humble-Object-Muster: [Frontend-Aufbau](docs/frontend.md).
@@ -219,8 +221,9 @@ AJAX; Listen starten mit 20 serverseitigen Zeilen und behalten danach höchstens
 60 Gerätezeilen im DOM. Ohne JavaScript bleiben Formulare und Seitenlinks nutzbar.
 Details: [Geräteverwaltung](docs/devices.md), [Abnahme](docs/t06-validation.md).
 
-Vor dem Produktionsrelease die Nginx-CSP mit `connect-src 'self'` über
-`deploy/ansible/infrastructure.yml` und den bisher laufenden App-Digest ausrollen.
-Danach liefert `deploy.yml` den neuen App-Digest und Migration `0002_devices` aus.
+Der normale `deploy.yml`-Aufruf gleicht die Nginx-CSP mit `connect-src 'self'`
+automatisch ab und liefert den geprüften App-Digest samt Migration aus.
+Identische Wiederholungen erstellen keine Container neu; eine separate
+Infrastrukturfreigabe ist nicht erforderlich.
 Keine neuen Environment-Variablen oder Secrets. Offene Security-Abnahmen bleiben
 im T06-Nachweis ausdrücklich ausgewiesen.

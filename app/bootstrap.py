@@ -119,6 +119,38 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
         )
     )
 
+    from datetime import UTC, datetime
+
+    from app.data.repairs.add_step import AddStepRepository
+    from app.data.repairs.change_status import ChangeStatusRepository
+    from app.data.repairs.create_repair import CreateRepairRepository
+    from app.data.repairs.get_repair import GetRepairRepository
+    from app.data.repairs.list_repairs import ListRepairsRepository
+    from app.data.repairs.update_description import UpdateDescriptionRepository
+    from app.data.repairs.update_step import UpdateStepRepository
+    from app.domains.repairs.add_step.handler import AddStep
+    from app.domains.repairs.change_status.handler import ChangeStatus
+    from app.domains.repairs.create_repair.handler import CreateRepair
+    from app.domains.repairs.get_repair.handler import GetRepair
+    from app.domains.repairs.list_repairs.handler import ListRepairs
+    from app.domains.repairs.update_description.handler import UpdateDescription
+    from app.domains.repairs.update_step.handler import UpdateStep
+    from app.web.routes.repairs import create_repair_blueprint
+
+    app.register_blueprint(
+        create_repair_blueprint(
+            identity=identity,
+            device_reader=GetDevice(GetDeviceRepository()),
+            create=CreateRepair(CreateRepairRepository(), lambda: datetime.now(UTC)),
+            listing=ListRepairs(ListRepairsRepository()),
+            detail=GetRepair(GetRepairRepository()),
+            description=UpdateDescription(UpdateDescriptionRepository()),
+            status=ChangeStatus(ChangeStatusRepository()),
+            add_step=AddStep(AddStepRepository()),
+            update_step=UpdateStep(UpdateStepRepository()),
+        )
+    )
+
     @app.context_processor
     def identity_context():
         # Eigene Vorlagen erhalten nur einen Wert, kein nachladendes ORM-Objekt.

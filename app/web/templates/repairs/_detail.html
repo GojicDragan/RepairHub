@@ -1,0 +1,64 @@
+{% from 'repairs/_forms.html' import description, result %}
+{% set repair = data.repair %}
+{% set list_device_id = repair.device_id if request.args.get('device_id') == repair.device_id|string else none %}
+<article class="repair-workspace">
+  <div class="repair-breadcrumb"><a href="{{ url_for('repairs.index', device_id=list_device_id) }}">← {{ _('Your repairs') }}</a><a href="{{ url_for('devices.detail', device_id=repair.device_id) }}">{{ repair.device_name }}</a></div>
+  <div class="section-heading repair-heading"><div><p class="eyebrow">{{ _('KEEP THE REPAIR MOVING') }}</p><h1 tabindex="-1">{{ _('Repair #%(id)s', id=repair.id) }}</h1><p>{{ repair.device_name }}</p></div><span class="repair-status repair-status-{{ repair.status }}">{{ status_labels[repair.status] }}</span></div>
+  <p data-repair-message role="status" aria-live="polite"></p>
+  <div class="repair-grid">
+    <section class="repair-panel" aria-labelledby="fault-heading">
+      <h2 id="fault-heading">{{ _('Fault description') }}</h2>
+      <form action="{{ url_for('repairs.edit_description', repair_id=repair.id, offset=data.step_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+        {{ forms.description.hidden_tag() }}
+        {{ description(forms.description.description, 'fault-description', 10000, repair.description) }}
+        <button class="btn btn-primary btn-sm" type="submit">{{ _('Save description') }}</button>
+        {{ result() }}
+      </form>
+    </section>
+    <section class="repair-panel" aria-labelledby="status-heading">
+      <h2 id="status-heading">{{ _('Repair status') }}</h2>
+      <p>{{ _('You can reopen a completed repair at any time.') }}</p>
+      <form action="{{ url_for('repairs.change_status', repair_id=repair.id, offset=data.step_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+        {{ forms.status.hidden_tag() }}
+        <label class="form-label" for="repair-status">{{ _('Repair status') }}</label>
+        {{ forms.status.status(id='repair-status', class_='form-select', data_repair_field='true', data_original=repair.status, required=true, aria_describedby='status-error') }}
+        <p id="status-error" data-error-for="status" class="field-validation" aria-live="polite">{{ forms.status.status.errors|join(' ') }}</p>
+        <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Save status') }}</button>
+        {{ result() }}
+      </form>
+      <p class="field-hint">{{ _('Created') }} <time datetime="{{ repair.created_at.isoformat() }}">{{ repair.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</time></p>
+    </section>
+  </div>
+  <section class="repair-panel repair-steps" aria-labelledby="steps-heading">
+    <div class="section-heading"><h2 id="steps-heading">{{ _('Repair steps') }}</h2><span>{{ _('%(count)s steps', count=data.step_total) }}</span></div>
+    {% if not data.step_total %}<p class="text-muted">{{ _('No steps yet. Add the first action for this repair.') }}</p>{% endif %}
+    <ol class="repair-step-list" start="{{ data.step_offset + 1 }}">
+      {% for step in data.steps %}
+      {% set form = forms['step-' ~ step.id] %}
+      <li class="repair-step{% if step.completed %} is-completed{% endif %}" data-step-id="{{ step.id }}">
+        <form action="{{ url_for('repairs.edit_step', repair_id=repair.id, step_id=step.id, offset=data.step_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+          {{ form.hidden_tag() }}
+          {{ description(form.description, 'step-description-' ~ step.id, 2000, step.description) }}
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="form-check">{{ form.completed(id='step-completed-' ~ step.id, class_='form-check-input', value='true', data_repair_field='true', data_original='true' if step.completed else 'false') }}<label for="step-completed-{{ step.id }}" class="form-check-label">{{ _('Done') }}</label></div>
+            <button class="btn btn-outline-secondary btn-sm" type="submit">{{ _('Save step') }}</button>
+          </div>
+          <p data-error-for="completed" class="field-validation">{{ form.completed.errors|join(' ') }}</p>
+          {{ result() }}
+        </form>
+      </li>
+      {% endfor %}
+    </ol>
+    <nav class="device-pagination" aria-label="{{ _('Step pages') }}">
+      {% if data.step_offset > 0 %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=[0, data.step_offset-20]|max) }}">{{ _('Previous steps') }}</a>{% endif %}
+      {% if data.step_offset + 20 < data.step_total %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset+20) }}">{{ _('Next steps') }}</a>{% endif %}
+    </nav>
+    <h3>{{ _('Add a step') }}</h3>
+    <form action="{{ url_for('repairs.create_step', repair_id=repair.id, offset=data.step_offset, device_id=list_device_id) }}" method="post" data-repair-form>
+      {{ forms['new-step'].hidden_tag() }}
+      {{ description(forms['new-step'].description, 'new-step-description', 2000) }}
+      <button class="btn btn-primary btn-sm" type="submit">{{ _('Add step') }}</button>
+      {{ result() }}
+    </form>
+  </section>
+</article>

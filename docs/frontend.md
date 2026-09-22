@@ -181,3 +181,32 @@ Die Gerätefelder verwenden eine markeneigene Combobox mit weiterhin freier Eing
 Antworten; `device-suggestions-view.mjs` kapselt ausschliesslich DOM, Timer und Fetch.
 Die serverseitige Eigentumsprüfung und Eingabevalidierung bleiben im Geräte-Slice.
 Umfang, Rückfallverhalten und Datenschutz: [Geräteverwaltung](devices.md).
+
+## T07: Reparaturformulare
+
+`RepairFormPresenter` entscheidet DOM-frei über Änderungen, leere Pflichtwerte,
+laufende Speicheranfragen und Fehler. `repair-form-view.mjs` bindet delegierte
+DOM-Ereignisse und Fetch an serverseitig gerenderte Formulare. Erfassung,
+Fehlerbeschreibung, Status und Schritte speichern per AJAX, mit CSRF und einer
+normalen POST-Weiterleitung als Rückfall ohne JavaScript. Andere Formularentwürfe
+werden beim Ersetzen des Detailbereichs wiederhergestellt, auch vorübergehend
+leere Eingaben. Schritte sind auf 20 Einträge je Seite begrenzt; die Reparaturliste
+verwendet die unten beschriebene gemeinsame virtuelle Listensteuerung.
+Fachregeln und Eigentumsprüfung bleiben ausschliesslich serverseitig in den
+injizierten Reparatur-Slices. Details: [Reparaturverwaltung](repairs.md).
+
+
+### Gemeinsame virtuelle Listen für Geräte und Reparaturfälle
+
+`virtual-list-presenter.mjs` enthält die gemeinsame DOM-freie Fenstersteuerung
+(20er-Seiten, höchstens 60 sichtbare/vorgeladene Zeilen, Schutz vor verspäteten
+Antworten). `virtual-list-view.mjs` kapselt Fetch, Platzhalter, Tastatur/Fokus,
+Fehlerwiederholung und benutzer-/listenbezogene Scrollpositionen. Geräte und
+Reparaturen liefern nur ihre jeweiligen Zeilen-Renderer; keine kopierte zweite
+Scrollimplementierung. Der bisherige Geräte-Presenter exportiert die gemeinsame
+Klasse kompatibel weiter. Bestehende URL-Filter werden beim Nachladen erhalten.
+
+Reparaturzeilen verwenden dieselbe Höhe von 112 px und denselben gebrandeten
+Scrollbereich. Nutzereingaben werden über `textContent` gerendert. Ohne JavaScript
+bleiben SSR-Seiten und Seitenlinks nutzbar. Listenfenster und Eigentumsprüfung
+werden unabhängig davon im jeweiligen Python-Slice begrenzt.
