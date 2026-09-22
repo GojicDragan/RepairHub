@@ -42,6 +42,8 @@
   when: repairhub_has_api | default(false)
   no_log: true
 
+# Eine leere Installation ist gültig. Sobald Fälle existieren, wird zusätzlich
+# ein Detail aus der authentifizierten Liste geprüft; keine feste Fall-ID nötig.
 - name: Ersten verfügbaren API-Fall authentifiziert lesen
   ansible.builtin.uri:
     url: "{{ repairhub_check_url | default(repairhub_public_url) }}/api/repairs/{{ repairhub_api_list.json['items'][0].id }}"

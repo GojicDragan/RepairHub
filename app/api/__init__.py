@@ -18,12 +18,16 @@ def create_api_blueprint(*, authenticate, detail, listing):
     blueprint = Blueprint("api", __name__)
 
     def owner():
+        # Browsersitzungen und Queryparameter autorisieren die API nicht.
+        # Bearer bezeichnet hier einen opaken Schlüssel, kein JWT-Format.
         authorization = request.headers.get("Authorization", "").split()
         identity = None
         if len(authorization) == 2 and authorization[0].lower() == "bearer":
             identity = authenticate.execute(Authenticate(authorization[1]))
         if identity is None:
             raise Unauthorized(www_authenticate=WWWAuthenticate("bearer", {"realm": "RepairHub"}))
+        # Nur das Ergebnis der Schlüsselprüfung darf systemweiten Zugriff erteilen;
+        # weder eine übermittelte Benutzer-ID noch ein fehlender Eigentümer genügt.
         return (
             SystemReadAccess.ALL_REPAIRS if isinstance(identity, SystemApiIdentity) else identity.id
         )
@@ -32,6 +36,8 @@ def create_api_blueprint(*, authenticate, detail, listing):
         values = request.args.getlist(name)
         if not values:
             return default
+        # Mehrdeutige Parameter und überlange Zahlen vor der Konvertierung abweisen;
+        # die Obergrenze passt zum BIGINT-Bereich der Datenbank.
         if (
             len(values) != 1
             or not values[0].isascii()

@@ -40,6 +40,8 @@ def seed_api(directory: Path, host: str, refs: dict, values: dict) -> None:
     run("docker", "cp", str(seed_env), f"{host}:{remote_env}")
     try:
         run("docker", "exec", host, "docker", "network", "create", network)
+        # Dasselbe Volume übernimmt später Compose. So prüft das Deployment
+        # echte vorhandene Falldaten statt einer nachträglich befüllten Datenbank.
         run(
             "docker",
             "exec",

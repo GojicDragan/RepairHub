@@ -65,6 +65,8 @@ def main() -> None:
     system_key = required("API_SMOKE_KEY")
     if not re.fullmatch(r"rh_[A-Za-z0-9_-]{43}", system_key):
         raise ValueError("API_SMOKE_KEY benötigt rh_ gefolgt von 43 URL-sicheren Zeichen.")
+    # Anwendung und HTTPS-Abnahme müssen denselben Systemschlüssel verwenden.
+    # Beide Werte gelangen nur in die geschützten Ansible-Eingaben.
     runtime_env += f"API_SMOKE_KEY={system_key}\n"
     values = {
         "repairhub_api_smoke_key": system_key,

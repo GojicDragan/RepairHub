@@ -42,6 +42,8 @@
   when: repairhub_previous.smoke_ca_pem | default('') | length > 0
   changed_when: false
 
+# Nach einer Schlüsselrotation gilt beim Rollback wieder die vorige Runtime.
+# Deshalb muss auch die Abnahme den gespeicherten Schlüssel dieses Releases nutzen.
 - name: Vorherigen API-Prüfzugang ohne Ausgabe lesen
   ansible.builtin.slurp:
     src: "{{ repairhub_previous.release_dir }}/smoke-account.json"

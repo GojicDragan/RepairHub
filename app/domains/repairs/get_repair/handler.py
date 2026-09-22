@@ -22,6 +22,8 @@ class GetRepair:
         if command.owner_id is not SystemReadAccess.ALL_REPAIRS:
             require_owner(command.owner_id)
         require_id(command.repair_id)
+        # Der API-Einzelfall enthält alle Schritte und Teile. Nur die Browseransicht
+        # nutzt Teilfenster; die Berechtigungs- und Kostenregeln bleiben dieselben.
         part_offset = 0 if command.complete else offset(command.part_offset)
         step_offset = 0 if command.complete else offset(command.offset)
         result = self.repository.get(

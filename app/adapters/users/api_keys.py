@@ -15,6 +15,8 @@ class ApiKeys:
         self.datastore = datastore
         if system_key and not KEY_PATTERN.fullmatch(system_key):
             raise ValueError("API_SMOKE_KEY must use rh_ followed by 43 URL-safe characters.")
+        # Ein leerer Konfigurationswert deaktiviert nur den Systemzugang.
+        # Der Adapter behält vom konfigurierten Schlüssel lediglich den Vergleichshash.
         self.system_digest = self.digest(system_key) if system_key else None
 
     @staticmethod
@@ -29,6 +31,8 @@ class ApiKeys:
 
     def _save(self, user, key):
         user.api_key_hash = self.digest(key)
+        # Flask-Security ändert diese Identitätskennung beim Passwort-Reset.
+        # Dadurch verliert auch ein zuvor ausgestellter API-Key seine Gültigkeit.
         user.api_key_identity = user.fs_uniquifier
         user.api_key_created_at = datetime.now(UTC)
         try:
@@ -68,6 +72,8 @@ class ApiKeys:
         if not isinstance(command.key, str) or not KEY_PATTERN.fullmatch(command.key):
             return None
         digest = self.digest(command.key)
+        # Der Systemzugang gehört keinem Benutzerkonto; seine Leseberechtigung
+        # wird erst an der API-Grenze in die Reparaturdomäne übersetzt.
         if self.system_digest and secrets.compare_digest(self.system_digest, digest):
             return SystemApiIdentity()
         user = self.datastore.find_user(api_key_hash=digest)

@@ -16,7 +16,8 @@ def repair_dto(row):
 
 
 def owned_devices_for_repair(row):
-    # Aufrufer hat den Fall bereits eigentumsgebunden geladen; nur den Namen ergänzen.
+    # Der Aufrufer hat den Fall bereits mit geprüftem Lesezugriff geladen
+    # (Eigentümer oder Systemschlüssel); hier wird nur der Gerätename ergänzt.
     from sqlalchemy import select
 
     return select(Device.name).where(Device.id == row.device_id)

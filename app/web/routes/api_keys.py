@@ -31,6 +31,7 @@ def create_api_key_blueprint(*, identity, create, revoke, status):
 
     @blueprint.post("")
     def generate():
+        # Die Zielidentität kommt immer aus der geprüften Sitzung, nie aus Formulardaten.
         generated = create.execute(Create(identity.current().id))
         if generated is None:
             abort(403)

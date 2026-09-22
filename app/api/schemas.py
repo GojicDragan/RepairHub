@@ -4,6 +4,8 @@ from app.domains.repairs.dto import Repair, RepairDetails
 
 
 def repair_document(detail: RepairDetails) -> dict:
+    # Beträge sind bereits fachlich berechnet. Dezimalstrings erhalten im JSON
+    # die Genauigkeit und zwei Nachkommastellen, ohne Umweg über binäre Floats.
     repair = detail.repair
     return {
         "id": repair.id,

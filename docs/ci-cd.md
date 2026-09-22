@@ -506,7 +506,7 @@ Aus dem Repository-Stamm:
 ```bash
 uv sync --locked --group ci
 export ANSIBLE_CONFIG="$PWD/deploy/ansible/ansible.cfg"
-uv run --locked --group ci ansible-galaxy collection install -r deploy/ansible/requirements.yml
+uv run --locked --group ci python -m scripts.ci.install_collections
 uv run --locked --group ci ansible-lint deploy/ansible
 uv run --locked --group ci ansible-playbook -i deploy/ansible/inventories/production/hosts.yml deploy/ansible/deploy.yml --syntax-check
 ```
@@ -786,3 +786,14 @@ Persönliche Benutzerkeys werden nicht verändert. Details: [API](api.md).
 
 Isolierte Image- und Deployment-Tests nutzen ausschliesslich synthetische Konten,
 Beispieldaten und wegwerfbare Schlüssel.
+
+
+### Vorübergehende Fehler beim Galaxy-Download
+
+Test- und Deploy-Job installieren Collections über `scripts.ci.install_collections`.
+Abgebrochene TLS-Verbindungen (z.B. `SSL: UNEXPECTED_EOF_WHILE_READING`) können
+bereits während der Abhängigkeitsauflösung auftreten, bevor Anwendungstests starten.
+Die Installation wird höchstens dreimal versucht, mit 5 und 15 Sekunden Pause
+und maximal 180 Sekunden je Versuch. Gepinnte Versionen und TLS-Zertifikatsprüfung
+bleiben erhalten. Nach drei Fehlschlägen bleibt der Job rot; weitere Stufen laufen
+nicht. Ein dauerhaft nicht erreichbares Galaxy muss weiterhin behoben werden.

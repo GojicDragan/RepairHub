@@ -9,6 +9,8 @@ from app.data.repairs.model import Repair, RepairStep
 from app.domains.repairs.dto import SystemReadAccess
 
 
+# Diese Ausnahme gilt ausschliesslich für Leseadapter. Schreibadapter verwenden
+# weiterhin die Eigentumsabfragen; None oder eine ungültige ID bedeutet nie «alle».
 def readable_repairs(access):
     if access is SystemReadAccess.ALL_REPAIRS:
         return select(Repair).join(Device, Repair.device_id == Device.id)

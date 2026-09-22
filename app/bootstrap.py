@@ -177,6 +177,8 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     from app.web import blueprint as web_blueprint
     from app.web.routes.api_keys import create_api_key_blueprint
 
+    # Persönliche Keys und System-Key nutzen dieselbe Authentifizierungsgrenze.
+    # Die Browserverwaltung erhält weiterhin ausschliesslich kontogebundene Commands.
     keys = ApiKeys(datastore, app.config["API_SMOKE_KEY"])
     app.register_blueprint(web_blueprint)
     app.register_blueprint(

@@ -10,6 +10,8 @@ depends_on = None
 
 
 def upgrade():
+    # Bestehende Konten starten ohne API-Key. PostgreSQL erlaubt mehrere NULL-Werte
+    # im Unique-Constraint, aber niemals denselben gespeicherten Schlüsselhash.
     op.add_column("users", sa.Column("api_key_hash", sa.String(64), nullable=True))
     op.add_column("users", sa.Column("api_key_identity", sa.String(64), nullable=True))
     op.add_column(
