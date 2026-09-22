@@ -248,3 +248,8 @@ h1, h2, h3 { letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
 /* Gleiche Oberkante und Höhe trotz mehrzeiligem Suchhinweis; keine leere Button-Spalte. */
 .repair-filters .form-select { min-height: 46px; font-size: .95rem; border-color: #c8cfc3; border-radius: 6px; background-color: #fffefa; }
 .repair-filters .form-select:focus { border-color: var(--rh-accent); box-shadow: 0 0 0 3px #b840201a; }
+
+/* Gleiche Karten gewichten die drei Zustände gleich; Text ergänzt die Statusfarbe. */
+.repair-overview h2 { font-size: 1.2rem; }
+.repair-overview-card { border: 1px solid var(--rh-line); border-radius: 12px; background: #fff; padding: 20px; }
+.repair-overview-card dd { font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 12px 0 0; font-variant-numeric: tabular-nums; }

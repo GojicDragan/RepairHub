@@ -3,6 +3,18 @@
 {% block content %}
 <section aria-labelledby="repairs-heading" data-repair-list data-owner="{{ viewer.id }}" data-url="{{ url_for('repairs.index', device_id=device_id, q=search, status=status_filter) }}" data-offset="{{ page.offset }}" data-total="{{ page.total }}" data-snapshot="{{ page.snapshot }}" data-loading="{{ _('Loading repairs…') }}" data-failure="{{ _('Could not load repairs. Please retry.') }}">
 <div class="section-heading device-heading"><div><p class="eyebrow">{{ _('KEEP THE REPAIR MOVING') }}</p><h1 id="repairs-heading">{{ _('Your repairs') }}</h1><p>{{ _('Faults, progress and the next small step.') }}</p></div><a class="btn btn-primary" href="{{ url_for('repairs.new', device_id=device_id) if device_id else url_for('devices.index') }}">{{ _('New repair') if device_id else _('Choose a device to start') }}</a></div>
+<section class="repair-overview mt-4" aria-labelledby="overview-heading">
+<h2 id="overview-heading">{{ _('Your repair overview') }}</h2>
+<p class="text-muted">{{ _('Across all your devices, regardless of list filters.') }}</p>
+<div class="row g-3">
+{% for state, count in [('open', overview.open), ('in_progress', overview.in_progress), ('completed', overview.completed)] %}
+<div class="col-12 col-sm-4"><dl class="repair-overview-card mb-0">
+<dt><span class="repair-status repair-status-{{ state }}">{{ status_labels[state] }}</span></dt>
+<dd data-status-count="{{ state }}">{{ count }}</dd>
+</dl></div>
+{% endfor %}
+</div>
+</section>
 <form data-list-filters method="get" action="{{ url_for('repairs.index') }}" class="repair-filters row g-3 align-items-start mt-2 mb-4" role="search" aria-label="{{ _('Filter repairs') }}">
 {% if device_id %}<input type="hidden" name="device_id" value="{{ device_id }}">{% endif %}
 <div class="col-12 col-md-8"><label class="form-label" for="repair-search">{{ _('Search repairs') }}</label><input class="form-control" type="search" id="repair-search" name="q" value="{{ search }}" maxlength="200" aria-describedby="repair-search-hint"><div class="form-text" id="repair-search-hint">{{ _('Search faults, device names, manufacturers and models.') }}</div></div>

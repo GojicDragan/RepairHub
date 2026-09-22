@@ -130,6 +130,7 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     from app.data.repairs.change_status import ChangeStatusRepository
     from app.data.repairs.create_repair import CreateRepairRepository
     from app.data.repairs.get_repair import GetRepairRepository
+    from app.data.repairs.get_status_overview import GetStatusOverviewRepository
     from app.data.repairs.list_repairs import ListRepairsRepository
     from app.data.repairs.update_description import UpdateDescriptionRepository
     from app.data.repairs.update_step import UpdateStepRepository
@@ -140,6 +141,7 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     from app.domains.repairs.change_status.handler import ChangeStatus
     from app.domains.repairs.create_repair.handler import CreateRepair
     from app.domains.repairs.get_repair.handler import GetRepair
+    from app.domains.repairs.get_status_overview.handler import GetStatusOverview
     from app.domains.repairs.list_repairs.handler import ListRepairs
     from app.domains.repairs.update_description.handler import UpdateDescription
     from app.domains.repairs.update_step.handler import UpdateStep
@@ -150,6 +152,7 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
         create_repair_blueprint(
             identity=identity,
             device_reader=GetDevice(GetDeviceRepository()),
+            overview=GetStatusOverview(GetStatusOverviewRepository()),
             create=CreateRepair(CreateRepairRepository(), lambda: datetime.now(UTC)),
             listing=ListRepairs(ListRepairsRepository()),
             detail=GetRepair(GetRepairRepository()),

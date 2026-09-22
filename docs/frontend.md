@@ -278,3 +278,14 @@ Humble-Object-Adapter optional; eine reine Textsuche benötigt keinen unsichtbar
 Statusfilter. Trefferzahl, Leerzustand, Zurücksetzen, Fehlerwiederholung und Scroll-Reset
 verwenden dieselbe virtuelle Liste. Gerätezeilen bauen Detail-/Bearbeitungslinks
 über die URL-API auf, damit Suchparameter nicht Teil des URL-Pfads werden.
+
+## K-T03: Statusübersicht
+
+Die Reparaturliste erhält drei gleich gewichtete Statuskarten vor den Filtern.
+Die Angaben beziehen sich ausdrücklich auf alle eigenen Geräte, unabhängig von
+Listenfiltern. Semantische Definitionslisten verbinden Zahl und Statusbeschriftung;
+Statusfarben entsprechen den vorhandenen Badges. Bootstrap stapelt die Karten auf
+kleinen Bildschirmen. Die Anzeige entsteht vollständig auf dem Server und braucht
+weder einen zusätzlichen Presenter noch JavaScript. Bestehende AJAX-Filter und
+virtuelle Fenster bleiben unabhängig; beim nächsten HTML-Aufruf werden die Zahlen
+neu gelesen. Details: [Reparaturverwaltung](repairs.md#statusübersicht-k-t03).

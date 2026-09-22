@@ -22,9 +22,9 @@ eigenes Gerät eingeschränkt. `/repairs/<id>` zeigt den Fall und seine Schritte
 
 ## Architektur und Persistenz
 
-`app.domains.repairs` enthält sieben vertikale Slices: `create_repair`,
-`list_repairs`, `get_repair`, `update_description`, `change_status`, `add_step`
-und `update_step`. Jeder besitzt eigene Commands, Ports und Handler. Gemeinsame
+`app.domains.repairs` enthält unter anderem die vertikalen Slices `create_repair`,
+`list_repairs`, `get_repair`, `update_description`, `change_status`, `add_step`,
+`update_step` und `get_status_overview`. Jeder besitzt eigene Commands, Ports und Handler. Gemeinsame
 DTOs und Regeln importieren keine Slices. Der Erstellungszeitpunkt stammt aus
 einer injizierten Uhr. Der Fachkern kennt weder Flask noch SQLAlchemy.
 
@@ -125,3 +125,24 @@ Die obere ID verhindert das Einschieben neuer Fälle in ein laufendes Fenster,
 ist aber kein unveränderlicher Datenbank-Snapshot: Status- oder Textänderungen
 können Treffer während des Scrollens verändern. Erneutes Anwenden aktualisiert die Liste.
 Englische Texte und deutsche gettext-Übersetzungen umfassen auch den leeren Suchzustand.
+
+## Statusübersicht (K-T03)
+
+Oberhalb der Liste stehen die Zahlen eigener offener, laufender und abgeschlossener
+Fälle. Der ausdrücklich beschriftete Überblick gilt für alle eigenen Geräte;
+Suchtext, Status-/Gerätefilter und virtuelle Listenfenster schränken ihn nicht ein.
+Ohne Fälle erscheinen drei Nullwerte. Ein erneuter HTML-Aufruf liest den aktuellen
+Stand, auch nach Abschluss oder Wiederaufnahme eines Falls. Keine Live-Aktualisierung
+anderer geöffneter Tabs; AJAX-Listenfilter verändern die globale Übersicht nicht.
+
+Der Slice `get_status_overview` validiert die injizierte Benutzeridentität und
+liefert ein unveränderliches DTO über einen eigenen Lese-Port. Sein SQLAlchemy-
+Adapter aggregiert mit der gemeinsamen Eigentumsabfrage direkt in PostgreSQL.
+Weder Falldetails noch alle Listeneinträge werden geladen. Der System-API-Key
+öffnet keine globale Browserübersicht. Composition Root und Fachgrenzen bleiben
+erhalten; keine Migration, zusätzliche Bibliothek oder neue Konfiguration.
+
+Die drei gleich gewichteten Karten verwenden bestehende Statusfarben und
+Textbeschriftungen, semantische Definitionslisten sowie responsive Bootstrap-
+Spalten. Englisch und Deutsch werden serverseitig übersetzt; JavaScript ist
+für diese Anzeige nicht erforderlich.

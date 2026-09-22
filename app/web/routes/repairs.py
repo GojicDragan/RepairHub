@@ -17,6 +17,7 @@ from app.domains.repairs.change_status.dto import Command as ChangeStatus
 from app.domains.repairs.create_repair.dto import Command as Create
 from app.domains.repairs.errors import InvalidRepair, RepairNotFound
 from app.domains.repairs.get_repair.dto import Command as Get
+from app.domains.repairs.get_status_overview.dto import Command as Overview
 from app.domains.repairs.list_repairs.dto import Command as List
 from app.domains.repairs.update_description.dto import Command as Description
 from app.domains.repairs.update_step.dto import Command as UpdateStep
@@ -28,6 +29,7 @@ def create_repair_blueprint(
     *,
     identity,
     device_reader,
+    overview,
     create,
     listing,
     detail,
@@ -230,6 +232,7 @@ def create_repair_blueprint(
         return render_template(
             "repairs/index.html",
             page=result,
+            overview=overview.execute(Overview(owner())),
             device_id=device_id,
             status_labels=labels(),
             search=request.args.get("q", ""),
