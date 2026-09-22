@@ -1,4 +1,6 @@
 ---
+# mkdir erwirbt die Sperre atomar. Bei bestehender Sperre wird nicht in den
+# geschützten Block eingetreten und folglich keine fremde Sperre entfernt.
 - name: Exklusive Hostsperre für Notfall-Rollback erwerben
   ansible.builtin.command:
     argv: [mkdir, "{{ repairhub_install_dir }}/.deployment-lock"]
@@ -33,6 +35,8 @@
       ansible.builtin.stat:
         path: "{{ repairhub_install_dir }}/infrastructure-pending.json"
       register: repairhub_rollback_pending
+    # Bei teilweise umgestellter Infrastruktur ist das alte App-Image allein
+    # kein geprüfter Zielzustand; zuerst den unterbrochenen Deploy abschliessen.
     - name: App-Rollback nur bei abgeschlossener Infrastrukturwartung erlauben
       ansible.builtin.assert:
         that:

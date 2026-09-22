@@ -4,5 +4,6 @@
 <div data-repair-content data-expired="{{ _('Your session has expired. Please log in again.') }}" data-failure="{{ _('Could not save the repair. Your entries are still here. Please retry.') }}">
   {{ content|safe }}
 </div>
+{# Ausserhalb des AJAX-Bereichs: Reparaturänderungen verwerfen keine Bildauswahl. #}
 {% if gallery %}{{ gallery|safe }}{% endif %}
 {% endblock %}

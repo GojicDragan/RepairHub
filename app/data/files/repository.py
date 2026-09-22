@@ -15,6 +15,8 @@ class ImagesRepository:
         )
 
     def query(self, owner_id, parent_id):
+        # Die Bild-ID allein beweist kein Eigentum: jede Abfrage bindet den
+        # übergeordneten Gegenstand an den vertrauenswürdig ermittelten Benutzer.
         parents = self.owned_parent(owner_id).subquery()
         return (
             select(self.model)
@@ -52,6 +54,7 @@ class ImagesRepository:
     def list(self, owner_id, parent_id, offset, limit):
         query = self.query(owner_id, parent_id)
         total = db.session.scalar(select(func.count()).select_from(query.subquery()))
+        # Die ID entscheidet bei identischen Zeitstempeln und hält die Reihenfolge eindeutig.
         rows = db.session.scalars(
             query.order_by(self.model.created_at.desc(), self.model.id.desc())
             .offset(offset)

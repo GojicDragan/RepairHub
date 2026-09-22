@@ -2,11 +2,13 @@ import { ImageUploadPresenter } from './image-upload-presenter.mjs';
 
 /** Nur Galerie ersetzen: Entwürfe der übrigen Reparaturformulare bleiben erhalten. */
 export function mountImageUploads(root) {
+  // Ausgetauschte Galerieformulare sollen mitsamt ihrem Presenter freigegeben werden können.
   const presenters = new WeakMap();
   function presenter(form) {
     if (presenters.has(form)) return presenters.get(form);
     const section = form.closest('[data-image-gallery]');
     const deleting = form.hasAttribute('data-image-delete');
+    // Löschen verwendet denselben Anfrageablauf, benötigt aber keine Dateiauswahl.
     const available = () => deleting || Boolean(form.elements.image.files.length);
     const view = {
       hasFile: available,
@@ -44,6 +46,7 @@ export function mountImageUploads(root) {
     const form = event.target.closest('[data-image-form], [data-image-delete]');
     if (form) presenter(form).update(form.hasAttribute('data-image-delete') || Boolean(form.elements.image.files.length));
   });
+  // Ereignisse am stabilen Vorfahren behandeln: Auch neu gerenderte Formulare funktionieren.
   root.addEventListener('submit', event => {
     const form = event.target.closest('[data-image-form], [data-image-delete]');
     if (!form) return;

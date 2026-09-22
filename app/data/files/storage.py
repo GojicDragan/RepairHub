@@ -19,6 +19,7 @@ class ObjectStorage:
             "aws_secret_access_key": secret_key,
             "config": Config(
                 signature_version="s3v4",
+                # Interner Docker-Hostname statt eigener DNS-Namen pro Bucket.
                 s3={"addressing_style": "path"},
                 connect_timeout=3,
                 read_timeout=10,
@@ -50,6 +51,7 @@ class ObjectStorage:
         try:
             response = self.client().get_object(Bucket=self.bucket, Key=key)
             with response["Body"] as stream:
+                # Ein zusätzliches Byte erkennt Übergrösse ohne unbeschränktes Einlesen.
                 data = stream.read(10 * 1024 * 1024 + 1)
             if len(data) > 10 * 1024 * 1024:
                 raise OSError("storage_unavailable")

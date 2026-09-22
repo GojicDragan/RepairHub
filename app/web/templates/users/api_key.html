@@ -5,6 +5,7 @@
   <p class="eyebrow">{{ _('YOUR WORKSHOP, CONNECTED') }}</p>
   <h1>{{ _('API access') }}</h1>
   <p>{{ _('Read your repairs from another application with a personal API key.') }}</p>
+  {# Klartext kommt nur aus der Erzeugungsantwort, niemals aus einer gespeicherten Abfrage. #}
   {% if generated %}
   <div class="alert alert-success" role="status">
     <h2 class="h5">{{ _('Your new API key') }}</h2>

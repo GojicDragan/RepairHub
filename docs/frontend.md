@@ -296,3 +296,9 @@ Geräte- und Reparaturdetails zeigen ein responsives Mosaik mit maximal 24 Bilde
 Seite und begrenzten Vorschaubildern. Uploadzustand und Mehrfachsendeschutz liegen im
 DOM-freien `ImageUploadPresenter`; der View-Adapter bindet Formular, Fetch und DOM an.
 Ohne JavaScript bleibt der serverseitige Formularablauf erhalten. Siehe [Bilder](images.md).
+
+## K-T05: PDF-Download
+
+Ein normaler Download-Link auf der Reparaturdetailseite benötigt keinen zusätzlichen
+JavaScript-Adapter. Das Dokument übernimmt Sprache und Markenfarben, ist serverseitig
+paginiert und funktioniert auch ohne JavaScript. Siehe [PDF-Berichte](pdf-reports.md).

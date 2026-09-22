@@ -333,6 +333,8 @@ def scan_garage(command, report_path, entry, reports, binary_dir):
                 raise ValueError("Garage-Imageprüfung blockiert.")
         elif metadata.get("OS") or not metadata.get("Layers"):
             raise ValueError("Fehlendes Inventar ausserhalb des geprüften Scratch-Images.")
+        # Fehlende Binary-Metadaten allein gelten nicht als bestanden. Erst das an
+        # genau diesen Image-Digest gebundene Quellinventar vervollständigt die Prüfung.
         source_dir = reports / "garage-source"
         evidence = prepare(source_dir, entry["source_reference"])
         source_report = reports / "trivy-garage-source.json"

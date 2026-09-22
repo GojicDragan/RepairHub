@@ -7,6 +7,7 @@ export class ListFilterPresenter {
 
   changed() {
     this.cancelPending();
+    // Während der Eingabepause dürfen alte Suchantworten die Liste nicht aktualisieren.
     this.view.pending();
     this.timer = this.schedule(() => this.apply(), 300);
   }

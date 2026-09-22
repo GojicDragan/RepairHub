@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 19:53+0200\n"
+"POT-Creation-Date: 2026-09-22 20:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgid "Invalid request"
 msgstr ""
 
 #: app/bootstrap.py:318 app/web/routes/devices.py:52
-#: app/web/routes/images.py:100 app/web/routes/repairs.py:82
+#: app/web/routes/images.py:100 app/web/routes/repairs.py:114
 msgid "Please reload the page and check your input."
 msgstr ""
 
@@ -95,7 +95,7 @@ msgid "The request could not be processed. Please try again later."
 msgstr ""
 
 #: app/bootstrap.py:338 app/web/routes/devices.py:63
-#: app/web/routes/images.py:89 app/web/routes/repairs.py:86
+#: app/web/routes/images.py:89 app/web/routes/repairs.py:118
 msgid "Request failed"
 msgstr ""
 
@@ -107,49 +107,136 @@ msgstr ""
 msgid "Email or username"
 msgstr ""
 
+#: app/web/documents/repair_pdf.py:36
+msgid "Repair report"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:79 app/web/forms/repairs.py:14
+#: app/web/routes/repairs.py:141
+msgid "Open"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:79 app/web/forms/repairs.py:15
+#: app/web/routes/repairs.py:141
+msgid "In progress"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:79 app/web/forms/repairs.py:16
+#: app/web/routes/repairs.py:141
+msgid "Completed"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:83
+msgid "Generated"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:84
+msgid "Device"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:86 app/web/forms/devices.py:8
+#: app/web/templates/devices/detail.html:8
+msgid "Manufacturer"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:87 app/web/forms/devices.py:9
+#: app/web/templates/devices/detail.html:8
+msgid "Model"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:88 app/web/templates/repairs/_detail.html:30
+msgid "Created"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:89 app/web/forms/repairs.py:7
+#: app/web/templates/repairs/_detail.html:11
+msgid "Fault description"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:91 app/web/templates/repairs/_detail.html:34
+msgid "Repair steps"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:94
+msgid "No repair steps recorded."
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:97 app/web/forms/repairs.py:23
+#: app/web/templates/repairs/_detail.html:44
+msgid "Done"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:97
+msgid "Pending"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:100 app/web/templates/repairs/_costs.html:30
+msgid "Parts"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:103
+msgid "Part"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:103 app/web/forms/repairs.py:34
+msgid "Quantity"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:103
+msgid "Unit price"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:103 app/web/templates/repairs/_costs.html:31
+msgid "Total"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:137
+msgid "No parts recorded."
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:140 app/web/templates/repairs/_costs.html:27
+msgid "Estimated costs"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:141 app/web/forms/repairs.py:27
+msgid "Working hours"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:142
+msgid "Hourly rate"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:149
+msgid "Labour cost"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:150
+msgid "Parts cost"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:151
+msgid "Estimated total"
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:169
+msgid "Cost estimate only. This report is not an invoice."
+msgstr ""
+
+#: app/web/documents/repair_pdf.py:185
+msgid "Page"
+msgstr ""
+
 #: app/web/forms/devices.py:7
 msgid "Device name"
 msgstr ""
 
-#: app/web/forms/devices.py:8 app/web/templates/devices/detail.html:8
-msgid "Manufacturer"
-msgstr ""
-
-#: app/web/forms/devices.py:9 app/web/templates/devices/detail.html:8
-msgid "Model"
-msgstr ""
-
-#: app/web/forms/repairs.py:7 app/web/templates/repairs/_detail.html:10
-msgid "Fault description"
-msgstr ""
-
-#: app/web/forms/repairs.py:12 app/web/templates/repairs/_detail.html:19
-#: app/web/templates/repairs/_detail.html:23
+#: app/web/forms/repairs.py:12 app/web/templates/repairs/_detail.html:20
+#: app/web/templates/repairs/_detail.html:24
 msgid "Repair status"
-msgstr ""
-
-#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:109
-msgid "Open"
-msgstr ""
-
-#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:109
-msgid "In progress"
-msgstr ""
-
-#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:109
-msgid "Completed"
 msgstr ""
 
 #: app/web/forms/repairs.py:22
 msgid "Step description"
-msgstr ""
-
-#: app/web/forms/repairs.py:23 app/web/templates/repairs/_detail.html:43
-msgid "Done"
-msgstr ""
-
-#: app/web/forms/repairs.py:27
-msgid "Working hours"
 msgstr ""
 
 #: app/web/forms/repairs.py:28
@@ -164,12 +251,8 @@ msgstr ""
 msgid "Unit price (CHF)"
 msgstr ""
 
-#: app/web/forms/repairs.py:34
-msgid "Quantity"
-msgstr ""
-
 #: app/web/routes/devices.py:53 app/web/routes/images.py:95
-#: app/web/routes/repairs.py:80 app/web/templates/devices/form.html:9
+#: app/web/routes/repairs.py:112 app/web/templates/devices/form.html:9
 #: app/web/templates/images/_gallery.html:1
 #: app/web/templates/repairs/page.html:4
 msgid "Your session has expired. Please log in again."
@@ -179,7 +262,7 @@ msgstr ""
 msgid "Device not found."
 msgstr ""
 
-#: app/web/routes/devices.py:140 app/web/routes/repairs.py:177
+#: app/web/routes/devices.py:140 app/web/routes/repairs.py:209
 msgid "This field is required."
 msgstr ""
 
@@ -187,7 +270,7 @@ msgstr ""
 msgid "Use at most 120 characters."
 msgstr ""
 
-#: app/web/routes/devices.py:142 app/web/routes/repairs.py:179
+#: app/web/routes/devices.py:142 app/web/routes/repairs.py:211
 msgid "Use text without control characters."
 msgstr ""
 
@@ -221,55 +304,55 @@ msgstr ""
 msgid "Image deleted."
 msgstr ""
 
-#: app/web/routes/repairs.py:81
+#: app/web/routes/repairs.py:113
 msgid "Repair not found."
 msgstr ""
 
-#: app/web/routes/repairs.py:178
+#: app/web/routes/repairs.py:210
 #, python-format
 msgid "Use at most %(count)s characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:180
+#: app/web/routes/repairs.py:212
 msgid "Choose a valid repair status."
 msgstr ""
 
-#: app/web/routes/repairs.py:181
+#: app/web/routes/repairs.py:213
 msgid "Choose a valid completion state."
 msgstr ""
 
-#: app/web/routes/repairs.py:183
+#: app/web/routes/repairs.py:215
 msgid ""
 "Enter a nonnegative amount with at most two decimal places within the "
 "displayed limit."
 msgstr ""
 
-#: app/web/routes/repairs.py:186
+#: app/web/routes/repairs.py:218
 msgid "Enter a whole quantity between 1 and 2147483647."
 msgstr ""
 
-#: app/web/routes/repairs.py:187
+#: app/web/routes/repairs.py:219
 msgid "Use at most 200 characters without control characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:222 app/web/templates/repairs/_detail.html:6
+#: app/web/routes/repairs.py:254 app/web/templates/repairs/_detail.html:6
 #: app/web/templates/repairs/index.html:30
 #, python-format
 msgid "Repair #%(id)s"
 msgstr ""
 
-#: app/web/routes/repairs.py:260 app/web/routes/repairs.py:263
+#: app/web/routes/repairs.py:292 app/web/routes/repairs.py:295
 #: app/web/templates/devices/detail.html:10
 #: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
 msgid "New repair"
 msgstr ""
 
-#: app/web/routes/repairs.py:270 app/web/routes/repairs.py:303
-#: app/web/routes/repairs.py:332 app/web/routes/repairs.py:390
+#: app/web/routes/repairs.py:302 app/web/routes/repairs.py:335
+#: app/web/routes/repairs.py:364 app/web/routes/repairs.py:422
 msgid "Repair details"
 msgstr ""
 
-#: app/web/routes/repairs.py:302 app/web/routes/repairs.py:305
+#: app/web/routes/repairs.py:334 app/web/routes/repairs.py:337
 msgid "Repair saved."
 msgstr ""
 
@@ -714,20 +797,8 @@ msgstr ""
 msgid "PLAN THE REPAIR"
 msgstr ""
 
-#: app/web/templates/repairs/_costs.html:27
-msgid "Estimated costs"
-msgstr ""
-
 #: app/web/templates/repairs/_costs.html:29
 msgid "Labor"
-msgstr ""
-
-#: app/web/templates/repairs/_costs.html:30
-msgid "Parts"
-msgstr ""
-
-#: app/web/templates/repairs/_costs.html:31
-msgid "Total"
 msgstr ""
 
 #: app/web/templates/repairs/_costs.html:33
@@ -786,56 +857,52 @@ msgstr ""
 msgid "KEEP THE REPAIR MOVING"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:14
+#: app/web/templates/repairs/_detail.html:7
+msgid "Download PDF report"
+msgstr ""
+
+#: app/web/templates/repairs/_detail.html:15
 msgid "Save description"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:20
+#: app/web/templates/repairs/_detail.html:21
 msgid "You can reopen a completed repair at any time."
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:26
+#: app/web/templates/repairs/_detail.html:27
 msgid "Save status"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:29
-msgid "Created"
-msgstr ""
-
-#: app/web/templates/repairs/_detail.html:33
-msgid "Repair steps"
-msgstr ""
-
-#: app/web/templates/repairs/_detail.html:33
+#: app/web/templates/repairs/_detail.html:34
 #, python-format
 msgid "%(count)s steps"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:34
+#: app/web/templates/repairs/_detail.html:35
 msgid "No steps yet. Add the first action for this repair."
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:44
+#: app/web/templates/repairs/_detail.html:45
 msgid "Save step"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:52
+#: app/web/templates/repairs/_detail.html:53
 msgid "Step pages"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:53
+#: app/web/templates/repairs/_detail.html:54
 msgid "Previous steps"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:54
+#: app/web/templates/repairs/_detail.html:55
 msgid "Next steps"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:56
+#: app/web/templates/repairs/_detail.html:57
 msgid "Add a step"
 msgstr ""
 
-#: app/web/templates/repairs/_detail.html:60
+#: app/web/templates/repairs/_detail.html:61
 msgid "Add step"
 msgstr ""
 

@@ -10,6 +10,7 @@ depends_on = None
 
 
 def upgrade():
+    # Getrennte Fremdschlüssel sichern beide Eigentumsketten auch auf Datenbankebene.
     for domain in ("devices", "repairs"):
         table = domain + "_images"
         op.create_table(
