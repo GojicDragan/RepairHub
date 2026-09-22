@@ -140,7 +140,7 @@ Die Browsertests prüfen Fehlerseite, Rückkehr zur Startseite und API-404 durch
 Nginx. Ein Datenbankausfall wird mit echtem gestopptem PostgreSQL getestet.
 Konkrete Befehle und Ergebnisse: [t03-validation.md](t03-validation.md).
 
-Frontend-Unit-Tests: `node --test tests/unit/frontend/*.test.mjs` (Node.js 22 oder
+JavaScript-Unit-Tests: `node --test tests/unit/frontend/*.test.mjs tests/unit/ci/*.test.mjs` (Node.js 22 oder
 neuer), zusätzlich zu pytest. DOM-freie Presenter werden mit Fake-Views geprüft;
 DOM-Bindung, Bootstrap und progressive Erweiterung deckt Playwright ab.
 Siehe [Frontend-Aufbau](frontend.md).
@@ -174,3 +174,18 @@ Gerätefunktionen vorgezogen. Domain- und Routingtests sichern weiterhin den
 Aufrufweg über injizierte Handler. Der E2E-Ablauf prüft deutsche und englische
 Seiten mit und ohne JavaScript; Validierungsfehler ohne JS werden serverseitig
 abgenommen. Ergebnisse und Grenzen: [T05-Abnahme](t05-validation.md).
+
+## T06: Geräte, Eigentumsprüfung und AJAX
+
+`tests/unit/domains/devices`, `tests/integration/devices` und
+`tests/e2e/test_devices.py` prüfen die vier Geräteanwendungsfälle. Die PostgreSQL-
+Schema-Fixture liegt nun gemeinsam in `tests/integration/conftest.py`; sie kann
+auch die vorherige Migration für einen echten Upgrade-Test anlegen. Die zusätzliche
+Tabelle ist im Modell-/Schemaabgleich berücksichtigt.
+
+Node-Tests unter `tests/unit/frontend/device-presenters.test.mjs` prüfen begrenzte
+Fenster, verspätete Antworten, Rückscrollen, Netzfehler, Wiederholung und paralleles
+Absenden ohne DOM. Browserprüfungen verwenden je 240 eigene Geräte, prüfen zuerst
+20 Zeilen im gelieferten HTML und danach höchstens 60 Zeilen im DOM. AJAX-Speichern,
+Fehlererhalt und der Betrieb ohne JavaScript werden auf Englisch/Deutsch geprüft.
+Ergebnisse und Releasehinweise: [T06-Abnahme](t06-validation.md).

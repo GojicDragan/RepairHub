@@ -152,6 +152,7 @@ def test_migration_repetition_and_model_match(identity_app):
         check()
         assert set(inspect(db.engine).get_table_names()) == {
             "users",
+            "devices",
             "roles",
             "roles_users",
             "alembic_version",

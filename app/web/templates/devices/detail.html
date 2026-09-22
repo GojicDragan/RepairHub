@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Device details') }} | RepairHub{% endblock %}
+{% block content %}
+<article class="device-editor">
+  <a href="{{ url_for('devices.index') }}">← {{ _('Your devices') }}</a>
+  <p class="eyebrow mt-4">{{ _('WORTH KEEPING') }}</p>
+  <h1 class="text-break">{{ device.name }}</h1>
+  <dl class="device-details"><dt>{{ _('Manufacturer') }}</dt><dd>{{ device.manufacturer }}</dd><dt>{{ _('Model') }}</dt><dd>{{ device.model }}</dd></dl>
+  <a class="btn btn-primary" href="{{ url_for('devices.edit', device_id=device.id) }}">{{ _('Edit device') }}</a>
+</article>
+{% endblock %}

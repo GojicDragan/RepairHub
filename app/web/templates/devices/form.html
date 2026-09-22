@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Edit device') if device else _('Add device') }} | RepairHub{% endblock %}
+{% block content %}
+<div class="device-editor">
+  <a href="{{ url_for('devices.index') }}">← {{ _('Your devices') }}</a>
+  <p class="eyebrow mt-4">{{ _('THE DETAILS THAT MATTER') }}</p>
+  <h1>{{ _('Edit device') if device else _('Add device') }}</h1>
+  <p>{{ _('Give your device a name you will recognise.') }}</p>
+  <form method="post" data-device-form data-editing="{{ 'true' if device else 'false' }}" data-suggestions-url="{{ url_for('devices.suggest') }}" data-suggestions-loading="{{ _('Looking for suggestions…') }}" data-suggestions-found="{{ _('Suggestions from your devices. Keep typing to enter a new value.') }}" data-suggestions-empty="{{ _('No suggestions. You can enter a new value.') }}" data-suggestions-failure="{{ _('Suggestions are unavailable. You can still enter a value.') }}" data-failure="{{ _('Could not save the device. Your entries are still here. Please retry.') }}" data-expired="{{ _('Your session has expired. Please log in again.') }}" data-saved="false" class="identity-form">
+    {{ form.hidden_tag() }}
+    {% for field in [form.name, form.manufacturer, form.model] %}
+    <div class="form-field device-suggestion-field" data-suggestion-field>
+      {{ field.label(class_='form-label') }}
+      <div class="device-suggestion-input">
+        {{ field(class_='form-control' ~ (' is-invalid' if field.errors else ''), required=true, maxlength=120, data_original_value=(device|attr(field.name)) if device else '', aria_describedby=field.id ~ '-error', aria_invalid='true' if field.errors else 'false') }}
+        <div class="device-suggestion-popup" data-suggestion-popup hidden>
+          <ul id="{{ field.id }}-suggestions" class="device-suggestions" data-suggestions role="listbox" aria-label="{{ field.label.text }}" hidden></ul>
+          <p class="field-hint" data-suggestion-status role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <p id="{{ field.id }}-error" class="field-validation" data-error-for="{{ field.name }}" aria-live="polite">{{ field.errors|join(' ') }}</p>
+    </div>
+    {% endfor %}
+    <div class="d-flex gap-3 align-items-center"><button class="btn btn-primary" type="submit">{{ _('Save device') }}</button><a href="{{ url_for('devices.detail', device_id=device.id) if device else url_for('devices.index') }}">{{ _('Cancel') }}</a></div>
+    <p data-save-status role="status" aria-live="polite" class="mt-3"></p>
+    <a data-saved-link hidden>{{ _('View device') }}</a>
+    <a href="{{ url_for('security.login') }}" data-login-link hidden>{{ _('Log in') }}</a>
+  </form>
+</div>
+{% endblock %}

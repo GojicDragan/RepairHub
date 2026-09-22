@@ -57,6 +57,7 @@ def _write_private(path: Path, content: str) -> None:
 
 
 def _cleanup(containers: list[str], network: str | None) -> None:
+    # Nach einem Fehler trotzdem alle Ressourcen aufräumen; erst danach scheitern.
     failed = False
     commands = [["docker", "rm", "--force", container] for container in reversed(containers)]
     if network is not None:

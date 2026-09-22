@@ -14,6 +14,12 @@ from scripts.ci import dast
 COMMIT = "a" * 40
 SYNTHETIC_SECRET = "synthetic-response-secret-placeholder"
 MISSING = object()
+COMPLETE_LOG = (
+    "completed host/plugin https://nginx:8443 | SqlInjectionScanRule "
+    "in 2.5s with 120 message(s) sent and 0 alert(s) raised.\n"
+    "completed host/plugin https://nginx:8443 | DomXssScanRule "
+    "in 3.5s with 0 message(s) sent and 0 alert(s) raised.\n"
+)
 
 
 @pytest.fixture
@@ -246,6 +252,8 @@ def fake_scanner(monkeypatch, clean_report):
         "raw": None,
         "cleanup_returncode": 0,
         "cleanup_exception": None,
+        "log": COMPLETE_LOG,
+        "output": SYNTHETIC_SECRET,
     }
 
     def run(command, **kwargs):
@@ -268,6 +276,10 @@ def fake_scanner(monkeypatch, clean_report):
         directory = Path(workspace["src"])
         state["directory"] = directory
         state["plan"] = json.loads((directory / "plan.yaml").read_text())
+        state["script"] = (directory / "forms.js").read_text()
+        if state["log"] is not None:
+            (directory / "home").mkdir()
+            (directory / "home" / "zap.log").write_text(state["log"])
         if state["exception"]:
             raise state["exception"]
         if state["raw"] is not None:
@@ -275,7 +287,7 @@ def fake_scanner(monkeypatch, clean_report):
         elif state["report"] is not None:
             (directory / "raw-report.json").write_text(json.dumps(state["report"]))
         return subprocess.CompletedProcess(
-            command, state["returncode"], SYNTHETIC_SECRET.encode(), SYNTHETIC_SECRET.encode()
+            command, state["returncode"], state["output"].encode(), SYNTHETIC_SECRET.encode()
         )
 
     monkeypatch.setattr(dast.subprocess, "run", run)
@@ -296,11 +308,15 @@ def test_scan_uses_only_the_isolated_network_and_cleans_up_after_success(fake_sc
     command, arguments = calls[0]
     assert command[command.index("--network") + 1] == "synthetic-private-network"
     assert dast.ZAP_IMAGE in command
+    assert "XDG_CACHE_HOME=/zap/wrk/browser-cache" in command
+    assert "--read-only" in command
     assert "--privileged" not in command
     assert "--publish" not in command
     assert arguments["timeout"] == dast.SCAN_TIMEOUT_SECONDS
     assert arguments["capture_output"] is True
     assert state["plan"]["env"]["contexts"][0]["urls"] == [dast.TARGET]
+    assert state["script"] == Path("scripts/ci/zap_forms.js").read_text()
+    assert result["coverage"] == {"sql_injection_requests": 120, "dom_xss_completed": True}
     assert SYNTHETIC_SECRET not in json.dumps(result)
     assert_scanner_was_cleaned_up(state, calls)
 
@@ -312,6 +328,47 @@ def test_scan_process_failure_cannot_be_hidden_by_clean_json(fake_scanner, retur
     result = dast.scan("synthetic-private-network")
     assert result["passed"] is False
     assert result["error_category"] == "scanner_failed"
+    assert SYNTHETIC_SECRET not in json.dumps(result)
+    assert_scanner_was_cleaned_up(state, calls)
+
+
+@pytest.mark.parametrize(
+    "log",
+    [
+        None,
+        "",
+        COMPLETE_LOG.replace("SqlInjectionScanRule", "OtherRule"),
+        COMPLETE_LOG.replace("120 message(s)", "0 message(s)"),
+        COMPLETE_LOG.replace("DomXssScanRule", "OtherRule"),
+        COMPLETE_LOG + "DomXssScanRule - Skipping scanner: " + SYNTHETIC_SECRET,
+    ],
+)
+def test_missing_or_partially_skipped_active_rules_block_even_with_clean_report(fake_scanner, log):
+    state, calls = fake_scanner
+    state["log"] = log
+    result = dast.scan("synthetic-private-network")
+    assert result["passed"] is False
+    assert SYNTHETIC_SECRET not in json.dumps(result)
+    assert_scanner_was_cleaned_up(state, calls)
+
+
+@pytest.mark.parametrize("returncode", [0, 1])
+def test_failed_checks_are_published_by_allowlisted_name_without_raw_scanner_output(
+    fake_scanner, returncode
+):
+    state, calls = fake_scanner
+    state["returncode"] = returncode
+    state["output"] = (
+        "Job activeScan test of type stats failed: "
+        "activeScan/stats/repairhub.csrf.post.login [0 <= 0]\n"
+        "Job activeScan test of type stats failed: activeScan/stats/"
+        + SYNTHETIC_SECRET
+        + " [0 <= 0]\nRaw response: "
+        + SYNTHETIC_SECRET
+    )
+    result = dast.scan("synthetic-private-network")
+    assert result["passed"] is False
+    assert result["failed_checks"] == ["repairhub.csrf.post.login"]
     assert SYNTHETIC_SECRET not in json.dumps(result)
     assert_scanner_was_cleaned_up(state, calls)
 
@@ -386,6 +443,14 @@ def test_active_scan_plan_requires_actual_scan_completion_and_target_coverage():
         ("stats.ascan.time", ">", 0),
         ("stats.ascan.urls", ">", 0),
         ("stats.ascan.stopped", "==", 0),
+        ("domxss.gets.count", ">", 0),
+        ("repairhub.csrf.normalized", ">", 0),
+        ("repairhub.csrf.refreshed", ">", 0),
+        ("repairhub.csrf.errors", "==", 0),
+        *(
+            ("repairhub.csrf.post." + path, ">", 0)
+            for path in ("register", "login", "confirm", "reset")
+        ),
     ):
         assert completion_tests[statistic]["operator"] == operator
         assert completion_tests[statistic]["value"] == value
@@ -394,6 +459,22 @@ def test_active_scan_plan_requires_actual_scan_completion_and_target_coverage():
     assert spider_test["statistic"] == "automation.spider.urls.added"
     assert spider_test["value"] >= 1
     assert spider_test["onFail"] == "error"
+    assert jobs["spider"]["parameters"]["threadCount"] == 1
+    assert jobs["spider"]["parameters"]["acceptCookies"] is True
+    assert jobs["activeScan"]["parameters"]["handleAntiCSRFTokens"] is True
+    assert jobs["activeScan"]["parameters"]["injectPluginIdInHeader"] is True
+    assert jobs["activeScan"]["policyDefinition"] == {
+        "defaultStrength": "Medium",
+        "defaultThreshold": "Medium",
+    }
+    assert "alertFilter" not in jobs
+    assert jobs["script"]["parameters"] == {
+        "action": "add",
+        "type": "httpsender",
+        "engine": "Graal.js",
+        "name": "repairhub-forms",
+        "source": "/zap/wrk/forms.js",
+    }
 
 
 @pytest.mark.parametrize("failure_stage", ["artifact", "startup", "cleanup"])

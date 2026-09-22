@@ -113,3 +113,12 @@ Der ursprüngliche SQL-Injection-Verdacht wurde durch die vorhandenen acht
 PostgreSQL-Regressionsprüfungen auch in diesem Integrationslauf nicht bestätigt;
 das ersetzt keine Klärung der Scannerbefunde. Alle kurzlebigen Container der
 Integrations-, Browser-, Smoke- und DAST-Prüfungen wurden entfernt.
+
+
+### Nachtrag: ZAP-Korrektur
+
+Die oben dokumentierten Formularbefunde und der Firefox-Startfehler wurden
+anschliessend gezielt untersucht. Der korrigierte aktive Scanner bestand den
+Nachlauf; Herkunft der Fehlmeldungen, unveränderte Befundgrenzen und Grenzen
+der Abdeckung sind in [docs/dast.md](dast.md) dokumentiert. Dies ersetzt keinen
+authentifizierten Geräte-/API-Scan und keine Produktionsabnahme.
