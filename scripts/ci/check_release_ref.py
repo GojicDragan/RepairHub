@@ -18,7 +18,7 @@ def remote_commit(repository: str, ref: str) -> str:
 
 
 def check_release(repository: str, ref: str, commit: str, event: str) -> None:
-    if event not in {"push", "release"}:
+    if event != "release":
         raise ValueError("Dieses Ereignis darf keine Produktion ausliefern.")
     if not ref.startswith("refs/tags/"):
         raise ValueError("Nur Release-Tags dürfen veröffentlichen.")

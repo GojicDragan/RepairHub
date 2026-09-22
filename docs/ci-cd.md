@@ -14,7 +14,7 @@ Bereitstellungsziel: Release-Tags → GitHub-Environment `production`. Eine sepa
 Testumgebung und ein Integrationsbranch für Deployments sind nicht vorgesehen.
 Dies ersetzt die frühere Zuordnung `develop` → `test`.
 Pushes auf **alle Branches**, einschliesslich `main`, sowie Pull Requests führen
-Test, Build und Security aus. Nur Tag-Pushes und veröffentlichte GitHub-Releases dürfen anschliessend
+Test, Build und Security aus. Nur veröffentlichte GitHub-Releases dürfen anschliessend
 das geprüfte App-Image veröffentlichen und nach `production` ausliefern.
 
 | Auslöser | Test → Build → Security | Publish → Deploy |
@@ -22,7 +22,7 @@ das geprüfte App-Image veröffentlichen und nach `production` ausliefern.
 | Push auf beliebigen anderen Branch | Ja | Nein |
 | Push auf `main` (auch Merge) | Ja | Nein |
 | Pull Request | Ja | Nein |
-| Push eines Tags (beliebiger Name) | Ja | Ja, für aktuellen `main`-Commit |
+| Push eines Tags (beliebiger Name) | Kein Lauf | Nein |
 | GitHub-Release veröffentlicht (`release.published`) | Ja | Ja, für aktuellen `main`-Commit |
 | Manueller Lauf (`workflow_dispatch`) | Ja | Nein |
 
@@ -31,9 +31,11 @@ dass der Commit weiterhin dem aktuellen `main`-Stand entspricht. Bei Tags wird
 zusätzlich die aktuelle Tag-Zuordnung geprüft; annotierte und einfache Tags
 werden über die Commit-API aufgelöst. Verschobene, gelöschte oder veraltete Tags
 und API-Fehler blockieren die Auslieferung. Tags deshalb auf dem aktuellen
-`main`-Commit setzen. Ein separat veröffentlichter GitHub-Release nach einem
-Tag-Push löst einen weiteren vollständigen Prüflauf aus, ebenso ein
-veröffentlichtes Prerelease. Tag-Push allein benötigt keinen GitHub-Release.
+`main`-Commit setzen. Erst die Veröffentlichung des GitHub-Releases löst den
+vollständigen Release-Lauf aus, auch bei einem Prerelease. Der Tag-Push selbst
+ist kein Workflow-Auslöser mehr: So entstehen beim Taggen und anschliessenden
+Veröffentlichen nicht zwei vollständige Auslieferungen desselben Releases.
+Branch-Pushes behalten ihren eigenen Prüflauf ohne Publish/Deploy.
 [GitHub: Branch-/Tag-Filter](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
 [Release-Ereignisse](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows),
 [Commit-API](https://docs.github.com/en/rest/commits/commits).
