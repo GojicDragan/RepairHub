@@ -18,13 +18,14 @@ def image_artifacts(tmp_path, monkeypatch):
     configuration = {
         "schema_version": 1,
         "nginx_image": "nginx:synthetic@sha256:" + "b" * 64,
+        "garage_image": "dxflrs/garage:v2.4.1@sha256:" + "e" * 64,
         "postgres_image": "example/db@sha256:" + "c" * 64,
         "database_contract": "synthetic-db-contract",
         "postgres_version": "17.11",
     }
     monkeypatch.setattr(image_gate, "load_infrastructure", lambda path: configuration)
     entries = {}
-    for name in ("app", "nginx", "db"):
+    for name in ("app", "nginx", "db", "garage"):
         config = json.dumps({"name": name, "architecture": "amd64", "os": "linux"}).encode()
         image_id = "sha256:" + hashlib.sha256(config).hexdigest()
         with tarfile.open(tmp_path / f"{name}.tar", "w") as archive:
@@ -38,7 +39,9 @@ def image_artifacts(tmp_path, monkeypatch):
         reference = f"repairhub-app:{COMMIT}"
         source_reference = None
         if name != "app":
-            source_reference = configuration["nginx_image" if name == "nginx" else "postgres_image"]
+            source_reference = configuration[
+                {"nginx": "nginx_image", "db": "postgres_image", "garage": "garage_image"}[name]
+            ]
             reference = image_gate.infrastructure_reference(name, source_reference)
         entries[name] = {
             "archive": f"{name}.tar",
@@ -320,6 +323,7 @@ def test_registry_pull_accepts_linked_platform_digest(containerd_archive, monkey
     archive, config_digest, runtime_digest, index_digest = containerd_archive
     configuration = {
         "nginx_image": "nginx:synthetic@sha256:" + "b" * 64,
+        "garage_image": "dxflrs/garage:v2.4.1@sha256:" + "e" * 64,
         "postgres_image": "example/db@sha256:" + "c" * 64,
         "database_contract": "synthetic-db-contract",
     }
@@ -379,6 +383,7 @@ def test_build_creates_only_app_and_pulls_pinned_infrastructure(image_artifacts,
     assert [command[-1] for command in calls if command[0] == "pull"] == [
         existing["infrastructure"]["nginx_image"],
         existing["infrastructure"]["postgres_image"],
+        existing["infrastructure"]["garage_image"],
     ]
 
 
@@ -399,5 +404,6 @@ def test_normal_publisher_pushes_only_app_and_exposes_only_app_output(image_arti
         "app": app_digest,
         "nginx": manifest["infrastructure"]["nginx_image"],
         "db": manifest["infrastructure"]["postgres_image"],
+        "garage": manifest["infrastructure"]["garage_image"],
     }
     assert output.read_text() == f"app_image={app_digest}\n"

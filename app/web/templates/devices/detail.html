@@ -8,5 +8,6 @@
   <dl class="device-details"><dt>{{ _('Manufacturer') }}</dt><dd>{{ device.manufacturer }}</dd><dt>{{ _('Model') }}</dt><dd>{{ device.model }}</dd></dl>
   <a class="btn btn-primary" href="{{ url_for('devices.edit', device_id=device.id, q=device_search) }}">{{ _('Edit device') }}</a>
   <section class="repair-panel mt-4"><h2>{{ _('Repairs for this device') }}</h2><div class="d-flex flex-wrap gap-3"><a class="btn btn-primary" href="{{ url_for('repairs.new', device_id=device.id) }}">{{ _('New repair') }}</a><a class="btn btn-outline-secondary" href="{{ url_for('repairs.index', device_id=device.id) }}">{{ _('View repairs') }}</a></div></section>
+  {{ gallery|safe }}
 </article>
 {% endblock %}

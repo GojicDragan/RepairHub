@@ -27,7 +27,7 @@ def load(path: Path | None = None) -> dict:
             configuration[field]
         ):
             raise ValueError(f"Ungültige Infrastruktur-Version: {field}.")
-    for field in ("nginx_image", "postgres_image"):
+    for field in ("nginx_image", "postgres_image", "garage_image"):
         value = configuration.get(field)
         if not isinstance(value, str) or not PINNED_IMAGE.fullmatch(value):
             raise ValueError(f"Infrastruktur-Image benötigt einen festen Digest: {field}.")

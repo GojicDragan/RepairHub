@@ -7,15 +7,16 @@ import pytest
 from scripts.ci.encrypt_backups import encrypt
 
 
-def test_backup_roundtrip_and_wrong_passphrase(tmp_path):
+@pytest.mark.parametrize("suffix", [".dump", ".dump.files.tar"])
+def test_backup_roundtrip_and_wrong_passphrase(tmp_path, suffix):
     source = tmp_path / "source" / "production"
     source.mkdir(parents=True)
     content = b"disposable test database backup"
-    (source / "test.dump").write_bytes(content)
+    (source / ("test" + suffix)).write_bytes(content)
     output = tmp_path / "encrypted"
     password = "synthetic-backup-passphrase-for-tests-only"
     encrypt(source.parent, output, password)
-    encrypted = output / "production-test.dump.gpg"
+    encrypted = output / ("production-test" + suffix + ".gpg")
     assert content not in encrypted.read_bytes()
     home = tmp_path / "gnupg"
     home.mkdir(mode=0o700)

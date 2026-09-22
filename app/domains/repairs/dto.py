@@ -61,3 +61,18 @@ class SystemReadAccess(Enum):
     """Explizite Leseberechtigung; niemals als Eigentümer für Schreibabläufe verwenden."""
 
     ALL_REPAIRS = "all_repairs"
+
+
+@dataclass(frozen=True)
+class Image:
+    id: str
+    filename: str
+    width: int
+    height: int
+
+
+@dataclass(frozen=True)
+class ImagePage:
+    items: tuple[Image, ...]
+    total: int
+    offset: int

@@ -178,7 +178,11 @@ def build(directory: Path, commit: str, infrastructure: Path | None = None) -> N
         ".",
     )
     images = {"app": archive_image(directory, "app", app_reference)}
-    for name, field in (("nginx", "nginx_image"), ("db", "postgres_image")):
+    for name, field in (
+        ("nginx", "nginx_image"),
+        ("db", "postgres_image"),
+        ("garage", "garage_image"),
+    ):
         source = configuration[field]
         docker("pull", "--platform", "linux/amd64", source)
         source_identity = inspect_image(source)["Id"]
@@ -258,12 +262,14 @@ def verify(directory: Path, commit: str, infrastructure: Path | None = None) -> 
         raise ValueError(
             "PostgreSQL-Kompatibilitätsvertrag stimmt nicht mit Infrastruktur überein."
         )
-    if set(manifest.get("images", {})) != {"app", "nginx", "db"}:
+    if set(manifest.get("images", {})) != {"app", "nginx", "db", "garage"}:
         raise ValueError("Die freigegebene Image-Kombination ist unvollständig.")
     for name, entry in manifest["images"].items():
         reference = f"repairhub-app:{commit}"
         if name != "app":
-            source = configuration["nginx_image" if name == "nginx" else "postgres_image"]
+            source = configuration[
+                {"nginx": "nginx_image", "db": "postgres_image", "garage": "garage_image"}[name]
+            ]
             if entry.get("source_reference") != source:
                 raise ValueError("Infrastruktur-Quelle stimmt nicht mit dem geprüften Pin überein.")
             reference = infrastructure_reference(name, source)
@@ -317,6 +323,7 @@ def publish(
             "app": app_image,
             "nginx": configuration["nginx_image"],
             "db": configuration["postgres_image"],
+            "garage": configuration["garage_image"],
         },
         "infrastructure": configuration,
         "database_contract": configuration["database_contract"],

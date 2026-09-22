@@ -1,0 +1,24 @@
+{
+  "image": "dxflrs/garage:v2.4.1@sha256:9c96caa2612d3411acc5b0e6701fb238dbfba33e533a6d7d3d811a4b12d0d020",
+  "commit": "268334bd2530fa99f8b06c7383b2e9f776691edd",
+  "files": {
+    "Cargo.toml": "1579b594a314cec1b34aa216ae0e225533aa40926970e1ac8ba7415daa0bb175",
+    "Cargo.lock": "02ed5aba4ef8644207309f16e808abf17bcee6423efb7ae91341916e9a3598aa",
+    "src/db/Cargo.toml": "76a3442be9f92569049524d76aab246959386d5c7eec58a33d45ef519f7e35c5",
+    "src/util/Cargo.toml": "ba1ccdc67651b2536c1c4989e34df8fc5c68530463aaa231b74840c9b2d7bbdb",
+    "src/net/Cargo.toml": "f92fb2e79067e87dff8353ad4bebac8eab29a57ccda413b18dc5c2e3924409fc",
+    "src/rpc/Cargo.toml": "3829b30a8db9cc03da812bbd6d464cdb13287375662dd4aade09397c785c3424",
+    "src/table/Cargo.toml": "79548b942fa9ba59121780b5e6397cf765c966f6a46255145e23fa28a740e505",
+    "src/block/Cargo.toml": "d9465011e4d0b0d4e7bd1ad8e7272b1e59e7c6a0b6c836d12fb857d0c26f2825",
+    "src/model/Cargo.toml": "39d98bd9c77a3047406b5c43a17ffe09b6576732bb672650bf331ce7e21c9a59",
+    "src/api/common/Cargo.toml": "54fb23be81f6c73731358f13e0d0ba2318a8fcdc26a72c2f824b6c806d53bed7",
+    "src/api/s3/Cargo.toml": "e68f8b6b13dac24cfab1a698a98d9f8022b0ea5f71f44ad8f12fdf54b5f16160",
+    "src/api/k2v/Cargo.toml": "4ba544062a05e6d6ed50c63a2c4e688fc3e1216859494351f861f2dc9f441657",
+    "src/api/admin/Cargo.toml": "280bcc3e5da91c1916c888e848a633f2d783bb51fc58e066207feb45e1c0ffe6",
+    "src/web/Cargo.toml": "70801074b8f04279f9da72ea1b7c5b030b0245afb302d37e344d3ff51f746171",
+    "src/garage/Cargo.toml": "a5ade8ca26a58d4fd925b715bdfecae3c6bcd47c2c16e2edde6b1a88940bf00a",
+    "src/k2v-client/Cargo.toml": "209a89e091c76676ac0482ec17c64cbaa0931affbefa6895af2424ad2098da57",
+    "src/format-table/Cargo.toml": "bdade1d0936b4f48280214c9444e2a91696506fd35c81759bbce6fee41556d6a",
+    "fuzz/Cargo.toml": "b049febcdbdbb3361a2d5c3b20671397cfa1f9c5c78f549cabf21d9ac4f3c841"
+  }
+}

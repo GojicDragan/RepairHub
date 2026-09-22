@@ -289,3 +289,10 @@ kleinen Bildschirmen. Die Anzeige entsteht vollständig auf dem Server und brauc
 weder einen zusätzlichen Presenter noch JavaScript. Bestehende AJAX-Filter und
 virtuelle Fenster bleiben unabhängig; beim nächsten HTML-Aufruf werden die Zahlen
 neu gelesen. Details: [Reparaturverwaltung](repairs.md#statusübersicht-k-t03).
+
+## K-T04: Bildmosaik
+
+Geräte- und Reparaturdetails zeigen ein responsives Mosaik mit maximal 24 Bildern pro
+Seite und begrenzten Vorschaubildern. Uploadzustand und Mehrfachsendeschutz liegen im
+DOM-freien `ImageUploadPresenter`; der View-Adapter bindet Formular, Fetch und DOM an.
+Ohne JavaScript bleibt der serverseitige Formularablauf erhalten. Siehe [Bilder](images.md).

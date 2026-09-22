@@ -17,7 +17,7 @@ Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für akt
 DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
 für Abhängigkeiten, Geheimnisse und Container.
 Normale Releases bauen und veröffentlichen nur das App-Image. Ansible verwaltet
-Nginx und PostgreSQL als offizielle, über Version und Digest festgelegte Images.
+Nginx, PostgreSQL und Garage als offizielle, über Version und Digest festgelegte Images.
 Ein eigener PostgreSQL-Build oder ein separates Datenbankpaket in GHCR entfällt.
 
 ## Lokal starten
@@ -61,8 +61,9 @@ with os.fdopen(fd, "w") as stream:
     stream.write(content)
 PY
 
+uv run --locked python scripts/setup_storage.py
 docker compose -f compose.yaml -f compose.development.yaml build app
-docker compose -f compose.yaml -f compose.development.yaml up -d --wait db mailpit
+docker compose -f compose.yaml -f compose.development.yaml up -d --wait db mailpit garage
 docker compose -f compose.yaml -f compose.development.yaml run --rm --no-deps app flask --app app db upgrade
 docker compose -f compose.yaml -f compose.development.yaml up -d --wait
 curl --fail http://127.0.0.1:8080/health/ready
@@ -254,3 +255,7 @@ mit 300 ms Eingabepause und virtuellen Trefferfenstern:
 Die [Statusübersicht](docs/repairs.md#statusübersicht-k-t03) zeigt die Anzahl eigener
 Fälle pro Zustand über alle Geräte hinweg.
 Prüfnachweis: [K-T03](docs/kt03-validation.md).
+
+K-T04 ergänzt private Bild-Uploads und eine Mosaikansicht auf Geräte- und Reparaturdetails.
+Einrichtung, Grenzen und neue Produktions-Secrets: [Bilder](docs/images.md) und
+[Garage](docs/garage.md).

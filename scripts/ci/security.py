@@ -62,12 +62,21 @@ def assess_report(kind: str, report: object, *, ignored_source: str | None = Non
         return False
     if kind == "gitleaks":
         return not isinstance(report, list) or bool(report)
-    if kind == "trivy":
+    if kind in {"trivy", "trivy-source"}:
         if not isinstance(report, dict) or report.get("SchemaVersion") != 2:
             return True
-        if report.get("ArtifactType") != "container_image" or not report.get("ArtifactName"):
+        expected_type = "filesystem" if kind == "trivy-source" else "container_image"
+        if report.get("ArtifactType") != expected_type or not report.get("ArtifactName"):
             return True
         if not isinstance(report.get("Results"), list) or not report["Results"]:
+            return True
+        if kind == "trivy-source" and any(
+            not isinstance(r, dict)
+            or r.get("Type") != "cargo"
+            or not isinstance(r.get("Packages"), list)
+            or len(r["Packages"]) < 100
+            for r in report["Results"]
+        ):
             return True
         levels = {"UNKNOWN", "LOW", "MEDIUM", "HIGH", "CRITICAL"}
         for result in report["Results"]:
@@ -291,6 +300,78 @@ def source_scans(reports: Path, binary_dir: Path) -> list[dict]:
     return scans
 
 
+def scan_garage(command, report_path, entry, reports, binary_dir):
+    """Scratch-Image und verifizierte Rust-Laufzeitabhängigkeiten gemeinsam verlangen."""
+    if __package__:
+        from .garage_inventory import prepare
+    else:
+        from garage_inventory import prepare
+
+    report_path.unlink(missing_ok=True)
+    result = {
+        "scanner": "trivy",
+        "report": report_path.name,
+        "passed": False,
+        "coverage": "pinned scratch image plus verified upstream runtime lockfile",
+    }
+    scans = []
+    try:
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
+        result["exit_code"] = completed.returncode
+        report = json.loads(report_path.read_text())
+        metadata = report.get("Metadata", {})
+        if (
+            completed.returncode != 0
+            or report.get("SchemaVersion") != 2
+            or report.get("ArtifactType") != "container_image"
+            or not report.get("ArtifactName")
+            or metadata.get("ImageID") not in {entry["image_id"], entry["config_digest"]}
+        ):
+            raise ValueError("Garage-Imageprüfung unvollständig.")
+        if report.get("Results"):
+            if assess_report("trivy", report):
+                raise ValueError("Garage-Imageprüfung blockiert.")
+        elif metadata.get("OS") or not metadata.get("Layers"):
+            raise ValueError("Fehlendes Inventar ausserhalb des geprüften Scratch-Images.")
+        source_dir = reports / "garage-source"
+        evidence = prepare(source_dir, entry["source_reference"])
+        source_report = reports / "trivy-garage-source.json"
+        source = run_scan(
+            "trivy-source",
+            [
+                str(binary_dir / "trivy"),
+                "fs",
+                "--scanners",
+                "vuln",
+                "--severity",
+                "HIGH,CRITICAL",
+                "--exit-code",
+                "1",
+                "--format",
+                "json",
+                "--list-all-pkgs",
+                "--ignorefile",
+                os.devnull,
+                "--output",
+                str(source_report),
+                "--timeout",
+                "15m",
+                "--no-progress",
+                str(source_dir),
+            ],
+            source_report,
+        )
+        scans.append(source)
+        result["source_commit"] = evidence["source_commit"]
+        result["runtime_package_count"] = evidence["runtime_package_count"]
+        result["passed"] = source["passed"]
+        result["error_category"] = None if source["passed"] else "source_dependencies_blocked"
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        result["error_category"] = "garage_image_or_source_inventory_invalid"
+    print(f"trivy-garage: {'bestanden' if result['passed'] else 'blockiert'}")
+    return [*scans, result]
+
+
 def main(artifact_dir: Path, reports: Path, binary_dir: Path) -> int:
     scans = source_scans(reports, binary_dir)
     manifest = json.loads((artifact_dir / "manifest.json").read_text())
@@ -323,7 +404,10 @@ def main(artifact_dir: Path, reports: Path, binary_dir: Path) -> int:
             "15m",
             "--no-progress",
         ]
-        scans.append(run_scan("trivy", command, path, trivy_ignorefile=ignorefile))
+        if name == "garage":
+            scans.extend(scan_garage(command, path, entry, reports, binary_dir))
+        else:
+            scans.append(run_scan("trivy", command, path, trivy_ignorefile=ignorefile))
     summary = {"commit": manifest["commit"], "images": manifest["images"], "scans": scans}
     (reports / "security-summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     return 0 if all(item["passed"] for item in scans) else 1

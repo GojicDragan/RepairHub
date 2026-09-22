@@ -13,3 +13,15 @@ class DeviceNotFound(LookupError):
 
 class AuthenticationRequired(PermissionError):
     pass
+
+
+class ImageNotFound(LookupError):
+    """Unbekannte und fremde Bilder haben denselben Fehler."""
+
+
+class InvalidImage(ValueError):
+    pass
+
+
+class ImageUnavailable(RuntimeError):
+    pass

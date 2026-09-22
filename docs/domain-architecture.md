@@ -272,3 +272,12 @@ Eigentumsabfragen bleiben unverändert. Kosten werden weiterhin im selben
 Anwendungsfall berechnet. Keine neue Fachabhängigkeit, Benutzerrolle oder
 Migration. Diese ausdrücklich gewünschte Ausnahme ersetzt für den Systemschlüssel
 die bisherige Beschränkung auf eigene Fälle. Persönliche Keys bleiben gebunden.
+
+## K-T04: Bildspeicherung
+
+Die Slices `upload_image`, `list_images` und `get_image` bleiben getrennt in Geräte-
+und Reparaturdomäne. Injizierte Ports kapseln Bildverarbeitung, Metadaten und privaten
+Objektspeicher. Technische Adapter unter `app.data.files` verwenden Pillow und boto3;
+Flask-Routen erhalten ausschliesslich verdrahtete Anwendungsfälle. Der auf ausdrücklichen
+Benutzerwunsch ergänzte Garage-Container erweitert die technische Bereitstellung,
+nicht die fachlichen Abhängigkeiten. Details: [Bilder](images.md).

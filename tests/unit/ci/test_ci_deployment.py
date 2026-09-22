@@ -21,6 +21,9 @@ spec.loader.exec_module(deployment_input)
 def deployment_environment(tmp_path, monkeypatch):
     values = {
         "DEPLOY_INPUT_DIR": str(tmp_path / "inputs"),
+        "GARAGE_ACCESS_KEY_ID": "GK" + "a" * 32,
+        "GARAGE_SECRET_ACCESS_KEY": "b" * 64,
+        "GARAGE_RPC_SECRET": "c" * 64,
         "POSTGRES_PASSWORD": "synthetic-@:#'\"$-value",
         "SECRET_KEY": "synthetic-disposable-test-value-of-sufficient-length",
         "APP_IMAGE": "example/app@sha256:" + "a" * 64,

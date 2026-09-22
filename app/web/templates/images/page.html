@@ -1,0 +1,6 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Images') }} | RepairHub{% endblock %}
+{% block content %}
+<a href="{{ back_url }}">← {{ _('Back to details') }}</a>
+{{ gallery|safe }}
+{% endblock %}

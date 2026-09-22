@@ -4,7 +4,7 @@
     project_src: "{{ repairhub_infrastructure_dir }}"
     project_name: "{{ repairhub_project_name }}"
     files: [compose.yaml, compose.production.yaml]
-    services: [db, nginx]
+    services: [db, nginx, garage]
     policy: missing
   no_log: true
 
@@ -43,6 +43,24 @@
     services: [db]
     dependencies: false
     state: present
+    build: never
+    pull: never
+    wait: true
+    wait_timeout: "{{ repairhub_wait_timeout }}"
+  no_log: true
+
+
+# Bind-Mount-Inhalte ändern den Compose-Hash nicht. Nur echte Konfigurations-
+# abweichungen benötigen eine neue Garage-Instanz; das Datenvolume bleibt bestehen.
+- name: Garage-Konfiguration idempotent anwenden
+  community.docker.docker_compose_v2:
+    project_src: "{{ repairhub_infrastructure_dir }}"
+    project_name: "{{ repairhub_project_name }}"
+    files: [compose.yaml, compose.production.yaml]
+    services: [garage]
+    dependencies: false
+    state: present
+    recreate: "{{ 'always' if repairhub_garage_configuration.changed else 'auto' }}"
     build: never
     pull: never
     wait: true

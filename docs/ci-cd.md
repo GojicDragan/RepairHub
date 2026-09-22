@@ -835,3 +835,14 @@ Dies ist eine Korrektur eines bestätigten Fehlalarms, keine akzeptierte
 Offenlegung eines Schlüssels. Bei einer späteren Historienumschreibung muss der
 Fingerprint erneut geprüft werden; keine pauschale Ausnahme ergänzen.
 Mechanismus: [Gitleaks-Fingerprints](https://github.com/gitleaks/gitleaks#gitleaksignore).
+
+## K-T04: Garage und Bildsicherungen
+
+Das Release verwendet zusätzlich das gepinnte offizielle Garage-Image. Nur die App
+wird veröffentlicht. Build, isolierte Smoke-/Browser-/DAST-Prüfungen sowie Trivy
+berücksichtigen Garage. Der ergänzende Rust-Quellinventar-Scan und seine Grenzen sind
+in [Garage](garage.md) dokumentiert. In `production` die Secrets `GARAGE_ACCESS_KEY_ID`,
+`GARAGE_SECRET_ACCESS_KEY` und `GARAGE_RPC_SECRET` ergänzen (Formate siehe dort).
+Vor Migrationen werden Datenbank und unveränderliche Bildobjekte exportiert;
+`.dump` und `.dump.files.tar` werden beide verschlüsselt und ausserhalb des Hosts
+aufbewahrt. Wiederholte unveränderte Releases ersetzen keine laufenden Container.

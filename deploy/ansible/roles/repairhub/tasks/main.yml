@@ -18,6 +18,9 @@
 - name: Vertrauliche Eingaben ohne Ausgabe prüfen
   ansible.builtin.assert:
     that:
+      - "'S3_ACCESS_KEY_ID=' in repairhub_storage_env"
+      - "'S3_SECRET_ACCESS_KEY=' in repairhub_storage_env"
+      - "'GARAGE_RPC_SECRET=' in repairhub_garage_env"
       - "'SECRET_KEY=' in repairhub_runtime_env"
       - "'DATABASE_URL=' in repairhub_runtime_env"
       - "'POSTGRES_PASSWORD=' in repairhub_database_env"

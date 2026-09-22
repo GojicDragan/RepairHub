@@ -253,3 +253,27 @@ h1, h2, h3 { letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
 .repair-overview h2 { font-size: 1.2rem; }
 .repair-overview-card { border: 1px solid var(--rh-line); border-radius: 12px; background: #fff; padding: 20px; }
 .repair-overview-card dd { font-size: 2rem; font-weight: 700; line-height: 1.2; margin: 12px 0 0; font-variant-numeric: tabular-nums; }
+
+/* Ein festes Raster hält die Leserichtung stabil; Hoch-/Querformat erzeugt das Mosaik. */
+.image-section .section-heading h2 { margin-bottom: 0; }
+.image-file { flex: 1 1 240px; max-width: 540px; }
+.image-mosaic { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 150px; gap: 12px; list-style: none; padding: 0; margin: 24px 0 0; }
+.image-tile { min-width: 0; overflow: hidden; border-radius: 12px; background: var(--rh-paper); }
+.image-tile-portrait { grid-row: span 2; }
+.image-tile-wide { grid-column: span 2; }
+.image-tile a { display: block; position: relative; height: 100%; color: #fff; }
+.image-tile img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .2s; }
+.image-tile a:hover img { transform: scale(1.03); }
+.image-tile a:focus-visible { outline: 3px solid var(--rh-accent); outline-offset: -3px; }
+.image-tile span { position: absolute; bottom: 0; inset-inline: 0; padding: 24px 12px 10px; background: linear-gradient(transparent, #000c); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.image-empty { padding: 24px; border: 1px dashed var(--rh-line); border-radius: 12px; color: var(--rh-muted); }
+@media (max-width: 767px) { .image-mosaic { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 130px; } }
+@media (prefers-reduced-motion: reduce) { .image-tile img { transition: none; } }
+
+/* Löschbestätigung bleibt auch ohne JavaScript bedienbar und neben dem Bildlink. */
+.image-tile { position: relative; }
+.image-delete { position: absolute; top: 8px; right: 8px; max-width: calc(100% - 16px); }
+.image-delete summary { list-style: none; }
+.image-delete summary::-webkit-details-marker { display: none; }
+.image-delete[open] { padding: 10px; border-radius: 8px; background: var(--rh-paper); box-shadow: 0 2px 12px #0003; }
+.image-delete p { margin: 10px 0; font-size: .9rem; }
