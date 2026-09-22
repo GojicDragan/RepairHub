@@ -26,6 +26,16 @@ class ListDevices:
             )
         ):
             raise ValueError("invalid_window")
+        if (
+            not isinstance(command.search, str)
+            or len(command.search) > 200
+            or any(ord(char) < 32 or ord(char) == 127 for char in command.search)
+        ):
+            raise ValueError("invalid_search")
         return self.repository.list(
-            command.owner_id, command.offset, command.limit, command.snapshot
+            command.owner_id,
+            command.offset,
+            command.limit,
+            command.snapshot,
+            " ".join(command.search.split()),
         )

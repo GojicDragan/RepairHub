@@ -20,6 +20,10 @@ from app.web.forms.devices import DeviceForm
 def create_device_blueprint(*, identity, register, update, get, listing, suggestions):
     blueprint = Blueprint("devices", __name__, url_prefix="/devices")
 
+    @blueprint.context_processor
+    def search_context():
+        return {"device_search": request.args.get("q") or None}
+
     def wants_json():
         return request.accept_mimetypes.best == "application/json"
 
@@ -78,7 +82,13 @@ def create_device_blueprint(*, identity, register, update, get, listing, suggest
             limit = int(request.args.get("limit", "20")) if wants_json() else 20
             snapshot = request.args.get("snapshot")
             page = listing.execute(
-                List(owner(), offset, limit, int(snapshot) if snapshot is not None else None)
+                List(
+                    owner(),
+                    offset,
+                    limit,
+                    int(snapshot) if snapshot is not None else None,
+                    request.args.get("q", ""),
+                )
             )
         except (ValueError, OverflowError):
             abort(400)
@@ -142,11 +152,18 @@ def create_device_blueprint(*, identity, register, update, get, listing, suggest
                 return jsonify(
                     device=asdict(saved),
                     message=message,
-                    url=url_for("devices.detail", device_id=saved.id),
-                    edit_url=url_for("devices.edit", device_id=saved.id),
+                    url=url_for(
+                        "devices.detail", device_id=saved.id, q=request.args.get("q") or None
+                    ),
+                    edit_url=url_for(
+                        "devices.edit", device_id=saved.id, q=request.args.get("q") or None
+                    ),
                 ), 200 if device else 201
             flash(message)
-            return redirect(url_for("devices.detail", device_id=saved.id), code=303)
+            return redirect(
+                url_for("devices.detail", device_id=saved.id, q=request.args.get("q") or None),
+                code=303,
+            )
         return render_template("devices/form.html", form=form, device=device)
 
     blueprint.add_url_rule("/new", "create", editor, methods=["GET", "POST"])

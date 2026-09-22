@@ -1,23 +1,27 @@
 {% extends 'base.html' %}
 {% block title %}{{ _('Your devices') }} | RepairHub{% endblock %}
 {% block content %}
-<section aria-labelledby="devices-heading" data-device-list data-owner="{{ viewer.id }}" data-url="{{ url_for('devices.index') }}" data-offset="{{ page.offset }}" data-total="{{ page.total }}" data-snapshot="{{ page.snapshot }}" data-loading="{{ _('Loading devices…') }}" data-failure="{{ _('Could not load devices. Please retry.') }}" data-edit-label="{{ _('Edit device') }}">
-  <div class="section-heading device-heading"><div><p class="eyebrow">{{ _('YOUR PERSONAL REPAIR WORKSHOP') }}</p><h1 id="devices-heading">{{ _('Your devices') }}</h1><p>{{ _('A place for the things worth keeping.') }}</p></div><a class="btn btn-primary" href="{{ url_for('devices.create') }}">{{ _('Add device') }} <span aria-hidden="true">+</span></a></div>
-  <p class="text-muted">{{ _('%(count)s devices', count=page.total) }}</p>
-  {% if not page.total %}<div class="device-empty"><h2>{{ _('Start with your first device.') }}</h2><p>{{ _('Add its name, manufacturer and model. Keep the details ready for its next repair.') }}</p></div>{% endif %}
+<section aria-labelledby="devices-heading" data-device-list data-owner="{{ viewer.id }}" data-url="{{ url_for('devices.index', q=device_search) }}" data-offset="{{ page.offset }}" data-total="{{ page.total }}" data-snapshot="{{ page.snapshot }}" data-loading="{{ _('Loading devices…') }}" data-failure="{{ _('Could not load devices. Please retry.') }}" data-edit-label="{{ _('Edit device') }}">
+  <div class="section-heading device-heading"><div><p class="eyebrow">{{ _('YOUR PERSONAL REPAIR WORKSHOP') }}</p><h1 id="devices-heading">{{ _('Your devices') }}</h1><p>{{ _('A place for the things worth keeping.') }}</p></div><a class="btn btn-primary" href="{{ url_for('devices.create', q=device_search) }}">{{ _('Add device') }} <span aria-hidden="true">+</span></a></div>
+  <form data-list-filters method="get" action="{{ url_for('devices.index') }}" class="row g-3 mt-2 mb-4" role="search" aria-label="{{ _('Search devices') }}">
+    <div class="col-12"><label class="form-label" for="device-search">{{ _('Search devices') }}</label><input class="form-control" type="search" id="device-search" name="q" value="{{ device_search or '' }}" maxlength="200" aria-describedby="device-search-hint"><p class="form-text mb-0" id="device-search-hint">{{ _('Search device names, manufacturers and models.') }}</p></div>
+    <div class="col-12 d-flex gap-2 flex-wrap"><noscript><button class="btn btn-primary" type="submit">{{ _('Search') }}</button></noscript><a data-filter-clear {% if not device_search %}hidden{% endif %} class="btn btn-outline-secondary" href="{{ url_for('devices.index') }}">{{ _('Clear filters') }}</a></div>
+  </form>
+  <p class="text-muted" data-list-count="{{ _('%(count)s devices', count='{count}') }}">{{ _('%(count)s devices', count=page.total) }}</p>
+  <div data-list-empty {% if page.total %}hidden{% endif %} class="device-empty" data-title-filtered="{{ _('No matching devices.') }}" data-hint-filtered="{{ _('Try another search or clear the filters.') }}" data-title-all="{{ _('Start with your first device.') }}" data-hint-all="{{ _('Add its name, manufacturer and model. Keep the details ready for its next repair.') }}"><h2>{{ _('No matching devices.') if device_search else _('Start with your first device.') }}</h2><p>{{ _('Try another search or clear the filters.') if device_search else _('Add its name, manufacturer and model. Keep the details ready for its next repair.') }}</p></div>
   <div data-list-viewport class="device-viewport" {% if not page.total %}hidden{% endif %} role="region" aria-label="{{ _('Device list') }}" tabindex="0">
     <div data-spacer-before aria-hidden="true"></div>
     <ul data-device-rows class="device-rows">
       {% for device in page.items %}
-      <li class="device-row" data-device-id="{{ device.id }}"><div class="device-row-copy"><a class="device-name" data-action="view" href="{{ url_for('devices.detail', device_id=device.id) }}">{{ device.name }}</a><p title="{{ device.manufacturer }} · {{ device.model }}">{{ device.manufacturer }} · {{ device.model }}</p></div><a class="btn btn-outline-secondary btn-sm" data-action="edit" href="{{ url_for('devices.edit', device_id=device.id) }}" aria-label="{{ _('Edit device') }}: {{ device.name }}">{{ _('Edit') }}</a></li>
+      <li class="device-row" data-device-id="{{ device.id }}"><div class="device-row-copy"><a class="device-name" data-action="view" href="{{ url_for('devices.detail', device_id=device.id, q=device_search) }}">{{ device.name }}</a><p title="{{ device.manufacturer }} · {{ device.model }}">{{ device.manufacturer }} · {{ device.model }}</p></div><a class="btn btn-outline-secondary btn-sm" data-action="edit" href="{{ url_for('devices.edit', device_id=device.id, q=device_search) }}" aria-label="{{ _('Edit device') }}: {{ device.name }}">{{ _('Edit') }}</a></li>
       {% endfor %}
     </ul>
     <div data-spacer-after aria-hidden="true"></div>
   </div>
   <p data-list-status role="status" aria-live="polite"></p><button data-list-retry class="btn btn-outline-secondary" type="button" hidden>{{ _('Retry') }}</button>
   <nav data-list-pagination class="device-pagination" aria-label="{{ _('Device pages') }}">
-    {% if page.offset > 0 %}<a href="{{ url_for('devices.index', offset=[0, page.offset - 20]|max, snapshot=page.snapshot) }}">{{ _('Previous devices') }}</a>{% endif %}
-    {% if page.offset + 20 < page.total %}<a href="{{ url_for('devices.index', offset=page.offset + 20, snapshot=page.snapshot) }}">{{ _('Next devices') }}</a>{% endif %}
+    {% if page.offset > 0 %}<a href="{{ url_for('devices.index', q=device_search, offset=[0, page.offset - 20]|max, snapshot=page.snapshot) }}">{{ _('Previous devices') }}</a>{% endif %}
+    {% if page.offset + 20 < page.total %}<a href="{{ url_for('devices.index', q=device_search, offset=page.offset + 20, snapshot=page.snapshot) }}">{{ _('Next devices') }}</a>{% endif %}
   </nav>
 </section>
 {% endblock %}

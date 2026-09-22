@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RepairHub VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 18:07+0200\n"
+"POT-Creation-Date: 2026-09-22 18:42+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:219 app/web/routes/devices.py:48
+#: app/bootstrap.py:219 app/web/routes/devices.py:52
 #: app/web/routes/repairs.py:79
 msgid "Please reload the page and check your input."
 msgstr ""
@@ -94,12 +94,12 @@ msgstr ""
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:239 app/web/routes/devices.py:59
+#: app/bootstrap.py:239 app/web/routes/devices.py:63
 #: app/web/routes/repairs.py:83
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:240 app/web/routes/devices.py:52
+#: app/bootstrap.py:240 app/web/routes/devices.py:56
 msgid "The request could not be processed."
 msgstr ""
 
@@ -168,28 +168,28 @@ msgstr ""
 msgid "Quantity"
 msgstr ""
 
-#: app/web/routes/devices.py:49 app/web/routes/repairs.py:77
+#: app/web/routes/devices.py:53 app/web/routes/repairs.py:77
 #: app/web/templates/devices/form.html:9 app/web/templates/repairs/page.html:4
 msgid "Your session has expired. Please log in again."
 msgstr ""
 
-#: app/web/routes/devices.py:50
+#: app/web/routes/devices.py:54
 msgid "Device not found."
 msgstr ""
 
-#: app/web/routes/devices.py:128 app/web/routes/repairs.py:171
+#: app/web/routes/devices.py:138 app/web/routes/repairs.py:174
 msgid "This field is required."
 msgstr ""
 
-#: app/web/routes/devices.py:129
+#: app/web/routes/devices.py:139
 msgid "Use at most 120 characters."
 msgstr ""
 
-#: app/web/routes/devices.py:130 app/web/routes/repairs.py:173
+#: app/web/routes/devices.py:140 app/web/routes/repairs.py:176
 msgid "Use text without control characters."
 msgstr ""
 
-#: app/web/routes/devices.py:140
+#: app/web/routes/devices.py:150
 msgid "Device saved."
 msgstr ""
 
@@ -197,51 +197,51 @@ msgstr ""
 msgid "Repair not found."
 msgstr ""
 
-#: app/web/routes/repairs.py:172
+#: app/web/routes/repairs.py:175
 #, python-format
 msgid "Use at most %(count)s characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:174
+#: app/web/routes/repairs.py:177
 msgid "Choose a valid repair status."
 msgstr ""
 
-#: app/web/routes/repairs.py:175
+#: app/web/routes/repairs.py:178
 msgid "Choose a valid completion state."
 msgstr ""
 
-#: app/web/routes/repairs.py:177
+#: app/web/routes/repairs.py:180
 msgid ""
 "Enter a nonnegative amount with at most two decimal places within the "
 "displayed limit."
 msgstr ""
 
-#: app/web/routes/repairs.py:180
+#: app/web/routes/repairs.py:183
 msgid "Enter a whole quantity between 1 and 2147483647."
 msgstr ""
 
-#: app/web/routes/repairs.py:181
+#: app/web/routes/repairs.py:184
 msgid "Use at most 200 characters without control characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:216 app/web/templates/repairs/_detail.html:6
+#: app/web/routes/repairs.py:219 app/web/templates/repairs/_detail.html:6
 #: app/web/templates/repairs/index.html:18
 #, python-format
 msgid "Repair #%(id)s"
 msgstr ""
 
-#: app/web/routes/repairs.py:253 app/web/routes/repairs.py:256
+#: app/web/routes/repairs.py:256 app/web/routes/repairs.py:259
 #: app/web/templates/devices/detail.html:10
 #: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
 msgid "New repair"
 msgstr ""
 
-#: app/web/routes/repairs.py:260 app/web/routes/repairs.py:291
-#: app/web/routes/repairs.py:320 app/web/routes/repairs.py:378
+#: app/web/routes/repairs.py:263 app/web/routes/repairs.py:294
+#: app/web/routes/repairs.py:323 app/web/routes/repairs.py:381
 msgid "Repair details"
 msgstr ""
 
-#: app/web/routes/repairs.py:290 app/web/routes/repairs.py:293
+#: app/web/routes/repairs.py:293 app/web/routes/repairs.py:296
 msgid "Repair saved."
 msgstr ""
 
@@ -430,7 +430,7 @@ msgstr ""
 #: app/web/templates/devices/detail.html:9
 #: app/web/templates/devices/form.html:2 app/web/templates/devices/form.html:7
 #: app/web/templates/devices/index.html:4
-#: app/web/templates/devices/index.html:12
+#: app/web/templates/devices/index.html:16
 msgid "Edit device"
 msgstr ""
 
@@ -500,42 +500,69 @@ msgid "A place for the things worth keeping."
 msgstr ""
 
 #: app/web/templates/devices/index.html:6
+#: app/web/templates/devices/index.html:7
+msgid "Search devices"
+msgstr ""
+
+#: app/web/templates/devices/index.html:7
+msgid "Search device names, manufacturers and models."
+msgstr ""
+
+#: app/web/templates/devices/index.html:8
+msgid "Search"
+msgstr ""
+
+#: app/web/templates/devices/index.html:8
+#: app/web/templates/repairs/index.html:10
+msgid "Clear filters"
+msgstr ""
+
+#: app/web/templates/devices/index.html:10
 #, python-format
 msgid "%(count)s devices"
 msgstr ""
 
-#: app/web/templates/devices/index.html:7
+#: app/web/templates/devices/index.html:11
+msgid "No matching devices."
+msgstr ""
+
+#: app/web/templates/devices/index.html:11
+#: app/web/templates/repairs/index.html:13
+msgid "Try another search or clear the filters."
+msgstr ""
+
+#: app/web/templates/devices/index.html:11
 msgid "Start with your first device."
 msgstr ""
 
-#: app/web/templates/devices/index.html:7
+#: app/web/templates/devices/index.html:11
 msgid ""
 "Add its name, manufacturer and model. Keep the details ready for its next"
 " repair."
 msgstr ""
 
-#: app/web/templates/devices/index.html:8
+#: app/web/templates/devices/index.html:12
 msgid "Device list"
 msgstr ""
 
-#: app/web/templates/devices/index.html:12
+#: app/web/templates/devices/index.html:16
 msgid "Edit"
 msgstr ""
 
-#: app/web/templates/devices/index.html:17
+#: app/web/templates/devices/index.html:21
 #: app/web/templates/repairs/index.html:23
 msgid "Retry"
 msgstr ""
 
-#: app/web/templates/devices/index.html:18
+#: app/web/templates/devices/index.html:22
 msgid "Device pages"
 msgstr ""
 
-#: app/web/templates/devices/index.html:19
+#: app/web/templates/devices/index.html:23
 msgid "Previous devices"
 msgstr ""
 
-#: app/web/templates/devices/index.html:20
+#: app/web/templates/devices/index.html:24
 msgid "Next devices"
 msgstr ""
 
@@ -757,10 +784,6 @@ msgstr ""
 msgid "Apply filters"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:10
-msgid "Clear filters"
-msgstr ""
-
 #: app/web/templates/repairs/index.html:12
 #, python-format
 msgid "%(count)s repairs"
@@ -772,10 +795,6 @@ msgstr ""
 
 #: app/web/templates/repairs/index.html:13
 msgid "No repairs yet."
-msgstr ""
-
-#: app/web/templates/repairs/index.html:13
-msgid "Try another search or clear the filters."
 msgstr ""
 
 #: app/web/templates/repairs/index.html:13

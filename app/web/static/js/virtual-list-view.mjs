@@ -109,7 +109,7 @@ export function mountVirtualLists(root, {selector, rowsSelector, itemAttribute, 
           }
           section.dataset.url = url.href;
           history.replaceState(history.state, '', url);
-          clear.hidden = !search.value && !state.value;
+          clear.hidden = !search.value && !state?.value;
           viewport.scrollTop = 0;
           before.style.height = after.style.height = '0px';
           rows.replaceChildren();
@@ -120,11 +120,12 @@ export function mountVirtualLists(root, {selector, rowsSelector, itemAttribute, 
       search.addEventListener('input', event => { if (!event.isComposing) filterPresenter.changed(); });
       search.addEventListener('compositionstart', () => { filterPresenter.cancelPending(); presenter.pause(); });
       search.addEventListener('compositionend', () => filterPresenter.changed());
-      state.addEventListener('change', () => filterPresenter.apply());
+      state?.addEventListener('change', () => filterPresenter.apply());
       filters.addEventListener('submit', event => { event.preventDefault(); filterPresenter.apply(); });
       clear.addEventListener('click', event => {
         event.preventDefault();
-        search.value = state.value = '';
+        search.value = '';
+        if (state) state.value = '';
         filterPresenter.apply();
         search.focus();
       });

@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 
 from app.data.devices.model import Device
 from app.data.devices.queries import device_dto
@@ -8,15 +8,23 @@ from app.extensions import db
 
 
 class ListDevicesRepository:
-    def list(self, owner_id, offset, limit, snapshot):
-        if snapshot is None:
-            snapshot = (
-                db.session.scalar(select(func.max(Device.id)).where(Device.owner_id == owner_id))
-                or 0
+    def list(self, owner_id, offset, limit, snapshot, search=""):
+        statement = owned_devices(owner_id)
+        # Alle Suchteile müssen vorkommen, dürfen aber verschiedene Gerätefelder treffen.
+        # Dieselbe Eigentums-/Suchabfrage gilt für Maximum, Trefferzahl und jedes Fenster.
+        for term in search.split():
+            statement = statement.where(
+                or_(
+                    *(
+                        field.icontains(term, autoescape=True)
+                        for field in (Device.name, Device.manufacturer, Device.model)
+                    )
+                )
             )
-        # Aufsteigende IDs und eine obere Grenze halten Positionen bei neuen Geräten stabil.
-        # T06 löscht keine Geräte; Änderungen an Textfeldern ändern die Reihenfolge nicht.
-        statement = owned_devices(owner_id).where(Device.id <= snapshot)
+        if snapshot is None:
+            snapshot = db.session.scalar(select(func.max(statement.subquery().c.id))) or 0
+        # Neue Geräte verändern laufende Fenster nicht; Textänderungen können Treffer ändern.
+        statement = statement.where(Device.id <= snapshot)
         total = db.session.scalar(select(func.count()).select_from(statement.subquery()))
         rows = db.session.scalars(statement.order_by(Device.id).offset(offset).limit(limit))
         return DevicePage(tuple(device_dto(row) for row in rows), total, snapshot, offset)

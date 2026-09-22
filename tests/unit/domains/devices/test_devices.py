@@ -73,3 +73,21 @@ def test_list_rejects_unbounded_or_invalid_windows(limit):
             SimpleNamespace(owner_id=1, offset=0, limit=limit, snapshot=None)
         )
     repository.list.assert_not_called()
+
+
+@pytest.mark.parametrize("search", [None, "x" * 201, "bad\x00value", "bad\nvalue", 1])
+def test_search_is_bounded_before_repository_access(search):
+    from app.domains.devices.list_devices.dto import Command
+
+    repository = Mock()
+    with pytest.raises(ValueError):
+        ListDevices(repository).execute(Command(1, search=search))
+    repository.list.assert_not_called()
+
+
+def test_device_search_passes_normalized_terms_with_owned_window():
+    from app.domains.devices.list_devices.dto import Command
+
+    repository = Mock()
+    ListDevices(repository).execute(Command(1, 20, 60, 123, "  RADIO   Müller  "))
+    repository.list.assert_called_once_with(1, 20, 60, 123, "RADIO Müller")
