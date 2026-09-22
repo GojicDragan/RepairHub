@@ -237,8 +237,9 @@ eigenes wegwerfbares Konto. Ansible prüft zusätzlich idempotente Bereitstellun
 Liste/Detail und den kompatiblen Fehlerpfad. Arbeitsnachweis: [T09](t09-validation.md).
 
 Die System-Key-Erweiterung prüft zusätzlich systemweite Listen über zwei Eigentümer,
-Detailzugriff, unveränderte Grenzen persönlicher Keys, falsche/deaktivierte/rotierte
-Systemschlüssel, leere Datenbanken und fehlende Browser-/Schreibberechtigung.
+Detailzugriff und unveränderte Grenzen persönlicher Zugangsschlüssel. Weitere
+Prüffälle betreffen ungültige, deaktivierte und ausgetauschte Systemschlüssel,
+leere Datenbanken sowie fehlende Browser- und Schreibberechtigungen.
 Domain-Tests sichern, dass die explizite System-Leseberechtigung keine
 Schreib-Slices autorisiert. Der Deployment-Test rotiert den Runtime-Schlüssel
 und erzwingt anschliessend einen fehlerhaften Prüfschlüssel für den Rollback.

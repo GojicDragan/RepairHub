@@ -818,3 +818,19 @@ beide Läufe prüfen. Die Vorprüfung benötigt nur `contents: read` und
 `pull-requests: read`, keine Produktions-Secrets oder zusätzlichen Actions.
 Grundlagen: [Workflow-Ereignisse](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#using-multiple-events)
 und [Pull-Request-Abfrage](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests).
+
+
+### Bestätigter Gitleaks-Fehlalarm in der Testdokumentation
+
+Der Commit `02c3140391f1075471ab26f609d4f627d427790b` enthält in
+`docs/testing.md`, Zeile 240, eine deutsche Aufzählung mit Schrägstrichen.
+Die Regel `generic-api-key` deutet diese Prosa fälschlich als Zugangsschlüssel.
+Der Treffer wurde geprüft: Er enthält kein Geheimnis. Die aktuelle Formulierung
+ist geändert; da CI die gesamte Historie prüft, wird zusätzlich nur der genaue
+Fingerprint dieses historischen Fundes in `.gitleaksignore` ausgenommen.
+Andere Fundstellen, Dateien und Regeln bleiben vollständig aktiv.
+
+Dies ist eine Korrektur eines bestätigten Fehlalarms, keine akzeptierte
+Offenlegung eines Schlüssels. Bei einer späteren Historienumschreibung muss der
+Fingerprint erneut geprüft werden; keine pauschale Ausnahme ergänzen.
+Mechanismus: [Gitleaks-Fingerprints](https://github.com/gitleaks/gitleaks#gitleaksignore).

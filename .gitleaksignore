@@ -1,0 +1,3 @@
+# Bestätigter Fehlalarm: deutsche Aufzählung in der Testdokumentation, kein Geheimnis.
+# Nur dieser historische Fund; keine Datei- oder Regelausnahme. Siehe docs/ci-cd.md.
+02c3140391f1075471ab26f609d4f627d427790b:docs/testing.md:generic-api-key:240
