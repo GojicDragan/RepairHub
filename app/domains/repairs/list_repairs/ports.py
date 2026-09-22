@@ -12,4 +12,6 @@ class Repository(Protocol):
         offset: int,
         limit: int,
         snapshot: int | None,
+        search: str = "",
+        status_filter: str = "",
     ) -> RepairPage: ...

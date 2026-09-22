@@ -105,6 +105,10 @@ def create_repair_blueprint(
     def labels():
         return {"open": _("Open"), "in_progress": _("In progress"), "completed": _("Completed")}
 
+    def list_filters():
+        # Nur bekannte Filter zurücktragen, niemals eine frei übergebene Rücksprung-URL.
+        return {key: request.args[key] for key in ("q", "status") if request.args.get(key)}
+
     def workspace(data, invalid=None):
         # Mehrere unabhängige Formulare teilen sich einen Request. Ohne formdata=None
         # würde WTForms dessen POST-Daten auch in unbeteiligte Formulare übernehmen.
@@ -149,7 +153,11 @@ def create_repair_blueprint(
                 for field, message in errors.items():
                     form[field].errors = [message]
         return render_template(
-            "repairs/_detail.html", data=data, forms=forms, status_labels=labels()
+            "repairs/_detail.html",
+            data=data,
+            forms=forms,
+            status_labels=labels(),
+            list_filters=list_filters(),
         )
 
     def page(content, title):
@@ -189,6 +197,8 @@ def create_repair_blueprint(
                     get_offset(),
                     int(request.args.get("limit", "20")) if wants_json() else 20,
                     int(snapshot) if snapshot is not None else None,
+                    request.args.get("q", ""),
+                    request.args.get("status", ""),
                 )
             )
         except (ValueError, OverflowError):
@@ -210,6 +220,7 @@ def create_repair_blueprint(
                         url=url_for(
                             "repairs.show",
                             repair_id=item.id,
+                            **list_filters(),
                             **({"device_id": device_id} if device_id else {}),
                         ),
                     )
@@ -217,7 +228,13 @@ def create_repair_blueprint(
                 ],
             )
         return render_template(
-            "repairs/index.html", page=result, device_id=device_id, status_labels=labels()
+            "repairs/index.html",
+            page=result,
+            device_id=device_id,
+            status_labels=labels(),
+            search=request.args.get("q", ""),
+            status_filter=request.args.get("status", ""),
+            list_filters=list_filters(),
         )
 
     @blueprint.route("/devices/<int:device_id>/repairs/new", methods=["GET", "POST"])
@@ -260,6 +277,7 @@ def create_repair_blueprint(
         target = url_for(
             "repairs.show",
             repair_id=repair_id,
+            **list_filters(),
             **({"offset": data.step_offset} if data.step_offset else {}),
             **({"part_offset": data.part_offset} if data.part_offset else {}),
             **(

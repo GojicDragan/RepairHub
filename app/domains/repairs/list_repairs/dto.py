@@ -10,3 +10,5 @@ class Command:
     offset: int = 0
     limit: int = 20
     snapshot: int | None = None
+    search: str = ""
+    status_filter: str = ""

@@ -46,6 +46,8 @@ def command(**overrides):
             "complete": False,
             "limit": 20,
             "snapshot": None,
+            "search": "",
+            "status_filter": "",
             **overrides,
         }
     )
@@ -149,7 +151,7 @@ def test_invalid_pagination_is_rejected(handler, value):
 def test_windows_are_bounded():
     repository = Mock()
     ListRepairs(repository).execute(command())
-    repository.list.assert_called_once_with(1, 2, 0, 20, None)
+    repository.list.assert_called_once_with(1, 2, 0, 20, None, "", "")
     from app.domains.repairs.dto import RepairDetails
 
     repository.get.return_value = RepairDetails(Mock(), (), 0, 0)
@@ -179,7 +181,7 @@ def test_repair_list_rejects_invalid_windows(field, value):
 def test_repair_list_forwards_bounded_window_and_snapshot():
     repository = Mock()
     ListRepairs(repository).execute(command(offset=40, limit=60, snapshot=120))
-    repository.list.assert_called_once_with(1, 2, 40, 60, 120)
+    repository.list.assert_called_once_with(1, 2, 40, 60, 120, "", "")
 
 
 def test_api_complete_detail_preserves_all_parts_and_steps():
@@ -211,3 +213,27 @@ def test_system_read_access_never_authorizes_writes(handler):
     with pytest.raises(AuthenticationRequired):
         make(handler, repository).execute(command(owner_id=SystemReadAccess.ALL_REPAIRS))
     assert repository.mock_calls == []
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("search", None),
+        ("search", "x" * 201),
+        ("search", "bad\x00text"),
+        ("search", "bad\ntext"),
+        ("status_filter", "closed"),
+        ("status_filter", None),
+    ],
+)
+def test_invalid_filters_do_not_query_repository(field, value):
+    repository = Mock()
+    with pytest.raises(ValueError):
+        ListRepairs(repository).execute(command(**{field: value}))
+    repository.list.assert_not_called()
+
+
+def test_search_normalization_and_combined_status_are_forwarded():
+    repository = Mock()
+    ListRepairs(repository).execute(command(search="  Radio   warm  ", status_filter="open"))
+    repository.list.assert_called_once_with(1, 2, 0, 20, None, "Radio warm", "open")

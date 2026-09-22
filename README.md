@@ -242,3 +242,7 @@ Deployment, Backupaufbewahrung und Wiederherstellung sind in der
 [Betriebsanleitung](docs/operations.md) beschrieben. T11 ist als Dokumentationsaufgabe
 abgeschlossen; eine Datenbankwiederherstellung wurde ausdrücklich nicht ausgeführt:
 [T11-Nachweis](docs/t11-validation.md).
+
+Reparaturfälle unterstützen Suche und kombinierbare Statusfilter mit SSR und
+virtuellen AJAX-Fenstern: [Suchsemantik](docs/repairs.md),
+[K-T01-Abnahme](docs/kt01-validation.md).

@@ -1,6 +1,7 @@
 from app.domains.repairs.dto import SystemReadAccess
 from app.domains.repairs.errors import RepairNotFound
 from app.domains.repairs.model import (
+    STATUSES,
     offset,
     require_id,
     require_owner,
@@ -29,12 +30,22 @@ class ListRepairs:
             raise ValueError("invalid_window")
         if command.snapshot is not None:
             offset(command.snapshot)
+        if (
+            not isinstance(command.search, str)
+            or len(command.search) > 200
+            or any(ord(char) < 32 or ord(char) == 127 for char in command.search)
+        ):
+            raise ValueError("invalid_search")
+        if command.status_filter not in ("", *STATUSES):
+            raise ValueError("invalid_status_filter")
         result = self.repository.list(
             command.owner_id,
             command.device_id,
             offset(command.offset),
             command.limit,
             command.snapshot,
+            " ".join(command.search.split()),
+            command.status_filter,
         )
         if result is None:
             raise RepairNotFound()

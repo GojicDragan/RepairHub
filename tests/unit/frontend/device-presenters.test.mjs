@@ -30,13 +30,13 @@ test('A late response cannot replace the current scroll window', async () => {
 test('Returning to the loaded window invalidates an in-flight request', async () => {
   const rendered = [], pending = deferred(); let count=0;
   const view = {loading(){}, failed(){assert.fail();}, render(page){rendered.push(page);}, idle(){}};
-  const source = {load(){return ++count===1 ? Promise.resolve('first') : pending.promise;}};
+  const source = {load(){return ++count===1 ? Promise.resolve({name:'first', total:1000, snapshot:1000}) : pending.promise;}};
   const presenter = new DeviceListPresenter(view,source,1000,1000);
   await presenter.update(0);
   const next=presenter.update(112*100);
   await presenter.update(0);
   pending.resolve('stale'); await next;
-  assert.deepEqual(rendered,['first']);
+  assert.deepEqual(rendered,[{name:'first', total:1000, snapshot:1000}]);
 });
 
 test('List failure preserves the window and retry requests the same position', async () => {

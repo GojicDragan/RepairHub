@@ -35,6 +35,9 @@ def load_config(environment: str | None = None) -> dict[str, Any]:
             "connect_args": {"connect_timeout": 3, "options": "-c statement_timeout=3000"},
         },
         "DEBUG": False,
+        # Gunicorn --reload beobachtet Python, nicht automatisch Jinja-Dateien.
+        # Gemountete HTML-Änderungen müssen dieselbe Version wie die JS-Module liefern.
+        "TEMPLATES_AUTO_RELOAD": environment == "development",
         "TESTING": False,
         "SESSION_COOKIE_SECURE": environment != "development",
         "SESSION_COOKIE_HTTPONLY": True,
