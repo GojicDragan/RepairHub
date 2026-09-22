@@ -209,3 +209,39 @@ weiterhin speicherbar. Der Presenter hält diesen Zustand unabhängig vom DOM.
 bestanden. Der Browserlauf prüft unveränderte Bearbeitung, echte Änderungen,
 Zurückändern, Leerzeichen und die neue Vergleichsbasis nach AJAX-Erfolg auf
 Deutsch/Englisch. Keine erneuten Security-Scans oder Produktionsbereitstellung.
+
+## K-T02: Suche in der Geräteliste
+
+`GET /devices?q=radio+maker` durchsucht ausschliesslich eigene Geräte nach
+Bezeichnung, Hersteller und Modell. Die Suchsemantik entspricht der Reparatursuche:
+Teilwörter an beliebiger Position, ohne Beachtung der Gross-/Kleinschreibung;
+alle durch Leerraum getrennten Begriffe müssen in mindestens einem der drei
+Felder vorkommen. Die Felder dürfen sich pro Begriff unterscheiden. Umlaute bleiben
+erhalten (`ü` wird nicht zu `ue`, `ß` nicht zu `ss`). Keine Stammbildung oder
+Relevanzsortierung; Reihenfolge weiterhin nach aufsteigender Geräte-ID.
+
+Eine leere Suche zeigt die normale Liste. Maximal 200 Zeichen, keine Steuerzeichen;
+ungültige Eingaben liefern HTTP 400. SQL-Wildcards wie `%` und `_` sowie Backslash
+werden als Literalzeichen behandelt. Parameter werden gebunden, nicht als SQL
+zusammengesetzt. Eigentumsfilter und Suche gelten für Maximum, Trefferzahl und
+jedes Fenster. Die obere ID schliesst später angelegte Geräte aus; Änderungen an
+Gerätetexten können Treffer verändern. Dies ist kein Datenbank-Transaktionssnapshot.
+
+Die Erweiterung gehört zum vorhandenen Slice `list_devices`. Command und Port
+bleiben frameworkfrei, die Suchabfrage liegt im SQLAlchemy-Adapter. Keine neue
+Domain-Abhängigkeit, Bibliothek oder Migration. Für den Praxisarbeitsumfang wird
+keine zusätzliche Suchmaschine oder Indexmigration eingeführt.
+
+Die erste Seite rendert 20 Treffer serverseitig. Mit JavaScript aktualisiert die
+Suche nach 300 ms Eingabepause per AJAX, erhält den Eingabefokus und setzt
+Scrollposition und Snapshot zurück. Die gemeinsame virtuelle Liste hält maximal
+60 Zeilen im DOM. Antworten älterer Suchen werden bereits bei neuer Eingabe entwertet;
+der bestehende Wiederholen-Button behandelt Ladefehler. Ohne JavaScript funktioniert
+das GET-Formular mit Suchbutton und Seitenlinks. Deutsch und Englisch über gettext.
+
+Gerätedetails, Bearbeitung und Rückweg erhalten `q`, ebenso die URLs nach dem
+Speichern. Die URL-gebundene Scrollspeicherung trennt verschiedene Suchlisten.
+Beim Wechsel in Reparaturfunktionen wird die Gerätesuche nicht als Reparatursuche
+übernommen. Autocomplete bleibt der separate Anwendungsfall für Geräteeingaben.
+
+Nachweis: [K-T02-Abnahme](kt02-validation.md).

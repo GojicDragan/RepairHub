@@ -8,3 +8,4 @@ class Command:
     limit: int = 20
     # Obere Geräte-ID der Listenansicht, kein Datenbank-Transaktionssnapshot.
     snapshot: int | None = None
+    search: str = ""

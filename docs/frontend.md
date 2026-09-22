@@ -269,3 +269,12 @@ zuverlässig. Ohne diese Einstellung kann ein altes Formular ohne Debounce-Hook 
 neuem JavaScript kombiniert werden. Nginx verlangt für lokale statische Dateien
 mit `expires -1` eine Revalidierung; Produktions-Caching bleibt unverändert.
 Bereits geöffnete Seiten nach Änderungen neu laden.
+
+## K-T02: Gerätesuche mit derselben Listensteuerung
+
+Die Geräteliste verwendet das vorhandene `data-list-filters`-Formular und den
+DOM-freien `ListFilterPresenter` aus der Reparatursuche. Das Statusfeld ist im
+Humble-Object-Adapter optional; eine reine Textsuche benötigt keinen unsichtbaren
+Statusfilter. Trefferzahl, Leerzustand, Zurücksetzen, Fehlerwiederholung und Scroll-Reset
+verwenden dieselbe virtuelle Liste. Gerätezeilen bauen Detail-/Bearbeitungslinks
+über die URL-API auf, damit Suchparameter nicht Teil des URL-Pfads werden.

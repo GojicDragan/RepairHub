@@ -246,3 +246,7 @@ abgeschlossen; eine Datenbankwiederherstellung wurde ausdr체cklich nicht ausgef�
 Reparaturf채lle unterst체tzen Suche und kombinierbare Statusfilter mit SSR und
 virtuellen AJAX-Fenstern: [Suchsemantik](docs/repairs.md),
 [K-T01-Abnahme](docs/kt01-validation.md).
+
+Auch die Ger채teliste unterst체tzt eine Suche 체ber Name, Hersteller und Modell
+mit 300 ms Eingabepause und virtuellen Trefferfenstern:
+[Ger채tesuche](docs/devices.md), [K-T02-Abnahme](docs/kt02-validation.md).

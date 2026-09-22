@@ -11,7 +11,10 @@ export function mountDeviceLists(root) {
           const link = root.createElement('a');
           link.className = 'device-name';
           link.dataset.action = 'view';
-          link.href = `${section.dataset.url}/${device.id}`;
+          // Den Pfad erweitern, ohne den Suchbegriff in die Geräte-ID einzubauen.
+          const detailUrl = new URL(section.dataset.url, location.href);
+          detailUrl.pathname += `/${device.id}`;
+          link.href = detailUrl.href;
           // Gerätetexte sind Benutzereingaben: niemals als HTML in den DOM einsetzen.
           link.textContent = device.name;
           link.title = device.name;
@@ -21,7 +24,9 @@ export function mountDeviceLists(root) {
           const edit = root.createElement('a');
           edit.className = 'btn btn-outline-secondary btn-sm';
           edit.dataset.action = 'edit';
-          edit.href = `${section.dataset.url}/${device.id}/edit`;
+          const editUrl = new URL(detailUrl);
+          editUrl.pathname += '/edit';
+          edit.href = editUrl.href;
           edit.textContent = section.dataset.editLabel;
           edit.setAttribute('aria-label', `${section.dataset.editLabel}: ${device.name}`);
           copy.append(link, description);
