@@ -250,3 +250,7 @@ virtuellen AJAX-Fenstern: [Suchsemantik](docs/repairs.md),
 Auch die Geräteliste unterstützt eine Suche über Name, Hersteller und Modell
 mit 300 ms Eingabepause und virtuellen Trefferfenstern:
 [Gerätesuche](docs/devices.md), [K-T02-Abnahme](docs/kt02-validation.md).
+
+Die [Statusübersicht](docs/repairs.md#statusübersicht-k-t03) zeigt die Anzahl eigener
+Fälle pro Zustand über alle Geräte hinweg.
+Prüfnachweis: [K-T03](docs/kt03-validation.md).

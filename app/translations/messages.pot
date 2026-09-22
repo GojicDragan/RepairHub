@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RepairHub VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 18:42+0200\n"
+"POT-Creation-Date: 2026-09-22 19:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,89 +17,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:213
+#: app/bootstrap.py:216
 msgid "Invalid request: untrusted host."
 msgstr ""
 
-#: app/bootstrap.py:218
+#: app/bootstrap.py:221
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:219 app/web/routes/devices.py:52
-#: app/web/routes/repairs.py:79
+#: app/bootstrap.py:222 app/web/routes/devices.py:52
+#: app/web/routes/repairs.py:81
 msgid "Please reload the page and check your input."
 msgstr ""
 
-#: app/bootstrap.py:221
+#: app/bootstrap.py:224
 msgid "Login required"
 msgstr ""
 
-#: app/bootstrap.py:221
+#: app/bootstrap.py:224
 msgid "Please log in to access this resource."
 msgstr ""
 
-#: app/bootstrap.py:222
+#: app/bootstrap.py:225
 msgid "Access denied"
 msgstr ""
 
-#: app/bootstrap.py:222
+#: app/bootstrap.py:225
 msgid "This action is not allowed."
 msgstr ""
 
-#: app/bootstrap.py:223
+#: app/bootstrap.py:226
 msgid "Page not found"
 msgstr ""
 
-#: app/bootstrap.py:223
+#: app/bootstrap.py:226
 msgid "The requested resource was not found."
 msgstr ""
 
-#: app/bootstrap.py:224
+#: app/bootstrap.py:227
 msgid "Method not allowed"
 msgstr ""
 
-#: app/bootstrap.py:224
+#: app/bootstrap.py:227
 msgid "This request method is not supported here."
 msgstr ""
 
-#: app/bootstrap.py:226
+#: app/bootstrap.py:229
 msgid "Unable to register"
 msgstr ""
 
-#: app/bootstrap.py:227
+#: app/bootstrap.py:230
 msgid "This username or email address is already in use."
 msgstr ""
 
-#: app/bootstrap.py:229
+#: app/bootstrap.py:232
 msgid "Temporarily unavailable"
 msgstr ""
 
-#: app/bootstrap.py:229
+#: app/bootstrap.py:232
 msgid "Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:230
+#: app/bootstrap.py:233
 msgid "Request too large"
 msgstr ""
 
-#: app/bootstrap.py:230
+#: app/bootstrap.py:233
 msgid "The submitted data exceeds the allowed size."
 msgstr ""
 
-#: app/bootstrap.py:232
+#: app/bootstrap.py:235
 msgid "Internal error"
 msgstr ""
 
-#: app/bootstrap.py:233
+#: app/bootstrap.py:236
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:239 app/web/routes/devices.py:63
-#: app/web/routes/repairs.py:83
+#: app/bootstrap.py:242 app/web/routes/devices.py:63
+#: app/web/routes/repairs.py:85
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:240 app/web/routes/devices.py:56
+#: app/bootstrap.py:243 app/web/routes/devices.py:56
 msgid "The request could not be processed."
 msgstr ""
 
@@ -128,15 +128,15 @@ msgstr ""
 msgid "Repair status"
 msgstr ""
 
-#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:106
+#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:108
 msgid "Open"
 msgstr ""
 
-#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:106
+#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:108
 msgid "In progress"
 msgstr ""
 
-#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:106
+#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:108
 msgid "Completed"
 msgstr ""
 
@@ -168,7 +168,7 @@ msgstr ""
 msgid "Quantity"
 msgstr ""
 
-#: app/web/routes/devices.py:53 app/web/routes/repairs.py:77
+#: app/web/routes/devices.py:53 app/web/routes/repairs.py:79
 #: app/web/templates/devices/form.html:9 app/web/templates/repairs/page.html:4
 msgid "Your session has expired. Please log in again."
 msgstr ""
@@ -177,7 +177,7 @@ msgstr ""
 msgid "Device not found."
 msgstr ""
 
-#: app/web/routes/devices.py:138 app/web/routes/repairs.py:174
+#: app/web/routes/devices.py:138 app/web/routes/repairs.py:176
 msgid "This field is required."
 msgstr ""
 
@@ -185,7 +185,7 @@ msgstr ""
 msgid "Use at most 120 characters."
 msgstr ""
 
-#: app/web/routes/devices.py:140 app/web/routes/repairs.py:176
+#: app/web/routes/devices.py:140 app/web/routes/repairs.py:178
 msgid "Use text without control characters."
 msgstr ""
 
@@ -193,55 +193,55 @@ msgstr ""
 msgid "Device saved."
 msgstr ""
 
-#: app/web/routes/repairs.py:78
+#: app/web/routes/repairs.py:80
 msgid "Repair not found."
 msgstr ""
 
-#: app/web/routes/repairs.py:175
+#: app/web/routes/repairs.py:177
 #, python-format
 msgid "Use at most %(count)s characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:177
+#: app/web/routes/repairs.py:179
 msgid "Choose a valid repair status."
 msgstr ""
 
-#: app/web/routes/repairs.py:178
+#: app/web/routes/repairs.py:180
 msgid "Choose a valid completion state."
 msgstr ""
 
-#: app/web/routes/repairs.py:180
+#: app/web/routes/repairs.py:182
 msgid ""
 "Enter a nonnegative amount with at most two decimal places within the "
 "displayed limit."
 msgstr ""
 
-#: app/web/routes/repairs.py:183
+#: app/web/routes/repairs.py:185
 msgid "Enter a whole quantity between 1 and 2147483647."
 msgstr ""
 
-#: app/web/routes/repairs.py:184
+#: app/web/routes/repairs.py:186
 msgid "Use at most 200 characters without control characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:219 app/web/templates/repairs/_detail.html:6
-#: app/web/templates/repairs/index.html:18
+#: app/web/routes/repairs.py:221 app/web/templates/repairs/_detail.html:6
+#: app/web/templates/repairs/index.html:30
 #, python-format
 msgid "Repair #%(id)s"
 msgstr ""
 
-#: app/web/routes/repairs.py:256 app/web/routes/repairs.py:259
+#: app/web/routes/repairs.py:259 app/web/routes/repairs.py:262
 #: app/web/templates/devices/detail.html:10
 #: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
 msgid "New repair"
 msgstr ""
 
-#: app/web/routes/repairs.py:263 app/web/routes/repairs.py:294
-#: app/web/routes/repairs.py:323 app/web/routes/repairs.py:381
+#: app/web/routes/repairs.py:266 app/web/routes/repairs.py:297
+#: app/web/routes/repairs.py:326 app/web/routes/repairs.py:384
 msgid "Repair details"
 msgstr ""
 
-#: app/web/routes/repairs.py:293 app/web/routes/repairs.py:296
+#: app/web/routes/repairs.py:296 app/web/routes/repairs.py:299
 msgid "Repair saved."
 msgstr ""
 
@@ -513,7 +513,7 @@ msgid "Search"
 msgstr ""
 
 #: app/web/templates/devices/index.html:8
-#: app/web/templates/repairs/index.html:10
+#: app/web/templates/repairs/index.html:22
 msgid "Clear filters"
 msgstr ""
 
@@ -527,7 +527,7 @@ msgid "No matching devices."
 msgstr ""
 
 #: app/web/templates/devices/index.html:11
-#: app/web/templates/repairs/index.html:13
+#: app/web/templates/repairs/index.html:25
 msgid "Try another search or clear the filters."
 msgstr ""
 
@@ -550,7 +550,7 @@ msgid "Edit"
 msgstr ""
 
 #: app/web/templates/devices/index.html:21
-#: app/web/templates/repairs/index.html:23
+#: app/web/templates/repairs/index.html:35
 msgid "Retry"
 msgstr ""
 
@@ -760,60 +760,68 @@ msgstr ""
 msgid "Choose a device to start"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:6
+#: app/web/templates/repairs/index.html:7
+msgid "Your repair overview"
+msgstr ""
+
+#: app/web/templates/repairs/index.html:8
+msgid "Across all your devices, regardless of list filters."
+msgstr ""
+
+#: app/web/templates/repairs/index.html:18
 msgid "Filter repairs"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:8
+#: app/web/templates/repairs/index.html:20
 msgid "Search repairs"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:8
+#: app/web/templates/repairs/index.html:20
 msgid "Search faults, device names, manufacturers and models."
 msgstr ""
 
-#: app/web/templates/repairs/index.html:9
+#: app/web/templates/repairs/index.html:21
 msgid "Status"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:9
+#: app/web/templates/repairs/index.html:21
 msgid "All statuses"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:10
+#: app/web/templates/repairs/index.html:22
 msgid "Apply filters"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:12
+#: app/web/templates/repairs/index.html:24
 #, python-format
 msgid "%(count)s repairs"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:13
+#: app/web/templates/repairs/index.html:25
 msgid "No matching repairs."
 msgstr ""
 
-#: app/web/templates/repairs/index.html:13
+#: app/web/templates/repairs/index.html:25
 msgid "No repairs yet."
 msgstr ""
 
-#: app/web/templates/repairs/index.html:13
+#: app/web/templates/repairs/index.html:25
 msgid "Open a device to start its first repair."
 msgstr ""
 
-#: app/web/templates/repairs/index.html:14
+#: app/web/templates/repairs/index.html:26
 msgid "Repair list"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:24
+#: app/web/templates/repairs/index.html:36
 msgid "Repair pages"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:25
+#: app/web/templates/repairs/index.html:37
 msgid "Previous repairs"
 msgstr ""
 
-#: app/web/templates/repairs/index.html:26
+#: app/web/templates/repairs/index.html:38
 msgid "Next repairs"
 msgstr ""
 
