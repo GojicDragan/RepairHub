@@ -14,12 +14,14 @@ Bereitstellungsziel: Release-Tags → GitHub-Environment `production`. Eine sepa
 Testumgebung und ein Integrationsbranch für Deployments sind nicht vorgesehen.
 Dies ersetzt die frühere Zuordnung `develop` → `test`.
 Pushes auf **alle Branches**, einschliesslich `main`, sowie Pull Requests führen
-Test, Build und Security aus. Nur veröffentlichte GitHub-Releases dürfen anschliessend
+Test, Build und Security aus; bei offenem PR übernimmt dessen Lauf die Prüfungen
+des Feature-Branches und der zusätzliche Push-Lauf überspringt sie.
+Nur veröffentlichte GitHub-Releases dürfen anschliessend
 das geprüfte App-Image veröffentlichen und nach `production` ausliefern.
 
 | Auslöser | Test → Build → Security | Publish → Deploy |
 | --- | --- | --- |
-| Push auf beliebigen anderen Branch | Ja | Nein |
+| Push auf beliebigen anderen Branch | Ja, sofern kein offener PR existiert | Nein |
 | Push auf `main` (auch Merge) | Ja | Nein |
 | Pull Request | Ja | Nein |
 | Push eines Tags (beliebiger Name) | Kein Lauf | Nein |
@@ -35,7 +37,7 @@ und API-Fehler blockieren die Auslieferung. Tags deshalb auf dem aktuellen
 vollständigen Release-Lauf aus, auch bei einem Prerelease. Der Tag-Push selbst
 ist kein Workflow-Auslöser mehr: So entstehen beim Taggen und anschliessenden
 Veröffentlichen nicht zwei vollständige Auslieferungen desselben Releases.
-Branch-Pushes behalten ihren eigenen Prüflauf ohne Publish/Deploy.
+Branch-Pushes ohne offenen PR behalten ihren eigenen Prüflauf ohne Publish/Deploy.
 [GitHub: Branch-/Tag-Filter](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax),
 [Release-Ereignisse](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows),
 [Commit-API](https://docs.github.com/en/rest/commits/commits).
@@ -797,3 +799,22 @@ Die Installation wird höchstens dreimal versucht, mit 5 und 15 Sekunden Pause
 und maximal 180 Sekunden je Versuch. Gepinnte Versionen und TLS-Zertifikatsprüfung
 bleiben erhalten. Nach drei Fehlschlägen bleibt der Job rot; weitere Stufen laufen
 nicht. Ein dauerhaft nicht erreichbares Galaxy muss weiterhin behoben werden.
+
+
+### Doppelte Push-/PR-Prüfungen vermeiden
+
+`Select CI run` prüft bei Branch-Pushes über die GitHub-API, ob der Branch bereits
+einen offenen PR im selben Repository besitzt. Dann übernimmt der PR-Lauf die
+Merge-Prüfung; im Push-Lauf werden Test, Build und Security übersprungen. Ohne
+offenen PR sowie auf `main` laufen die Prüfungen weiterhin. Releases und manuelle
+Aufrufe werden nicht unterdrückt; Publish/Deploy bleiben ausschliesslich Releases
+vorbehalten. Fork-PRs werden weiterhin geprüft.
+
+GitHub erzeugt für beide Ereignisse weiterhin je einen sichtbaren Workflow-Eintrag.
+Der zusätzliche Push-Eintrag führt nur die kurze Vorprüfung aus. Ein API-Fehler
+lässt diese Vorprüfung fehlschlagen. Bereits laufende Prüfungen werden nicht
+abgebrochen; wird ein PR erst nach der Push-Vorprüfung geöffnet, können einmalig
+beide Läufe prüfen. Die Vorprüfung benötigt nur `contents: read` und
+`pull-requests: read`, keine Produktions-Secrets oder zusätzlichen Actions.
+Grundlagen: [Workflow-Ereignisse](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#using-multiple-events)
+und [Pull-Request-Abfrage](https://docs.github.com/en/rest/pulls/pulls#list-pull-requests).
