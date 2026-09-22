@@ -155,6 +155,7 @@ def test_migration_repetition_and_model_match(identity_app):
             "devices",
             "repairs",
             "repair_steps",
+            "part_items",
             "roles",
             "roles_users",
             "alembic_version",

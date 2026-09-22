@@ -210,3 +210,12 @@ Reparaturzeilen verwenden dieselbe Höhe von 112 px und denselben gebrandeten
 Scrollbereich. Nutzereingaben werden über `textContent` gerendert. Ohne JavaScript
 bleiben SSR-Seiten und Seitenlinks nutzbar. Listenfenster und Eigentumsprüfung
 werden unabhängig davon im jeweiligen Python-Slice begrenzt.
+
+### T08: Teile und Arbeitswerte im Reparaturdetail
+
+Die zusätzlichen Formulare nutzen dieselben `RepairFormPresenter`- und
+`repair-form-view`-Instanzen wie Beschreibung, Status und Schritte. Keine zweite
+AJAX-Implementierung und keine clientseitige Kostenformel. Die Serverantwort
+aktualisiert den gesamten Arbeitsbereich samt Kosten und erhält andere Entwürfe.
+Teilepositionen werden wie Schritte in 20er-Seiten angezeigt. Details:
+[Teile und Kosten](parts-and-costs.md).

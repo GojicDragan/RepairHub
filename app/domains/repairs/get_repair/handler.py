@@ -1,3 +1,7 @@
+from dataclasses import replace
+from decimal import Decimal
+
+from app.domains.costs.model import calculate
 from app.domains.repairs.errors import RepairNotFound
 from app.domains.repairs.model import (
     offset,
@@ -16,9 +20,27 @@ class GetRepair:
     def execute(self, command: Command):
         require_owner(command.owner_id)
         require_id(command.repair_id)
+        part_offset = offset(command.part_offset)
         result = self.repository.get(
             command.owner_id, command.repair_id, offset(command.offset), 20
         )
         if result is None:
             raise RepairNotFound()
-        return result
+        # Alle Positionen zählen für die Kosten, auch wenn die Oberfläche nur eine
+        # Seite zeigt. Die gemeinsame Kostenfunktion bleibt die einzige Formel.
+        basis = tuple((part.unit_price, part.quantity) for part in result.parts)
+        parts = tuple(
+            replace(
+                part, total=calculate(Decimal(0), Decimal(0), [(part.unit_price, part.quantity)])
+            )
+            for part in result.parts[part_offset : part_offset + 20]
+        )
+        return replace(
+            result,
+            parts=parts,
+            part_total=len(result.parts),
+            part_offset=part_offset,
+            labor_cost=calculate(result.hours, result.hourly_rate, ()),
+            parts_cost=calculate(Decimal(0), Decimal(0), basis),
+            total_cost=calculate(result.hours, result.hourly_rate, basis),
+        )

@@ -79,6 +79,6 @@ gettext gewählt; URLs bleiben Englisch. Private Antworten werden nicht gecacht.
 
 Gespeichert werden die aktuelle Fehlerbeschreibung, der aktuelle Status und die
 Schritte samt Erledigungszustand; ein unveränderliches Änderungsprotokoll ist nicht
-Teil dieses Tasks. Ersatzteile, Arbeitswerte und Kosten folgen in T08, der lesende
-API-Zugang in T09. Such- und Statusfilter bleiben den geplanten Erweiterungen
+Teil dieses Tasks. Ersatzteile, Arbeitswerte und Kosten sind mit [T08](parts-and-costs.md) ergänzt;
+der lesende API-Zugang folgt in T09. Such- und Statusfilter bleiben den geplanten Erweiterungen
 vorbehalten. Prüfergebnisse: [T07-Abnahme](t07-validation.md).

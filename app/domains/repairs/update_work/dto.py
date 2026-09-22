@@ -5,5 +5,5 @@ from dataclasses import dataclass
 class Command:
     owner_id: int
     repair_id: int
-    offset: int = 0
-    part_offset: int = 0
+    hours: str
+    hourly_rate: str

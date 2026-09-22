@@ -1,14 +1,14 @@
-# Translations template for PROJECT.
-# Copyright (C) 2026 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
+# Translations template for RepairHub.
+# Copyright (C) 2026 RepairHub
+# This file is distributed under the same license as the RepairHub project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: RepairHub VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 10:59+0200\n"
+"POT-Creation-Date: 2026-09-22 13:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,89 +17,89 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:177
+#: app/bootstrap.py:186
 msgid "Invalid request: untrusted host."
 msgstr ""
 
-#: app/bootstrap.py:182
+#: app/bootstrap.py:191
 msgid "Invalid request"
 msgstr ""
 
-#: app/bootstrap.py:183 app/web/routes/devices.py:43
-#: app/web/routes/repairs.py:57
+#: app/bootstrap.py:192 app/web/routes/devices.py:43
+#: app/web/routes/repairs.py:74
 msgid "Please reload the page and check your input."
 msgstr ""
 
-#: app/bootstrap.py:185
+#: app/bootstrap.py:194
 msgid "Login required"
 msgstr ""
 
-#: app/bootstrap.py:185
+#: app/bootstrap.py:194
 msgid "Please log in to access this resource."
 msgstr ""
 
-#: app/bootstrap.py:186
+#: app/bootstrap.py:195
 msgid "Access denied"
 msgstr ""
 
-#: app/bootstrap.py:186
+#: app/bootstrap.py:195
 msgid "This action is not allowed."
 msgstr ""
 
-#: app/bootstrap.py:187
+#: app/bootstrap.py:196
 msgid "Page not found"
 msgstr ""
 
-#: app/bootstrap.py:187
+#: app/bootstrap.py:196
 msgid "The requested resource was not found."
 msgstr ""
 
-#: app/bootstrap.py:188
+#: app/bootstrap.py:197
 msgid "Method not allowed"
 msgstr ""
 
-#: app/bootstrap.py:188
+#: app/bootstrap.py:197
 msgid "This request method is not supported here."
 msgstr ""
 
-#: app/bootstrap.py:190
+#: app/bootstrap.py:199
 msgid "Unable to register"
 msgstr ""
 
-#: app/bootstrap.py:191
+#: app/bootstrap.py:200
 msgid "This username or email address is already in use."
 msgstr ""
 
-#: app/bootstrap.py:193
+#: app/bootstrap.py:202
 msgid "Temporarily unavailable"
 msgstr ""
 
-#: app/bootstrap.py:193
+#: app/bootstrap.py:202
 msgid "Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:194
+#: app/bootstrap.py:203
 msgid "Request too large"
 msgstr ""
 
-#: app/bootstrap.py:194
+#: app/bootstrap.py:203
 msgid "The submitted data exceeds the allowed size."
 msgstr ""
 
-#: app/bootstrap.py:196
+#: app/bootstrap.py:205
 msgid "Internal error"
 msgstr ""
 
-#: app/bootstrap.py:197
+#: app/bootstrap.py:206
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 
-#: app/bootstrap.py:203 app/web/routes/devices.py:54
-#: app/web/routes/repairs.py:62
+#: app/bootstrap.py:212 app/web/routes/devices.py:54
+#: app/web/routes/repairs.py:79
 msgid "Request failed"
 msgstr ""
 
-#: app/bootstrap.py:204 app/web/routes/devices.py:47
+#: app/bootstrap.py:213 app/web/routes/devices.py:47
 msgid "The request could not be processed."
 msgstr ""
 
@@ -128,15 +128,15 @@ msgstr ""
 msgid "Repair status"
 msgstr ""
 
-#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:80
+#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:102
 msgid "Open"
 msgstr ""
 
-#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:80
+#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:102
 msgid "In progress"
 msgstr ""
 
-#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:80
+#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:102
 msgid "Completed"
 msgstr ""
 
@@ -148,6 +148,26 @@ msgstr ""
 msgid "Done"
 msgstr ""
 
+#: app/web/forms/repairs.py:27
+msgid "Working hours"
+msgstr ""
+
+#: app/web/forms/repairs.py:28
+msgid "Hourly rate (CHF)"
+msgstr ""
+
+#: app/web/forms/repairs.py:32
+msgid "Part name"
+msgstr ""
+
+#: app/web/forms/repairs.py:33
+msgid "Unit price (CHF)"
+msgstr ""
+
+#: app/web/forms/repairs.py:34
+msgid "Quantity"
+msgstr ""
+
 #: app/web/routes/devices.py:44 app/web/templates/devices/form.html:9
 msgid "Your session has expired. Please log in again."
 msgstr ""
@@ -156,7 +176,7 @@ msgstr ""
 msgid "Device not found."
 msgstr ""
 
-#: app/web/routes/devices.py:123 app/web/routes/repairs.py:119
+#: app/web/routes/devices.py:123 app/web/routes/repairs.py:162
 msgid "This field is required."
 msgstr ""
 
@@ -164,7 +184,7 @@ msgstr ""
 msgid "Use at most 120 characters."
 msgstr ""
 
-#: app/web/routes/devices.py:125 app/web/routes/repairs.py:121
+#: app/web/routes/devices.py:125 app/web/routes/repairs.py:164
 msgid "Use text without control characters."
 msgstr ""
 
@@ -172,41 +192,55 @@ msgstr ""
 msgid "Device saved."
 msgstr ""
 
-#: app/web/routes/repairs.py:55
+#: app/web/routes/repairs.py:72
 msgid "Repair not found."
 msgstr ""
 
-#: app/web/routes/repairs.py:120
+#: app/web/routes/repairs.py:163
 #, python-format
 msgid "Use at most %(count)s characters."
 msgstr ""
 
-#: app/web/routes/repairs.py:122
+#: app/web/routes/repairs.py:165
 msgid "Choose a valid repair status."
 msgstr ""
 
-#: app/web/routes/repairs.py:123
+#: app/web/routes/repairs.py:166
 msgid "Choose a valid completion state."
 msgstr ""
 
-#: app/web/routes/repairs.py:156 app/web/templates/repairs/_detail.html:6
+#: app/web/routes/repairs.py:168
+msgid ""
+"Enter a nonnegative amount with at most two decimal places within the "
+"displayed limit."
+msgstr ""
+
+#: app/web/routes/repairs.py:171
+msgid "Enter a whole quantity between 1 and 2147483647."
+msgstr ""
+
+#: app/web/routes/repairs.py:172
+msgid "Use at most 200 characters without control characters."
+msgstr ""
+
+#: app/web/routes/repairs.py:205 app/web/templates/repairs/_detail.html:6
 #: app/web/templates/repairs/index.html:12
 #, python-format
 msgid "Repair #%(id)s"
 msgstr ""
 
-#: app/web/routes/repairs.py:186 app/web/routes/repairs.py:189
+#: app/web/routes/repairs.py:235 app/web/routes/repairs.py:238
 #: app/web/templates/devices/detail.html:10
 #: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
 msgid "New repair"
 msgstr ""
 
-#: app/web/routes/repairs.py:193 app/web/routes/repairs.py:211
-#: app/web/routes/repairs.py:238
+#: app/web/routes/repairs.py:242 app/web/routes/repairs.py:272
+#: app/web/routes/repairs.py:301 app/web/routes/repairs.py:359
 msgid "Repair details"
 msgstr ""
 
-#: app/web/routes/repairs.py:210 app/web/routes/repairs.py:213
+#: app/web/routes/repairs.py:271 app/web/routes/repairs.py:274
 msgid "Repair saved."
 msgstr ""
 
@@ -353,7 +387,9 @@ msgid "COMING NEXT"
 msgstr ""
 
 #: app/web/templates/index.html:27
-msgid "Devices and repair tracking are ready. Parts and costs are coming next."
+msgid ""
+"Manage devices, repairs, replacement parts and estimated costs in one "
+"place."
 msgstr ""
 
 #: app/web/templates/index.html:29
@@ -518,6 +554,91 @@ msgstr ""
 msgid ""
 "A personal workshop for the things you care about. Start your repair "
 "journey with RepairHub."
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:15
+msgid "Work estimate"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:16
+msgid ""
+"Up to 999999.99 hours and CHF 999999999.99 per hour. Use at most two "
+"decimal places."
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:21
+msgid "Save work estimate"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:26
+msgid "PLAN THE REPAIR"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:27
+msgid "Estimated costs"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:29
+msgid "Labor"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:30
+msgid "Parts"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:31
+msgid "Total"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:33
+msgid ""
+"Working hours × hourly rate + all parts. Calculated automatically; "
+"estimates may differ from actual costs."
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:37
+msgid "Replacement parts"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:37
+#, python-format
+msgid "%(count)s parts"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:38
+msgid "No parts yet. Add the materials needed for this repair."
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:39
+msgid "Unit price: CHF 0–999999999.99. Quantity: 1–2147483647 whole items."
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:51
+msgid "Save part"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:51
+msgid "Line total"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:57
+msgid "Part pages"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:58
+msgid "Previous parts"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:59
+msgid "Next parts"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:61
+msgid "Add a part"
+msgstr ""
+
+#: app/web/templates/repairs/_costs.html:69
+msgid "Add part"
 msgstr ""
 
 #: app/web/templates/repairs/_detail.html:6

@@ -1,0 +1,72 @@
+{% from 'repairs/_forms.html' import result %}
+{% macro input(field, id, original='', maximum='', step='0.01', minimum='0', numeric=true) %}
+<div class="mb-3">
+  <label class="form-label" for="{{ id }}">{{ field.label.text }}</label>
+  {% if numeric %}
+    {{ field(id=id, class_='form-control', type='number', min=minimum, max=maximum, step=step, required=true, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error') }}
+  {% else %}
+    {{ field(id=id, class_='form-control', maxlength=200, required=true, data_repair_field='true', data_original=original, aria_describedby=id ~ '-error') }}
+  {% endif %}
+  <p id="{{ id }}-error" class="field-validation" data-error-for="{{ field.name }}" aria-live="polite">{{ field.errors|join(' ') }}</p>
+</div>
+{% endmacro %}
+<div class="repair-grid mt-4">
+  <section class="repair-panel" aria-labelledby="work-heading">
+    <h2 id="work-heading">{{ _('Work estimate') }}</h2>
+    <p class="field-hint">{{ _('Up to 999999.99 hours and CHF 999999999.99 per hour. Use at most two decimal places.') }}</p>
+    <form action="{{ url_for('repairs.edit_work', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+      {{ forms.work.hidden_tag() }}
+      {{ input(forms.work.hours, 'work-hours', '{:.2f}'.format(data.hours), '999999.99') }}
+      {{ input(forms.work.hourly_rate, 'work-rate', '{:.2f}'.format(data.hourly_rate), '999999999.99') }}
+      <button type="submit" class="btn btn-primary btn-sm">{{ _('Save work estimate') }}</button>
+      {{ result() }}
+    </form>
+  </section>
+  <section class="repair-panel" aria-labelledby="cost-heading">
+    <p class="eyebrow">{{ _('PLAN THE REPAIR') }}</p>
+    <h2 id="cost-heading">{{ _('Estimated costs') }}</h2>
+    <dl class="cost-summary">
+      <div><dt>{{ _('Labor') }}</dt><dd data-labor-cost>CHF {{ '{:.2f}'.format(data.labor_cost) }}</dd></div>
+      <div><dt>{{ _('Parts') }}</dt><dd data-parts-cost>CHF {{ '{:.2f}'.format(data.parts_cost) }}</dd></div>
+      <div class="cost-total"><dt>{{ _('Total') }}</dt><dd data-total-cost>CHF {{ '{:.2f}'.format(data.total_cost) }}</dd></div>
+    </dl>
+    <p class="field-hint">{{ _('Working hours × hourly rate + all parts. Calculated automatically; estimates may differ from actual costs.') }}</p>
+  </section>
+</div>
+<section class="repair-panel repair-steps" aria-labelledby="parts-heading">
+  <div class="section-heading"><h2 id="parts-heading">{{ _('Replacement parts') }}</h2><span>{{ _('%(count)s parts', count=data.part_total) }}</span></div>
+  {% if not data.part_total %}<p class="text-muted">{{ _('No parts yet. Add the materials needed for this repair.') }}</p>{% endif %}
+  <p class="field-hint">{{ _('Unit price: CHF 0–999999999.99. Quantity: 1–2147483647 whole items.') }}</p>
+  <ol class="repair-step-list" start="{{ data.part_offset + 1 }}">
+  {% for part in data.parts %}
+    {% set form = forms['part-' ~ part.id] %}
+    <li class="repair-step" data-part-id="{{ part.id }}">
+      <form action="{{ url_for('repairs.edit_part', repair_id=repair.id, part_id=part.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+        {{ form.hidden_tag() }}
+        <div class="row g-3">
+          <div class="col-md-6">{{ input(form.name, 'part-name-' ~ part.id, part.name, numeric=false) }}</div>
+          <div class="col-md-3">{{ input(form.unit_price, 'part-price-' ~ part.id, '{:.2f}'.format(part.unit_price), '999999999.99') }}</div>
+          <div class="col-md-3">{{ input(form.quantity, 'part-quantity-' ~ part.id, part.quantity, '2147483647', '1', '1') }}</div>
+        </div>
+        <div class="d-flex flex-wrap align-items-center gap-3"><button type="submit" class="btn btn-outline-secondary btn-sm">{{ _('Save part') }}</button><span>{{ _('Line total') }}: CHF {{ '{:.2f}'.format(part.total) }}</span></div>
+        {{ result() }}
+      </form>
+    </li>
+  {% endfor %}
+  </ol>
+  <nav class="device-pagination" aria-label="{{ _('Part pages') }}">
+    {% if data.part_offset > 0 %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset, part_offset=[0,data.part_offset-20]|max, device_id=list_device_id) }}">{{ _('Previous parts') }}</a>{% endif %}
+    {% if data.part_offset + 20 < data.part_total %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset+20, device_id=list_device_id) }}">{{ _('Next parts') }}</a>{% endif %}
+  </nav>
+  <h3>{{ _('Add a part') }}</h3>
+  <form action="{{ url_for('repairs.create_part', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id) }}" method="post" data-repair-form>
+    {{ forms['new-part'].hidden_tag() }}
+    <div class="row g-3">
+      <div class="col-md-6">{{ input(forms['new-part'].name, 'new-part-name', numeric=false) }}</div>
+      <div class="col-md-3">{{ input(forms['new-part'].unit_price, 'new-part-price', maximum='999999999.99') }}</div>
+      <div class="col-md-3">{{ input(forms['new-part'].quantity, 'new-part-quantity', maximum='2147483647', step='1', minimum='1') }}</div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">{{ _('Add part') }}</button>
+    {{ result() }}
+  </form>
+</section>

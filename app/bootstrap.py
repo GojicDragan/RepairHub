@@ -121,6 +121,8 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
 
     from datetime import UTC, datetime
 
+    from app.data.parts.add_part import AddPartRepository
+    from app.data.parts.update_part import UpdatePartRepository
     from app.data.repairs.add_step import AddStepRepository
     from app.data.repairs.change_status import ChangeStatusRepository
     from app.data.repairs.create_repair import CreateRepairRepository
@@ -128,6 +130,9 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     from app.data.repairs.list_repairs import ListRepairsRepository
     from app.data.repairs.update_description import UpdateDescriptionRepository
     from app.data.repairs.update_step import UpdateStepRepository
+    from app.data.repairs.update_work import UpdateWorkRepository
+    from app.domains.parts.add_part.handler import AddPart
+    from app.domains.parts.update_part.handler import UpdatePart
     from app.domains.repairs.add_step.handler import AddStep
     from app.domains.repairs.change_status.handler import ChangeStatus
     from app.domains.repairs.create_repair.handler import CreateRepair
@@ -135,6 +140,7 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
     from app.domains.repairs.list_repairs.handler import ListRepairs
     from app.domains.repairs.update_description.handler import UpdateDescription
     from app.domains.repairs.update_step.handler import UpdateStep
+    from app.domains.repairs.update_work.handler import UpdateWork
     from app.web.routes.repairs import create_repair_blueprint
 
     app.register_blueprint(
@@ -148,6 +154,9 @@ def create_app(config: Mapping[str, Any] | None = None) -> Flask:
             status=ChangeStatus(ChangeStatusRepository()),
             add_step=AddStep(AddStepRepository()),
             update_step=UpdateStep(UpdateStepRepository()),
+            work=UpdateWork(UpdateWorkRepository()),
+            add_part=AddPart(AddPartRepository()),
+            update_part=UpdatePart(UpdatePartRepository()),
         )
     )
 
