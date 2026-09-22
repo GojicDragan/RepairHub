@@ -33,7 +33,7 @@ und gehört deshalb ausschliesslich in die geschützte Konfiguration.
 
 Wiederholungen mit gleichen Eingaben sollen keine Container unnötig neu starten.
 Deployment-Sperre und Release-Reihenfolge verhindern parallele oder veraltete
-Auslieferungen. Alle drei Dienste verwenden `restart: unless-stopped`; bewusst
+Auslieferungen. Alle vier Produktionsdienste verwenden `restart: unless-stopped`; bewusst
 gestoppte Container bleiben gestoppt. Die Neustartrichtlinie ersetzt keine Sicherung. Volumes bleiben erhalten; `down -v` gehört nicht zum Betriebsablauf.
 
 Nach einem Release den Workflow einschliesslich Backup-Upload kontrollieren.
@@ -134,3 +134,12 @@ Hostsperre erst entfernen, wenn nachweislich kein Deployment mehr läuft.
 Rücksicherung von Datenbankinhalten. Bei inkompatiblem Schema ist ein gesonderter
 Wartungs- und Wiederherstellungsablauf nötig; kein blindes Zurücksetzen auf ein
 älteres Image oder Backup.
+
+## Aktueller Abnahmestand
+
+Der Release-/HTTPS-/API-Nachweis zu v0.9 steht unter [T12](t12-validation.md).
+Seit K-T04 umfasst die Sicherung zusätzlich die unveränderlichen Garage-Objekte
+als passendes `.dump.files.tar`; beide Archive werden verschlüsselt aufbewahrt.
+Für eine Wiederherstellung gehören Datenbank- und Objektarchiv zusammen.
+Details und Grenzen: [Garage](garage.md). Ein tatsächlicher Datenbank-/Gesamtrestore
+wurde auch bei T12 nicht durchgeführt.

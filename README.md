@@ -262,3 +262,7 @@ Einrichtung, Grenzen und neue Produktions-Secrets: [Bilder](docs/images.md) und
 
 K-T05 ergänzt den vollständigen PDF-Reparaturbericht als Download auf der
 Falldetailseite. Details: [PDF-Berichte](docs/pdf-reports.md).
+
+Die Gesamtabnahme einschliesslich optionaler Funktionen ist in zwölf Fällen im
+[Abnahmeprotokoll](docs/acceptance-test-protocol.md) dokumentiert.
+Aktuelle Prüfergebnisse und Release-Zuordnung: [T12](docs/t12-validation.md).

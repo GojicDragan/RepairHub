@@ -1,6 +1,6 @@
 # Teststufen
 
-Stand: 18. September 2026. Benutzerentscheid: Tests der Anwendung werden in
+Stand: 22. September 2026. Benutzerentscheid: Tests der Anwendung werden in
 **Unit**, **Integration** und **End-to-End** aufgeteilt. Bezug: T02, M07,
 N03–N05 und N07–N10. Mit den folgenden Funktionstasks wächst jede passende Stufe
 zusammen mit der Implementierung.
@@ -33,8 +33,8 @@ uv run --locked pytest tests/integration
 ```
 
 Für die Datenbankintegration muss `TEST_DATABASE_URL` auf eine separate
-PostgreSQL-Testdatenbank zeigen. SQLite ist kein Ersatz. Ohne URL wird genau
-der PostgreSQL-Fall lokal sichtbar übersprungen; bei `CI=true` schlägt die
+PostgreSQL-Testdatenbank zeigen. SQLite ist kein Ersatz. Ohne URL werden die davon abhängigen
+PostgreSQL-Tests lokal sichtbar übersprungen; bei `CI=true` schlägt die
 fehlende Voraussetzung fehl. Ein lokaler Lauf mit einem übersprungenen DB-Fall
 ist keine vollständige Integrationsabnahme.
 
@@ -47,9 +47,9 @@ uv run --locked python scripts/ci/images.py build --commit "$(git rev-parse HEAD
 uv run --locked --group e2e pytest tests/e2e
 ```
 
-Der Build erzeugt nur das App-Image. Nginx und PostgreSQL werden mit den Pins
+Der Build erzeugt nur das App-Image. Nginx, PostgreSQL und Garage werden mit den Pins
 aus `deploy/infrastructure.json` bezogen und für die Prüfung ebenfalls
-archiviert. Beide offiziellen Images sind bereits per Digest festgelegt;
+archiviert. Die offiziellen Infrastruktur-Images sind bereits per Digest festgelegt;
 ein eigener PostgreSQL-Build oder GHCR-Release ist nicht nötig. Für eine lokale
 Registry-Fixture kann `REPAIRHUB_INFRASTRUCTURE_FILE` auf deren eigene geprüfte
 Pin-Datei zeigen. Diesen Override bei Build, Verifikation, Scans und E2E gleich
@@ -80,7 +80,7 @@ Die statischen Dateien stammen aus dem verifizierten App-Container. Das
 offizielle Nginx-Image bekommt sie zusammen mit der geprüften Konfiguration
 als schreibgeschützte Verzeichniseinbindungen; es enthält keinen App-Code.
 
-Eine neue temporäre PostgreSQL-Instanz, Gunicorn und Nginx laufen pro Sitzung in
+Neue temporäre PostgreSQL-/Garage-Instanzen, Gunicorn und Nginx laufen pro Sitzung in
 einem eigenen Docker-Bridge-Netz. Für den Browser auf dem Testrechner wird
 ausschliesslich Nginx an einen zufälligen Port auf `127.0.0.1` gebunden; App und
 Datenbank bleiben unveröffentlicht. Der gemeinsame Runtime-Helfer veröffentlicht
@@ -243,3 +243,11 @@ leere Datenbanken sowie fehlende Browser- und Schreibberechtigungen.
 Domain-Tests sichern, dass die explizite System-Leseberechtigung keine
 Schreib-Slices autorisiert. Der Deployment-Test rotiert den Runtime-Schlüssel
 und erzwingt anschliessend einen fehlerhaften Prüfschlüssel für den Rollback.
+
+## Gesamtabnahme T12
+
+Die aktuelle zusammengefasste Abnahme steht im [Testprotokoll](acceptance-test-protocol.md),
+die ausgeführten Stufen und Release-Zuordnung im [T12-Nachweis](t12-validation.md).
+Beide beziehen sich auf den dort festgehaltenen Commit; ältere Taskberichte bleiben
+als historische Einzelstände erhalten. Datenbank-Restore wurde auf Benutzerwunsch
+nicht tatsächlich ausgeführt.
