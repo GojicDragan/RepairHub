@@ -1,6 +1,18 @@
 """Dünne HTTP-Adapter; HTML und AJAX verwenden dieselben injizierten Slices."""
 
-from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
+from io import BytesIO
+
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
 from flask_babel import gettext as _
 from flask_wtf.csrf import CSRFError
 from werkzeug.datastructures import MultiDict
@@ -49,6 +61,26 @@ def create_repair_blueprint(
 
     def owner():
         return identity.current().id
+
+    @blueprint.get("/repairs/<int:repair_id>/report.pdf")
+    def report(repair_id):
+        from app.web.documents.repair_pdf import render_repair_pdf
+
+        # Autorisierte Gesamtauskunft wie bei der API; Browser-Pagination ignorieren.
+        data = detail.execute(Get(owner(), repair_id, complete=True))
+        device = device_reader.execute(DeviceQuery(owner(), data.repair.device_id))
+        response = send_file(
+            BytesIO(render_repair_pdf(data, device, _)),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"repair-{repair_id}.pdf",
+            conditional=False,
+            etag=False,
+            max_age=0,
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.vary.add("Accept-Language")
+        return response
 
     @blueprint.before_request
     def authenticate():

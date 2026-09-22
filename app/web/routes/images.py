@@ -128,6 +128,7 @@ def create_image_blueprint(
             else:
                 if not json_request():
                     return redirect(detail_url(parent_id), code=303)
+                # Neue Bilder stehen zuerst; nicht auf einem alten Seitenoffset verbleiben.
                 return jsonify(
                     html=render_gallery(parent_id, offset=0), message=_("Image uploaded.")
                 ), 201
@@ -140,6 +141,7 @@ def create_image_blueprint(
 
     @blueprint.post("/<image_id>/delete")
     def remove(parent_id, image_id):
+        # Erst nach erfolgreichem Commit neu rendern; ein Fehler bleibt für den Client sichtbar.
         delete.execute(delete_command(identity.current().id, parent_id, image_id))
         if json_request():
             return jsonify(html=render_gallery(parent_id, offset=0), message=_("Image deleted."))

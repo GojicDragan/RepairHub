@@ -3,6 +3,7 @@ export class ImageUploadPresenter {
   constructor(view, source) { Object.assign(this, {view, source}); this.busy = false; }
   update(hasFile) { this.view.enabled(Boolean(hasFile) && !this.busy); }
   async submit(hasFile) {
+    // Nicht nur den Button sperren: Auch direkt ausgelöste zweite Aufrufe abweisen.
     if (!hasFile || this.busy) return;
     this.busy = true;
     this.update(hasFile);

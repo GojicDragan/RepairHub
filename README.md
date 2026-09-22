@@ -259,3 +259,6 @@ Prüfnachweis: [K-T03](docs/kt03-validation.md).
 K-T04 ergänzt private Bild-Uploads und eine Mosaikansicht auf Geräte- und Reparaturdetails.
 Einrichtung, Grenzen und neue Produktions-Secrets: [Bilder](docs/images.md) und
 [Garage](docs/garage.md).
+
+K-T05 ergänzt den vollständigen PDF-Reparaturbericht als Download auf der
+Falldetailseite. Details: [PDF-Berichte](docs/pdf-reports.md).

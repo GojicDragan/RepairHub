@@ -281,3 +281,11 @@ Objektspeicher. Technische Adapter unter `app.data.files` verwenden Pillow und b
 Flask-Routen erhalten ausschliesslich verdrahtete Anwendungsfälle. Der auf ausdrücklichen
 Benutzerwunsch ergänzte Garage-Container erweitert die technische Bereitstellung,
 nicht die fachlichen Abhängigkeiten. Details: [Bilder](images.md).
+
+## K-T05: PDF als zusätzliche Darstellung
+
+Der PDF-Download nutzt `get_repair(complete=True)` und den vorhandenen Geräte-Leseslice.
+Keine neue Geschäftsregel wird implementiert; die Präsentation unter
+`app.web.documents` erhält ausschliesslich autorisierte DTOs und gerundete Kosten.
+Deshalb keine separate Export-Service-Schicht, keine Slice-zu-Slice-Imports und
+keine zweite Kostenberechnung. Details: [PDF-Berichte](pdf-reports.md).

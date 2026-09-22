@@ -20,9 +20,13 @@ def backup(storage, destination):
             created = True
             path.chmod(0o600)
             with tarfile.open(fileobj=output, mode="w") as archive:
+                # Auch nicht mehr referenzierte Objekte sichern: Ein zuvor erstellter
+                # Datenbanksnapshot kann noch Verweise auf inzwischen gelöschte Bilder enthalten.
                 for page in client.get_paginator("list_objects_v2").paginate(Bucket=storage.bucket):
                     for item in page.get("Contents", []):
                         key = item["Key"]
+                        # Unbekannte Schlüssel nicht still auslassen: Sonst wäre ein
+                        # als erfolgreich gemeldetes Archiv möglicherweise unvollständig.
                         if not OBJECT_KEY.fullmatch(key):
                             raise ValueError("unexpected_object")
                         body = storage.read(key)

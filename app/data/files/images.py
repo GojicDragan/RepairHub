@@ -22,6 +22,8 @@ class ImageProcessor:
                         or getattr(source, "n_frames", 1) != 1
                     ):
                         raise ValueError("invalid_image")
+                    # verify() prüft die Dateistruktur, macht das Bild aber nicht weiter lesbar.
+                    # Deshalb separat neu öffnen und load() auch die Pixel dekodieren lassen.
                     source.verify()
                 with Image.open(BytesIO(content), formats=("JPEG", "PNG", "WEBP")) as source:
                     source.load()
@@ -31,6 +33,7 @@ class ImageProcessor:
                     image = Image.new("RGBA", oriented.size)
                     image.paste(oriented.convert("RGBA"))
                     original = self.encode(image)
+                    # thumbnail() verändert das Bild; die volle Auflösung ist bereits kodiert.
                     image.thumbnail((640, 640))
                     thumbnail = self.encode(image)
                     return original, thumbnail, oriented.width, oriented.height

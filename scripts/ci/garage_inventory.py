@@ -87,6 +87,8 @@ def prepare(destination: Path, image_reference: str):
     if len(packages) < 100:
         raise ValueError("Unvollständiges Garage-Laufzeitinventar.")
     destination.mkdir(parents=True, exist_ok=True)
+    # Der transitive Abschluss ist bereits berechnet. Das reduzierte Lockfile
+    # enthält alle zu scannenden Pakete, ohne Testwurzeln erneut einzubeziehen.
     lines = ["version = 4"]
     for package in packages:
         lines.extend(

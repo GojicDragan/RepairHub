@@ -23,6 +23,8 @@ class GetImage:
         image = self.repository.get(command.owner_id, command.parent_id, command.image_id)
         if image is None:
             raise ImageNotFound()
+        # Ohne aktuellen Verweis kein Speicherzugriff, auch wenn private Objekte
+        # nach einer Löschung noch für Sicherungen aufbewahrt werden.
         suffix = "-thumb" if command.thumbnail else ""
         try:
             return self.storage.read(f"images/{image.id}{suffix}.webp")

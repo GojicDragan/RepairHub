@@ -4,6 +4,8 @@
 <article class="repair-workspace">
   <div class="repair-breadcrumb"><a href="{{ url_for('repairs.index', device_id=list_device_id, **list_filters) }}">← {{ _('Your repairs') }}</a><a href="{{ url_for('devices.detail', device_id=repair.device_id) }}">{{ repair.device_name }}</a></div>
   <div class="section-heading repair-heading"><div><p class="eyebrow">{{ _('KEEP THE REPAIR MOVING') }}</p><h1 tabindex="-1">{{ _('Repair #%(id)s', id=repair.id) }}</h1><p>{{ repair.device_name }}</p></div><span class="repair-status repair-status-{{ repair.status }}">{{ status_labels[repair.status] }}</span></div>
+  {# Normaler Link statt Fetch: Der Browser übernimmt den PDF-Download auch ohne JavaScript. #}
+  <p><a class="btn btn-outline-secondary btn-sm" href="{{ url_for('repairs.report', repair_id=repair.id) }}">{{ _('Download PDF report') }}</a></p>
   <p data-repair-message role="status" aria-live="polite"></p>
   <div class="repair-grid">
     <section class="repair-panel" aria-labelledby="fault-heading">

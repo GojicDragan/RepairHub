@@ -10,6 +10,8 @@ def setup(directory: Path) -> None:
     if garage.exists() and storage.exists():
         print("Garage-Konfiguration ist bereits vorhanden.")
         return
+    # Ein Abbruch zwischen den beiden Schreibvorgängen darf beim nächsten Start
+    # nicht zwei unterschiedliche Schlüsselpaare für denselben Speicher erzeugen.
     if garage.exists() or storage.exists():
         raise ValueError("Unvollständige Konfiguration: vorhandene Datei sichern und Paar prüfen.")
     access, secret, rpc = "GK" + secrets.token_hex(16), secrets.token_hex(32), secrets.token_hex(32)

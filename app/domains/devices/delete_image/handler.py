@@ -21,6 +21,8 @@ class DeleteImage:
         ):
             raise ImageNotFound()
         try:
+            # Prüfung und Entfernen gehören in dieselbe eigentumsgebundene Operation;
+            # ein vorheriger separater Existenztest würde ein Zeitfenster offenlassen.
             removed = self.repository.delete(command.owner_id, command.parent_id, command.image_id)
         except OSError:
             raise ImageUnavailable() from None

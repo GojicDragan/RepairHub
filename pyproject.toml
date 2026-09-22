@@ -22,6 +22,7 @@ dependencies = [
     "gunicorn==26.2.0",
     "itsdangerous==2.2.0",
     "psycopg[binary]==3.3.6",
+    "reportlab==5.0.1",
 ]
 
 [dependency-groups]
@@ -33,6 +34,7 @@ ci = [
 ]
 dev = [
     "aiosmtpd==1.4.6",
+    "pypdf==6.19.0",
     "pytest==9.1.1",
     "ruff==0.16.8",
 ]
