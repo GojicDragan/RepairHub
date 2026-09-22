@@ -247,3 +247,25 @@ sichtbare Navigation bis zu Geräten, Reparaturschritten, Status und CHF-Kosten.
 Englisch/Deutsch, mit/ohne JS, negative Zahleneingaben, erhaltene Formularwerte,
 Abmeldung und mobile Ansichten gehören zur Abnahme. Ein absichtlich unterbrochener Request prüft Netzwerkfehler; eine tatsächlich
 entfernte Browsersitzung prüft die UI-Reaktion auf 401 einschliesslich verfallenem CSRF-Wert. Ergebnisse: [T10](t10-validation.md).
+
+## K-T01: Reparatursuche
+
+Suche und Status bilden eine gemeinsame Bootstrap-Formulargruppe über der
+Reparaturliste. Das GET-Formular funktioniert ohne JavaScript. Mit JavaScript
+koordiniert der DOM-freie `ListFilterPresenter` eine Eingabepause von 300 ms;
+Statuswechsel und Enter reagieren sofort; der Anwenden-Button erscheint nur
+ohne JavaScript als Fallback. Timer und DOM bleiben
+im View-Adapter. Die gemeinsame virtuelle Listensteuerung verwirft alte Antworten
+bereits beim Tippen und lädt neue Filter ohne alten Snapshot ab Position null.
+Sie übernimmt die Filter aus der Daten-URL für alle weiteren AJAX-Fenster.
+Keine neue Browser-Fachlogik oder zweite Listenimplementierung. Detailnavigation
+und Rückweg erhalten die Filter. Verhalten und Suchsemantik: [Reparaturen](repairs.md).
+
+### Lokale Template- und Moduländerungen
+
+In Development ist `TEMPLATES_AUTO_RELOAD` explizit aktiv, während Debug deaktiviert
+bleibt. Gunicorns Python-Reload allein erkennt Änderungen an Jinja-Templates nicht
+zuverlässig. Ohne diese Einstellung kann ein altes Formular ohne Debounce-Hook mit
+neuem JavaScript kombiniert werden. Nginx verlangt für lokale statische Dateien
+mit `expires -1` eine Revalidierung; Produktions-Caching bleibt unverändert.
+Bereits geöffnete Seiten nach Änderungen neu laden.

@@ -14,7 +14,7 @@
   <section class="repair-panel" aria-labelledby="work-heading">
     <h2 id="work-heading">{{ _('Work estimate') }}</h2>
     <p class="field-hint">{{ _('Up to 999999.99 hours and CHF 999999999.99 per hour. Use at most two decimal places.') }}</p>
-    <form action="{{ url_for('repairs.edit_work', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+    <form action="{{ url_for('repairs.edit_work', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id, **list_filters) }}" method="post" data-repair-form data-existing="true">
       {{ forms.work.hidden_tag() }}
       {{ input(forms.work.hours, 'work-hours', '{:.2f}'.format(data.hours), '999999.99') }}
       {{ input(forms.work.hourly_rate, 'work-rate', '{:.2f}'.format(data.hourly_rate), '999999999.99') }}
@@ -41,7 +41,7 @@
   {% for part in data.parts %}
     {% set form = forms['part-' ~ part.id] %}
     <li class="repair-step" data-part-id="{{ part.id }}">
-      <form action="{{ url_for('repairs.edit_part', repair_id=repair.id, part_id=part.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id) }}" method="post" data-repair-form data-existing="true">
+      <form action="{{ url_for('repairs.edit_part', repair_id=repair.id, part_id=part.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id, **list_filters) }}" method="post" data-repair-form data-existing="true">
         {{ form.hidden_tag() }}
         <div class="row g-3">
           <div class="col-md-6">{{ input(form.name, 'part-name-' ~ part.id, part.name, numeric=false) }}</div>
@@ -55,11 +55,11 @@
   {% endfor %}
   </ol>
   <nav class="device-pagination" aria-label="{{ _('Part pages') }}">
-    {% if data.part_offset > 0 %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset, part_offset=[0,data.part_offset-20]|max, device_id=list_device_id) }}">{{ _('Previous parts') }}</a>{% endif %}
-    {% if data.part_offset + 20 < data.part_total %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset+20, device_id=list_device_id) }}">{{ _('Next parts') }}</a>{% endif %}
+    {% if data.part_offset > 0 %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset, part_offset=[0,data.part_offset-20]|max, device_id=list_device_id, **list_filters) }}">{{ _('Previous parts') }}</a>{% endif %}
+    {% if data.part_offset + 20 < data.part_total %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset+20, device_id=list_device_id, **list_filters) }}">{{ _('Next parts') }}</a>{% endif %}
   </nav>
   <h3>{{ _('Add a part') }}</h3>
-  <form action="{{ url_for('repairs.create_part', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id) }}" method="post" data-repair-form>
+  <form action="{{ url_for('repairs.create_part', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset, device_id=list_device_id, **list_filters) }}" method="post" data-repair-form>
     {{ forms['new-part'].hidden_tag() }}
     <div class="row g-3">
       <div class="col-md-6">{{ input(forms['new-part'].name, 'new-part-name', numeric=false) }}</div>

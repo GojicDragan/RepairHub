@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: RepairHub VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-22 14:51+0200\n"
+"POT-Creation-Date: 2026-09-22 18:07+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: RepairHub\n"
 "Language: de_DE\n"
@@ -18,91 +18,91 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app/bootstrap.py:216
+#: app/bootstrap.py:213
 msgid "Invalid request: untrusted host."
 msgstr "Ungültige Anfrage: nicht erlaubter Hostname."
 
-#: app/bootstrap.py:221
+#: app/bootstrap.py:218
 msgid "Invalid request"
 msgstr "Ungültige Anfrage"
 
-#: app/bootstrap.py:222 app/web/routes/devices.py:43
-#: app/web/routes/repairs.py:74
+#: app/bootstrap.py:219 app/web/routes/devices.py:48
+#: app/web/routes/repairs.py:79
 msgid "Please reload the page and check your input."
 msgstr "Bitte lade die Seite neu und prüfe deine Eingaben."
 
-#: app/bootstrap.py:224
+#: app/bootstrap.py:221
 msgid "Login required"
 msgstr "Anmeldung erforderlich"
 
-#: app/bootstrap.py:224
+#: app/bootstrap.py:221
 msgid "Please log in to access this resource."
 msgstr "Bitte melde dich an, um auf diesen Inhalt zuzugreifen."
 
-#: app/bootstrap.py:225
+#: app/bootstrap.py:222
 msgid "Access denied"
 msgstr "Zugriff verweigert"
 
-#: app/bootstrap.py:225
+#: app/bootstrap.py:222
 msgid "This action is not allowed."
 msgstr "Diese Aktion ist nicht erlaubt."
 
-#: app/bootstrap.py:226
+#: app/bootstrap.py:223
 msgid "Page not found"
 msgstr "Seite nicht gefunden"
 
-#: app/bootstrap.py:226
+#: app/bootstrap.py:223
 msgid "The requested resource was not found."
 msgstr "Der angeforderte Inhalt wurde nicht gefunden."
 
-#: app/bootstrap.py:227
+#: app/bootstrap.py:224
 msgid "Method not allowed"
 msgstr "Methode nicht erlaubt"
 
-#: app/bootstrap.py:227
+#: app/bootstrap.py:224
 msgid "This request method is not supported here."
 msgstr "Diese Anfragemethode wird hier nicht unterstützt."
 
-#: app/bootstrap.py:229
+#: app/bootstrap.py:226
 msgid "Unable to register"
 msgstr "Registrierung nicht möglich"
 
-#: app/bootstrap.py:230
+#: app/bootstrap.py:227
 msgid "This username or email address is already in use."
 msgstr "Dieser Benutzername oder diese E-Mail-Adresse wird bereits verwendet."
 
-#: app/bootstrap.py:232
+#: app/bootstrap.py:229
 msgid "Temporarily unavailable"
 msgstr "Vorübergehend nicht verfügbar"
 
-#: app/bootstrap.py:232
+#: app/bootstrap.py:229
 msgid "Please try again later."
 msgstr "Bitte versuche es später erneut."
 
-#: app/bootstrap.py:233
+#: app/bootstrap.py:230
 msgid "Request too large"
 msgstr "Anfrage zu gross"
 
-#: app/bootstrap.py:233
+#: app/bootstrap.py:230
 msgid "The submitted data exceeds the allowed size."
 msgstr "Die übermittelten Daten überschreiten die erlaubte Grösse."
 
-#: app/bootstrap.py:235
+#: app/bootstrap.py:232
 msgid "Internal error"
 msgstr "Interner Fehler"
 
-#: app/bootstrap.py:236
+#: app/bootstrap.py:233
 msgid "The request could not be processed. Please try again later."
 msgstr ""
 "Die Anfrage konnte nicht verarbeitet werden. Bitte versuche es später "
 "erneut."
 
-#: app/bootstrap.py:242 app/web/routes/devices.py:54
-#: app/web/routes/repairs.py:79
+#: app/bootstrap.py:239 app/web/routes/devices.py:59
+#: app/web/routes/repairs.py:83
 msgid "Request failed"
 msgstr "Anfrage fehlgeschlagen"
 
-#: app/bootstrap.py:243 app/web/routes/devices.py:47
+#: app/bootstrap.py:240 app/web/routes/devices.py:52
 msgid "The request could not be processed."
 msgstr "Die Anfrage konnte nicht verarbeitet werden."
 
@@ -131,15 +131,15 @@ msgstr "Fehlerbeschreibung"
 msgid "Repair status"
 msgstr "Reparaturstatus"
 
-#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:102
+#: app/web/forms/repairs.py:14 app/web/routes/repairs.py:106
 msgid "Open"
 msgstr "Offen"
 
-#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:102
+#: app/web/forms/repairs.py:15 app/web/routes/repairs.py:106
 msgid "In progress"
 msgstr "In Bearbeitung"
 
-#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:102
+#: app/web/forms/repairs.py:16 app/web/routes/repairs.py:106
 msgid "Completed"
 msgstr "Abgeschlossen"
 
@@ -171,48 +171,49 @@ msgstr "Einzelpreis (CHF)"
 msgid "Quantity"
 msgstr "Menge"
 
-#: app/web/routes/devices.py:44 app/web/templates/devices/form.html:9
+#: app/web/routes/devices.py:49 app/web/routes/repairs.py:77
+#: app/web/templates/devices/form.html:9 app/web/templates/repairs/page.html:4
 msgid "Your session has expired. Please log in again."
 msgstr "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an."
 
-#: app/web/routes/devices.py:45
+#: app/web/routes/devices.py:50
 msgid "Device not found."
 msgstr "Gerät nicht gefunden."
 
-#: app/web/routes/devices.py:123 app/web/routes/repairs.py:162
+#: app/web/routes/devices.py:128 app/web/routes/repairs.py:171
 msgid "This field is required."
 msgstr "Dieses Feld ist erforderlich."
 
-#: app/web/routes/devices.py:124
+#: app/web/routes/devices.py:129
 msgid "Use at most 120 characters."
 msgstr "Verwende höchstens 120 Zeichen."
 
-#: app/web/routes/devices.py:125 app/web/routes/repairs.py:164
+#: app/web/routes/devices.py:130 app/web/routes/repairs.py:173
 msgid "Use text without control characters."
 msgstr "Verwende Text ohne Steuerzeichen."
 
-#: app/web/routes/devices.py:135
+#: app/web/routes/devices.py:140
 msgid "Device saved."
 msgstr "Gerät gespeichert."
 
-#: app/web/routes/repairs.py:72
+#: app/web/routes/repairs.py:78
 msgid "Repair not found."
 msgstr "Reparaturfall nicht gefunden."
 
-#: app/web/routes/repairs.py:163
+#: app/web/routes/repairs.py:172
 #, python-format
 msgid "Use at most %(count)s characters."
 msgstr "Verwende höchstens %(count)s Zeichen."
 
-#: app/web/routes/repairs.py:165
+#: app/web/routes/repairs.py:174
 msgid "Choose a valid repair status."
 msgstr "Wähle einen gültigen Reparaturstatus."
 
-#: app/web/routes/repairs.py:166
+#: app/web/routes/repairs.py:175
 msgid "Choose a valid completion state."
 msgstr "Wähle einen gültigen Erledigungszustand."
 
-#: app/web/routes/repairs.py:168
+#: app/web/routes/repairs.py:177
 msgid ""
 "Enter a nonnegative amount with at most two decimal places within the "
 "displayed limit."
@@ -220,32 +221,32 @@ msgstr ""
 "Gib einen nichtnegativen Wert mit höchstens zwei Nachkommastellen "
 "innerhalb der angezeigten Grenze ein."
 
-#: app/web/routes/repairs.py:171
+#: app/web/routes/repairs.py:180
 msgid "Enter a whole quantity between 1 and 2147483647."
 msgstr "Gib eine ganze Menge zwischen 1 und 2147483647 ein."
 
-#: app/web/routes/repairs.py:172
+#: app/web/routes/repairs.py:181
 msgid "Use at most 200 characters without control characters."
 msgstr "Verwende höchstens 200 Zeichen ohne Steuerzeichen."
 
-#: app/web/routes/repairs.py:205 app/web/templates/repairs/_detail.html:6
-#: app/web/templates/repairs/index.html:12
+#: app/web/routes/repairs.py:216 app/web/templates/repairs/_detail.html:6
+#: app/web/templates/repairs/index.html:18
 #, python-format
 msgid "Repair #%(id)s"
 msgstr "Reparaturfall #%(id)s"
 
-#: app/web/routes/repairs.py:235 app/web/routes/repairs.py:238
+#: app/web/routes/repairs.py:253 app/web/routes/repairs.py:256
 #: app/web/templates/devices/detail.html:10
 #: app/web/templates/repairs/_new.html:5 app/web/templates/repairs/index.html:5
 msgid "New repair"
 msgstr "Neuer Reparaturfall"
 
-#: app/web/routes/repairs.py:242 app/web/routes/repairs.py:272
-#: app/web/routes/repairs.py:301 app/web/routes/repairs.py:359
+#: app/web/routes/repairs.py:260 app/web/routes/repairs.py:291
+#: app/web/routes/repairs.py:320 app/web/routes/repairs.py:378
 msgid "Repair details"
 msgstr "Reparaturdetails"
 
-#: app/web/routes/repairs.py:271 app/web/routes/repairs.py:274
+#: app/web/routes/repairs.py:290 app/web/routes/repairs.py:293
 msgid "Repair saved."
 msgstr "Reparaturfall gespeichert."
 
@@ -283,7 +284,8 @@ msgid "Log out"
 msgstr "Abmelden"
 
 #: app/web/templates/base.html:32 app/web/templates/devices/form.html:27
-#: app/web/templates/index.html:11 app/web/templates/security/login_user.html:3
+#: app/web/templates/index.html:11 app/web/templates/repairs/_forms.html:10
+#: app/web/templates/security/login_user.html:3
 #: app/web/templates/security/login_user.html:6
 #: app/web/templates/security/register_user.html:9
 msgid "Log in"
@@ -393,10 +395,6 @@ msgstr "ETWAS MEHR STRUKTUR. VIEL MEHR MÖGLICHKEITEN."
 #: app/web/templates/index.html:26
 msgid "Manage your personal repairs."
 msgstr "Verwalte deine privaten Reparaturen."
-
-#: app/web/templates/index.html:26
-msgid "COMING NEXT"
-msgstr "DEMNÄCHST"
 
 #: app/web/templates/index.html:27
 msgid ""
@@ -544,7 +542,7 @@ msgid "Edit"
 msgstr "Bearbeiten"
 
 #: app/web/templates/devices/index.html:17
-#: app/web/templates/repairs/index.html:17
+#: app/web/templates/repairs/index.html:23
 msgid "Retry"
 msgstr "Erneut versuchen"
 
@@ -771,31 +769,67 @@ msgid "Choose a device to start"
 msgstr "Zum Start ein Gerät wählen"
 
 #: app/web/templates/repairs/index.html:6
+msgid "Filter repairs"
+msgstr "Reparaturfälle filtern"
+
+#: app/web/templates/repairs/index.html:8
+msgid "Search repairs"
+msgstr "Reparaturfälle suchen"
+
+#: app/web/templates/repairs/index.html:8
+msgid "Search faults, device names, manufacturers and models."
+msgstr "Fehlerbeschreibungen, Gerätenamen, Hersteller und Modelle durchsuchen."
+
+#: app/web/templates/repairs/index.html:9
+msgid "Status"
+msgstr "Status"
+
+#: app/web/templates/repairs/index.html:9
+msgid "All statuses"
+msgstr "Alle Status"
+
+#: app/web/templates/repairs/index.html:10
+msgid "Apply filters"
+msgstr "Filter anwenden"
+
+#: app/web/templates/repairs/index.html:10
+msgid "Clear filters"
+msgstr "Filter zurücksetzen"
+
+#: app/web/templates/repairs/index.html:12
 #, python-format
 msgid "%(count)s repairs"
 msgstr "%(count)s Reparaturfälle"
 
-#: app/web/templates/repairs/index.html:7
+#: app/web/templates/repairs/index.html:13
+msgid "No matching repairs."
+msgstr "Keine passenden Reparaturfälle."
+
+#: app/web/templates/repairs/index.html:13
 msgid "No repairs yet."
 msgstr "Noch keine Reparaturfälle."
 
-#: app/web/templates/repairs/index.html:7
+#: app/web/templates/repairs/index.html:13
+msgid "Try another search or clear the filters."
+msgstr "Ändere die Suche oder setze die Filter zurück."
+
+#: app/web/templates/repairs/index.html:13
 msgid "Open a device to start its first repair."
 msgstr "Öffne ein Gerät, um seinen ersten Reparaturfall anzulegen."
 
-#: app/web/templates/repairs/index.html:8
+#: app/web/templates/repairs/index.html:14
 msgid "Repair list"
 msgstr "Reparaturfallliste"
 
-#: app/web/templates/repairs/index.html:18
+#: app/web/templates/repairs/index.html:24
 msgid "Repair pages"
 msgstr "Reparaturfallseiten"
 
-#: app/web/templates/repairs/index.html:19
+#: app/web/templates/repairs/index.html:25
 msgid "Previous repairs"
 msgstr "Vorherige Reparaturfälle"
 
-#: app/web/templates/repairs/index.html:20
+#: app/web/templates/repairs/index.html:26
 msgid "Next repairs"
 msgstr "Nächste Reparaturfälle"
 
@@ -1162,4 +1196,7 @@ msgstr "Einzelne Reparatur abrufen:"
 #~ "Geräteverwaltung und Reparaturverfolgung sind "
 #~ "bereit. Ersatzteile und Kosten folgen "
 #~ "als Nächstes."
+
+#~ msgid "COMING NEXT"
+#~ msgstr "DEMNÄCHST"
 

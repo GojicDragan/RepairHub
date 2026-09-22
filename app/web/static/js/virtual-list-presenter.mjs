@@ -23,9 +23,11 @@ export class VirtualListPresenter {
     this.generation = 0;
     this.loaded = null;
     this.pending = null;
+    this.paused = false;
   }
 
   async update(scrollTop) {
+    if (this.paused) return;
     this.top = scrollTop;
     const start = windowStart(scrollTop, this.total);
     // Zurückscrollen ins vorhandene Fenster benötigt keinen neuen Request,
@@ -43,6 +45,8 @@ export class VirtualListPresenter {
       const page = await this.source.load(start, WINDOW_SIZE, this.snapshot);
       // Eine langsame ältere Antwort darf die neuere Scrollposition nicht überschreiben.
       if (generation !== this.generation) return;
+      this.total = page.total;
+      this.snapshot = page.snapshot;
       this.view.render(page, ROW_HEIGHT);
       this.loaded = start;
     } catch (error) {
@@ -50,6 +54,23 @@ export class VirtualListPresenter {
     } finally {
       if (generation === this.generation) this.pending = null;
     }
+  }
+
+  pause() {
+    // Bereits beim Tippen entwerten, nicht erst nach Ablauf der Eingabepause.
+    ++this.generation;
+    this.pending = null;
+    this.paused = true;
+  }
+
+  reset() {
+    this.pause();
+    this.paused = false;
+    this.loaded = null;
+    this.snapshot = null;
+    // Auch nach einer leeren Trefferliste muss das erste neue Fenster geladen werden.
+    this.total = 1;
+    return this.update(0);
   }
 
   retry() { return this.update(this.top); }

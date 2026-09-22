@@ -82,3 +82,46 @@ Schritte samt Erledigungszustand; ein unveränderliches Änderungsprotokoll ist 
 Teil dieses Tasks. Ersatzteile, Arbeitswerte und Kosten sind mit [T08](parts-and-costs.md) ergänzt;
 der lesende API-Zugang folgt in T09. Such- und Statusfilter bleiben den geplanten Erweiterungen
 vorbehalten. Prüfergebnisse: [T07-Abnahme](t07-validation.md).
+
+## K-T01: Suche und Statusfilter
+
+`GET /repairs?q=radio+warm&status=open` kombiniert Suche und Statusfilter.
+`device_id` kann die Liste zusätzlich auf ein eigenes Gerät einschränken.
+Erlaubte Statuswerte: leer (alle), `open`, `in_progress`, `completed`.
+Unbekannte Werte liefern HTTP 400. Der Suchtext ist auf 200 Zeichen begrenzt;
+Steuerzeichen sind unzulässig. Leere beziehungsweise reine Leerzeicheneingaben
+schränken die Liste nicht ein.
+
+Die Suche berücksichtigt Fehlerbeschreibung, Gerätename, Hersteller und Modell.
+Alle durch Leerraum getrennten Begriffe müssen vorkommen, dürfen aber verschiedene
+Felder treffen. Teilwörter und beliebige Positionen sind erlaubt, Gross-/Kleinschreibung
+wird ignoriert. PostgreSQL übernimmt die Zeichenbehandlung; Umlaute bleiben erhalten,
+`ü` wird nicht zu `ue` und `ß` nicht zu `ss` umgeschrieben. Es gibt keine linguistische
+Stammbildung oder Relevanzsortierung. `%`, `_`, Backslash und SQL-Syntax gelten als
+Suchtext, nicht als Wildcards oder Befehle. Sortierung bleibt neueste Fall-ID zuerst.
+
+Der bestehende Slice `list_repairs` validiert die Eingaben und übergibt sie über
+seinen Repository-Port. SQL-Suchtechnik bleibt im Adapter. Eigentumsbindung,
+Gerätefilter, Suche und Status gelten gemeinsam für Maximum, Trefferzahl und jedes
+Datenfenster. Keine zusätzliche Domain-Abhängigkeit, Bibliothek oder Migration.
+Die lesende REST-API erhält durch diese Browserfunktion keine neuen Filterparameter.
+
+Das gebrandete GET-Formular funktioniert mit und ohne JavaScript. Anwenden beginnt
+ohne den alten Offset oder Snapshot; Zurücksetzen erhält gegebenenfalls den Gerätefilter.
+Die erste Seite rendert höchstens 20 Fälle serverseitig. Die vorhandene virtuelle
+Liste lädt danach per AJAX mit denselben Filtern höchstens 60 Zeilen; ohne JavaScript
+stehen Seitenlinks bereit. Mit JavaScript aktualisiert die Suche nach 300 ms Eingabepause die Treffer per
+AJAX. Statuswechsel und Enter wenden sofort an. Der Anwenden-Button erscheint nur
+ohne JavaScript als Fallback. Der DOM-freie
+`ListFilterPresenter` koordiniert die Eingabepause; die gemeinsame virtuelle
+Listensteuerung lädt das neue Fenster. Bereits beim Tippen werden alte Antworten
+entwertet. Snapshot und Scrollposition werden zurückgesetzt, Fokus und Eingabetext
+bleiben erhalten. IME-Komposition wird erst nach Abschluss angewendet. Die URL wird
+aktualisiert, damit Detailnavigation und Rückweg den Filter weiterverwenden.
+
+Detail-Links, Rückweg, Detailformulare und Schritte-/Teilepagination erhalten `q`
+und `status`. Die bestehende URL-gebundene Scrollspeicherung trennt gefilterte Listen.
+Die obere ID verhindert das Einschieben neuer Fälle in ein laufendes Fenster,
+ist aber kein unveränderlicher Datenbank-Snapshot: Status- oder Textänderungen
+können Treffer während des Scrollens verändern. Erneutes Anwenden aktualisiert die Liste.
+Englische Texte und deutsche gettext-Übersetzungen umfassen auch den leeren Suchzustand.

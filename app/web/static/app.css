@@ -244,3 +244,7 @@ h1, h2, h3 { letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
 .cost-summary > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; padding: .75rem 0; }
 .cost-summary dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .cost-summary .cost-total { border-top: 2px solid var(--bs-primary); font-weight: 700; font-size: 1.2rem; }
+
+/* Gleiche Oberkante und Höhe trotz mehrzeiligem Suchhinweis; keine leere Button-Spalte. */
+.repair-filters .form-select { min-height: 46px; font-size: .95rem; border-color: #c8cfc3; border-radius: 6px; background-color: #fffefa; }
+.repair-filters .form-select:focus { border-color: var(--rh-accent); box-shadow: 0 0 0 3px #b840201a; }

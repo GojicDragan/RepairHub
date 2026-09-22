@@ -54,3 +54,25 @@ def test_flash_messages_are_escaped_and_readable_without_javascript(app_config):
     assert b"<script>alert" not in response.data
     assert b"data-dismiss-notification hidden" in response.data
     assert b"data-notification" in response.data
+
+
+@pytest.mark.parametrize("environment,reloads", [("development", True), ("production", False)])
+def test_template_changes_reload_only_in_development(app_config, tmp_path, environment, reloads):
+    import os
+
+    from flask import render_template
+    from jinja2 import FileSystemLoader
+
+    application = create_app({**app_config, "REPAIRHUB_ENV": environment, "TESTING": False})
+    application.jinja_loader = FileSystemLoader(tmp_path)
+    template = tmp_path / "live.html"
+    template.write_text("old form")
+    application.add_url_rule("/template-check", view_func=lambda: render_template("live.html"))
+    client = application.test_client()
+    assert client.get("/template-check").text == "old form"
+    previous = template.stat().st_mtime
+    template.write_text("new form with debounce hook")
+    os.utime(template, (previous + 2, previous + 2))
+    expected = "new form with debounce hook" if reloads else "old form"
+    assert client.get("/template-check").text == expected
+    assert application.debug is False
