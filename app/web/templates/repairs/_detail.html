@@ -50,8 +50,8 @@
       {% endfor %}
     </ol>
     <nav class="device-pagination" aria-label="{{ _('Step pages') }}">
-      {% if data.step_offset > 0 %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=[0, data.step_offset-20]|max) }}">{{ _('Previous steps') }}</a>{% endif %}
-      {% if data.step_offset + 20 < data.step_total %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset+20) }}">{{ _('Next steps') }}</a>{% endif %}
+      {% if data.step_offset > 0 %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=[0, data.step_offset-20]|max, part_offset=data.part_offset or none, device_id=list_device_id) }}">{{ _('Previous steps') }}</a>{% endif %}
+      {% if data.step_offset + 20 < data.step_total %}<a href="{{ url_for('repairs.show', repair_id=repair.id, offset=data.step_offset+20, part_offset=data.part_offset or none, device_id=list_device_id) }}">{{ _('Next steps') }}</a>{% endif %}
     </nav>
     <h3>{{ _('Add a step') }}</h3>
     <form action="{{ url_for('repairs.create_step', repair_id=repair.id, offset=data.step_offset, part_offset=data.part_offset or none, device_id=list_device_id) }}" method="post" data-repair-form>

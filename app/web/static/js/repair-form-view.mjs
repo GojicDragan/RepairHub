@@ -35,12 +35,19 @@ export function mountRepairForms(root) {
       },
       errors(errors) {
         form.querySelector('[data-repair-form-status]').textContent = '';
+        form.querySelector('[data-repair-login]').hidden = true;
         for (const field of fields(form)) {
           const message = errors[field.name] || '';
           form.querySelector(`[data-error-for="${field.name}"]`).textContent = message;
           field.classList.toggle('is-invalid', Boolean(message));
           field.setAttribute('aria-invalid', String(Boolean(message)));
         }
+        // Der Fokus führt zum ersten fehlerhaften Feld; bestehende Entwürfe bleiben erhalten.
+        fields(form).find(field => errors[field.name])?.focus();
+      },
+      expired() {
+        form.querySelector('[data-repair-form-status]').textContent = container.dataset.expired;
+        form.querySelector('[data-repair-login]').hidden = false;
       },
       failed(message) { form.querySelector('[data-repair-form-status]').textContent = message || container.dataset.failure; },
       saved(result) {

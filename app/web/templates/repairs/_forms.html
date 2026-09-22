@@ -5,4 +5,7 @@
   <p id="{{ id }}-error" data-error-for="description" class="field-validation" aria-live="polite">{{ field.errors|join(' ') }}</p>
 </div>
 {% endmacro %}
-{% macro result() %}<p data-repair-form-status class="field-validation" role="status" aria-live="polite"></p>{% endmacro %}
+{% macro result() %}
+<p data-repair-form-status class="field-validation" role="status" aria-live="polite"></p>
+<a href="{{ url_for('security.login') }}" data-repair-login hidden>{{ _('Log in') }}</a>
+{% endmacro %}

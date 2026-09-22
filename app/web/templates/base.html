@@ -20,9 +20,9 @@
         </a>
         <div class="nav-actions">
           {% if viewer is not none %}
-          <a class="nav-login" href="{{ url_for('devices.index') }}">{{ _('Your devices') }}</a>
-          <a class="nav-login" href="{{ url_for('repairs.index') }}">{{ _('Your repairs') }}</a>
-          <a class="nav-login" href="{{ url_for('api_keys.index') }}">{{ _('API access') }}</a>
+          <a class="nav-login" href="{{ url_for('devices.index') }}" {% if request.blueprint == 'devices' %}aria-current="page"{% endif %}>{{ _('Your devices') }}</a>
+          <a class="nav-login" href="{{ url_for('repairs.index') }}" {% if request.blueprint == 'repairs' %}aria-current="page"{% endif %}>{{ _('Your repairs') }}</a>
+          <a class="nav-login" href="{{ url_for('api_keys.index') }}" {% if request.blueprint == 'api_keys' %}aria-current="page"{% endif %}>{{ _('API access') }}</a>
           <span class="account-name">{{ viewer.username }}</span>
           <form action="{{ url_for('security.logout') }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

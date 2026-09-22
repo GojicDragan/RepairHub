@@ -2,8 +2,9 @@
 
 from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_babel import gettext as _
+from flask_wtf.csrf import CSRFError
 from werkzeug.datastructures import MultiDict
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, Unauthorized
 from werkzeug.exceptions import NotFound as HTTPException404
 
 from app.domains.devices.errors import DeviceNotFound
@@ -68,11 +69,14 @@ def create_repair_blueprint(
 
     @blueprint.errorhandler(HTTPException)
     def http_error(error):
-        message = (
-            _("Repair not found.")
-            if error.code == 404
-            else _("Please reload the page and check your input.")
-        )
+        # Eine abgelaufene Sitzung verliert auch ihren CSRF-Wert. Der Schreibzugriff
+        # bleibt abgewiesen; Fetch benötigt hier den Anmeldehinweis statt eines 400.
+        if isinstance(error, CSRFError) and wants_json() and identity.current() is None:
+            error = Unauthorized()
+        message = {
+            401: _("Your session has expired. Please log in again."),
+            404: _("Repair not found."),
+        }.get(error.code, _("Please reload the page and check your input."))
         if wants_json():
             return jsonify(error=message), error.code
         return render_template(

@@ -233,3 +233,7 @@ im T06-Nachweis ausdrücklich ausgewiesen.
 
 Die authentifizierte, lesende REST-API und die zusätzlich erforderlichen
 Deployment-Prüfwerte sind in [docs/api.md](docs/api.md) beschrieben.
+
+T10 vervollständigt Navigation und Fehlerpfade. Der vollständige Browserablauf
+von Registrierung bis Kostenanzeige wird in beiden Sprachen mit und ohne
+JavaScript geprüft: [T10-Abnahme](docs/t10-validation.md).
