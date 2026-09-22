@@ -769,3 +769,20 @@ Nginx/TLS geprüft, einschliesslich beider interner Healthchecks mit aktivierter
 Hostbeschränkung. Produktions-Compose löst den generierten Host-Header korrekt
 auf. Ein vollständiger Ansible-Deployment-Lauf und die Produktionsabnahme wurden
 für diesen Fix noch nicht ausgeführt.
+
+## T09: API-Key-Abnahme
+
+Das einzige zusätzliche GitHub-Environment-Secret ist `API_SMOKE_KEY`. Es ist
+der zentrale System-Leseschlüssel für alle Reparaturfälle. Ansible übergibt ihn
+als gleichnamige geschützte Runtime-Variable und prüft Liste sowie einen dort
+gefundenen Fall. Leere Listen sind zulässig. Es gibt kein dediziertes Prüfkonto
+und keine feste Fall-ID mehr. Die bisherigen Werte `API_SMOKE_USERNAME`,
+`API_SMOKE_REPAIR_ID` und `API_SMOKE_PASSWORD` entfallen.
+
+Schlüsseländerungen fliessen in den Release-Konfigurationsfingerprint ein.
+Bei unveränderten Eingaben erfolgen keine unnötigen Neustarts; ein kompatibler
+Rollback stellt Runtime und Prüfschlüssel des vorherigen Releases wieder her.
+Persönliche Benutzerkeys werden nicht verändert. Details: [API](api.md).
+
+Isolierte Image- und Deployment-Tests nutzen ausschliesslich synthetische Konten,
+Beispieldaten und wegwerfbare Schlüssel.

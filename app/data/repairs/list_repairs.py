@@ -1,9 +1,9 @@
 from sqlalchemy import func, select
 
 from app.data.devices.model import Device
-from app.data.queries.ownership import owned_repairs
 from app.data.repairs.model import Repair
 from app.data.repairs.queries import OwnershipQueries
+from app.data.repairs.read_access import readable_repairs
 from app.domains.repairs.dto import Repair as RepairData
 from app.domains.repairs.dto import RepairPage
 from app.extensions import db
@@ -11,7 +11,7 @@ from app.extensions import db
 
 class ListRepairsRepository(OwnershipQueries):
     def list(self, owner_id, device_id, offset, limit, snapshot):
-        query = owned_repairs(owner_id)
+        query = readable_repairs(owner_id)
         if device_id is not None:
             query = query.where(Repair.device_id == device_id)
         # Die obere ID fixiert den Listenbestand für spätere AJAX-Fenster.

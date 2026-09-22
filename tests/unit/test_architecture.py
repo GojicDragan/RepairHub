@@ -19,7 +19,7 @@ def test_project_matches_component_contract():
     ("module", "source"),
     [
         ("app.web.routes.repairs", "from app.domains.repairs import get_repair"),
-        ("app.api.routes", "from app.domains.users import verify_token"),
+        ("app.api.routes", "from app.domains.users import authenticate_api_key"),
         ("app.domains.repairs", "from app.domains.costs import calculate"),
         ("app.data.queries", "from app.domains.parts.ports import PartRepository"),
         ("app.data.queries", "from app.domains.parts.dto import PartSnapshot"),

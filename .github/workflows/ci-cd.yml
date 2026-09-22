@@ -263,6 +263,7 @@ jobs:
           POSTGRES_DB: ${{ vars.POSTGRES_DB || 'repairhub' }}
           POSTGRES_USER: ${{ vars.POSTGRES_USER || 'repairhub' }}
           SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          API_SMOKE_KEY: ${{ secrets.API_SMOKE_KEY }}
           MAIL_SERVER: ${{ vars.MAIL_SERVER }}
           MAIL_PORT: ${{ vars.MAIL_PORT }}
           MAIL_DEFAULT_SENDER: ${{ vars.MAIL_DEFAULT_SENDER }}

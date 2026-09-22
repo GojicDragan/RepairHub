@@ -11,7 +11,8 @@ Reparaturfälle, Fehlerbeschreibungen, Schritte und Statuswechsel mit Wiederaufn
 Details: [Reparaturverwaltung](docs/repairs.md) und [T07-Abnahme](docs/t07-validation.md).
 T08 ergänzt Ersatzteilpositionen, Arbeitswerte und geschätzte Kosten in CHF.
 Details: [Teile und Kosten](docs/parts-and-costs.md) und [T08-Abnahme](docs/t08-validation.md).
-Die authentifizierte lesende API folgt mit T09.
+T09 ergänzt die lesende API mit persönlichen Schlüsseln aus dem Frontend und
+dem zentralen System-Leseschlüssel `API_SMOKE_KEY`. Details: [API](docs/api.md).
 Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für aktive
 DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
 für Abhängigkeiten, Geheimnisse und Container.
@@ -229,3 +230,6 @@ Identische Wiederholungen erstellen keine Container neu; eine separate
 Infrastrukturfreigabe ist nicht erforderlich.
 Keine neuen Environment-Variablen oder Secrets. Offene Security-Abnahmen bleiben
 im T06-Nachweis ausdrücklich ausgewiesen.
+
+Die authentifizierte, lesende REST-API und die zusätzlich erforderlichen
+Deployment-Prüfwerte sind in [docs/api.md](docs/api.md) beschrieben.

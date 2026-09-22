@@ -195,16 +195,15 @@ def test_upgrade_preserves_existing_accounts_and_enables_devices(identity_app):
     from flask_migrate import check, upgrade
 
     from app.data.users.model import User
+    from tests.support.legacy_user import seed_user
 
-    client = identity_app.test_client()
-    register(client)
-    client.get(confirmation(identity_app))
-    submit(client, "/login", identity="Lea", password=PASSWORD)
     with identity_app.app_context():
-        user_id = db.session.scalar(select(User.id))
+        user_id = seed_user()
         upgrade()
         check()
         assert db.session.get(User, user_id).username == "Lea"
+    client = identity_app.test_client()
+    submit(client, "/login", identity="Lea", password=PASSWORD)
     response = save(client)
     assert response.status_code == 201
     assert listing(client).json["total"] == 1

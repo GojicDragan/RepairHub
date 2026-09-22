@@ -22,6 +22,7 @@
           {% if viewer is not none %}
           <a class="nav-login" href="{{ url_for('devices.index') }}">{{ _('Your devices') }}</a>
           <a class="nav-login" href="{{ url_for('repairs.index') }}">{{ _('Your repairs') }}</a>
+          <a class="nav-login" href="{{ url_for('api_keys.index') }}">{{ _('API access') }}</a>
           <span class="account-name">{{ viewer.username }}</span>
           <form action="{{ url_for('security.logout') }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

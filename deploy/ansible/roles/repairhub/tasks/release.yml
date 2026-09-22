@@ -98,10 +98,8 @@
     that:
       - not repairhub_has_migrations or repairhub_migration_mode in ['compatible', 'maintenance']
       - not repairhub_has_migrations or repairhub_backup_fetch_dir | length > 0
-      - not repairhub_has_api or repairhub_api_smoke_username | length > 0
-      - not repairhub_has_api or repairhub_api_smoke_password | length > 0
-      - not repairhub_has_api or repairhub_api_smoke_repair_id | int > 0
-    fail_msg: Migrationen benötigen Kompatibilitätsentscheidung und externen Backup-Pfad; API benötigt ein separates Prüfkonto.
+      - not repairhub_has_api or repairhub_api_smoke_key | length > 0
+    fail_msg: Migrationen benötigen Kompatibilitätsentscheidung und externen Backup-Pfad; API benötigt den zentralen System-Leseschlüssel.
   no_log: true
 
 - name: T02-Abnahmeumfang festhalten
@@ -157,7 +155,7 @@
   ansible.builtin.set_fact:
     repairhub_config_fingerprint: >-
       {{ [repairhub_app_image, repairhub_infrastructure_fingerprint, repairhub_runtime_env,
-          repairhub_api_smoke_username, repairhub_api_smoke_password, repairhub_api_smoke_repair_id,
+          repairhub_api_smoke_key,
           repairhub_release_capabilities_text]
          | to_json | hash('sha256') }}
   no_log: true
@@ -208,8 +206,7 @@
   ansible.builtin.copy:
     dest: "{{ repairhub_release_dir }}/smoke-account.json"
     content: >-
-      {{ {'username': repairhub_api_smoke_username, 'password': repairhub_api_smoke_password,
-          'repair_id': repairhub_api_smoke_repair_id} | to_json }}
+      {{ {'key': repairhub_api_smoke_key} | to_json }}
     mode: "0600"
   when: repairhub_has_api
   no_log: true

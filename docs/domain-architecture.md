@@ -249,3 +249,26 @@ Positionsbetrag von derselben Funktion. Die Kostenkomponente kennt ausschliessli
 Standardbibliothek und übergebene Werte, keine Repository-Ports oder Persistenz.
 Keine Imports zwischen Reparatur- und Teiledomäne. Eigene DTOs der Fallauskunft
 tragen die benötigten Positionswerte. Einzelheiten: [Teile und Kosten](parts-and-costs.md).
+
+## T09: API-Key-Verwaltung und gemeinsame Fallauskunft
+
+Die Benutzer-Slices `create_api_key`, `get_api_key`, `revoke_api_key` und
+`authenticate_api_key` delegieren über eigene Ports an `app.adapters.users.api_keys`.
+Zufall, Hashing und Identitätspersistenz bleiben ausserhalb der Domäne.
+Die Webschicht erhält die Verwaltungs-Handler, die API nur Authentifizierung und
+die bestehenden `repairs.list_repairs`/`repairs.get_repair`-Anwendungsfälle.
+Keine zusätzlichen Fachabhängigkeiten. Migration 0005 folgt der konkreten
+Schlüsselverwaltung. Diese Benutzerentscheidung ersetzt die vorherige T09-
+Token-Ausstellung samt Passwortübergabe. Details: [API](api.md).
+
+### Benutzerentscheidung: zentraler System-Lesezugang
+
+`API_SMOKE_KEY` authentifiziert eine `SystemApiIdentity` ohne Benutzerkonto.
+Die API übersetzt diese technische Identität in die explizite Reparaturberechtigung
+`SystemReadAccess.ALL_REPAIRS`. Nur die beiden bestehenden Lese-Slices und ihre
+Read-Adapter verstehen diese Berechtigung; `None`, ungültige Eigentümer und
+Schreib-Slices erhalten dadurch keinerlei Sonderrechte. Die gemeinsamen
+Eigentumsabfragen bleiben unverändert. Kosten werden weiterhin im selben
+Anwendungsfall berechnet. Keine neue Fachabhängigkeit, Benutzerrolle oder
+Migration. Diese ausdrücklich gewünschte Ausnahme ersetzt für den Systemschlüssel
+die bisherige Beschränkung auf eigene Fälle. Persönliche Keys bleiben gebunden.

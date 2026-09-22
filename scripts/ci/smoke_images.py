@@ -33,7 +33,17 @@ def main(directory: Path, commit: str) -> None:
                 "https://127.0.0.1:8443/health/ready",
                 capture=True,
             )
+            if json.loads(Path("deploy/capabilities.json").read_text())["authenticated_api"]:
+                docker(
+                    "exec",
+                    runtime.app,
+                    "python",
+                    "-c",
+                    Path("tests/support/api_fixture.py").read_text(),
+                    capture=True,
+                )
             evidence["checks"] = [
+                "Authentifizierte Lese-API mit separatem Fixture-Konto und negativen Zugriffen",
                 "Interne App-/Nginx-Checks mit produktiver Hostbeschränkung",
                 "PostgreSQL bereit",
                 "Gunicorn bereit",

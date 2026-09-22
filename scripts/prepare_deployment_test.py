@@ -29,6 +29,110 @@ def write_private(path: Path, content: str) -> None:
         stream.write(content)
 
 
+def seed_api(directory: Path, host: str, refs: dict, values: dict) -> None:
+    """Prüfdaten nur im eigenen Docker-Daemon vor dem ersten API-Release anlegen."""
+    network = "repairhub-api-seed"
+    database = "repairhub-api-seed-db"
+    seed_env = directory / "seed.env"
+    write_private(seed_env, values["repairhub_runtime_env"] + values["repairhub_database_env"])
+    remote_directory = run("docker", "exec", host, "mktemp", "-d")
+    remote_env = remote_directory + "/seed.env"
+    run("docker", "cp", str(seed_env), f"{host}:{remote_env}")
+    try:
+        run("docker", "exec", host, "docker", "network", "create", network)
+        run(
+            "docker",
+            "exec",
+            host,
+            "docker",
+            "volume",
+            "create",
+            "--label",
+            "com.docker.compose.project=repairhub-fixture",
+            "--label",
+            "com.docker.compose.volume=pgdata",
+            "repairhub-fixture_pgdata",
+        )
+        run(
+            "docker",
+            "exec",
+            host,
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            database,
+            "--network",
+            network,
+            "--network-alias",
+            "db",
+            "--env-file",
+            remote_env,
+            "-e",
+            "POSTGRES_USER=repairhub",
+            "-e",
+            "POSTGRES_DB=repairhub",
+            "-v",
+            "repairhub-fixture_pgdata:/var/lib/postgresql/data",
+            refs["db"],
+        )
+        deadline = time.monotonic() + 90
+        while True:
+            try:
+                run(
+                    "docker",
+                    "exec",
+                    host,
+                    "docker",
+                    "exec",
+                    database,
+                    "pg_isready",
+                    "-h",
+                    "127.0.0.1",
+                    "-U",
+                    "repairhub",
+                    "-d",
+                    "repairhub",
+                )
+                break
+            except subprocess.CalledProcessError:
+                if time.monotonic() > deadline:
+                    raise RuntimeError("API-Fixture-Datenbank wurde nicht bereit.") from None
+                time.sleep(1)
+        command = (
+            "docker",
+            "exec",
+            host,
+            "docker",
+            "run",
+            "--rm",
+            "--network",
+            network,
+            "--env-file",
+            remote_env,
+            refs["app"],
+        )
+        run(*command, "flask", "--app", "app", "db", "upgrade")
+        json.loads(
+            run(
+                *command,
+                "python",
+                "-c",
+                Path("tests/support/api_fixture.py").read_text(),
+                "seed-only",
+            )
+        )
+        # Der Systemschlüssel ist unabhängig von den zuvor angelegten Benutzerkonten.
+        values["repairhub_api_smoke_key"] = "rh_" + secrets.token_urlsafe(32)
+        values["repairhub_runtime_env"] += f"API_SMOKE_KEY={values['repairhub_api_smoke_key']}\n"
+    finally:
+        seed_env.unlink(missing_ok=True)
+        run("docker", "exec", host, "rm", "-f", remote_env)
+        run("docker", "exec", host, "rmdir", remote_directory)
+        run("docker", "exec", host, "docker", "rm", "--force", database)
+        run("docker", "exec", host, "docker", "network", "rm", network)
+
+
 def prepare(directory: Path, artifacts: Path, commit: str) -> None:
     manifest = verify(artifacts, commit)
     directory.mkdir(parents=True, mode=0o700, exist_ok=False)
@@ -149,6 +253,8 @@ def prepare(directory: Path, artifacts: Path, commit: str) -> None:
         "repairhub_tls_certificate": (directory / "server.crt").read_text(),
         "repairhub_tls_private_key": (directory / "server.key").read_text(),
     }
+    if json.loads(Path("deploy/capabilities.json").read_text())["authenticated_api"]:
+        seed_api(directory, host, refs, values)
     write_private(directory / "release.json", json.dumps(values))
     environment = {
         "ANSIBLE_CONFIG": str(Path.cwd() / "deploy/ansible/ansible.cfg"),

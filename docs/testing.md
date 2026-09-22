@@ -224,3 +224,21 @@ weiter durch die bestehenden JavaScript-Tests abgesichert.
 
 Der neue Task benötigt keine zusätzlichen Ausnahmen der Architekturregeln und
 keine neue Abhängigkeit. Ergebnisse und Betriebsprüfung: [T08-Abnahme](t08-validation.md).
+
+## T09 – API-Keys und Lese-API
+
+Frameworkfreie Gateway-Tests prüfen die explizite Injection. PostgreSQL-Integration
+prüft einmalige Anzeige, Hashspeicherung, Rotation, Widerruf, CSRF, Kontosperre,
+Passwort-Reset-Bindung, Eigentum, Listenfenster, vollständige Falldetails,
+Dezimalstrings, HEAD/OPTIONS und abgewiesene Schreibmethoden.
+E2E erzeugt einen Schlüssel im englischen/deutschen Frontend mit/ohne JS und liest
+Browserdaten mit einem unabhängigen HTTPS-Client. Der Image-Smoke-Test prüft ein
+eigenes wegwerfbares Konto. Ansible prüft zusätzlich idempotente Bereitstellung,
+Liste/Detail und den kompatiblen Fehlerpfad. Arbeitsnachweis: [T09](t09-validation.md).
+
+Die System-Key-Erweiterung prüft zusätzlich systemweite Listen über zwei Eigentümer,
+Detailzugriff, unveränderte Grenzen persönlicher Keys, falsche/deaktivierte/rotierte
+Systemschlüssel, leere Datenbanken und fehlende Browser-/Schreibberechtigung.
+Domain-Tests sichern, dass die explizite System-Leseberechtigung keine
+Schreib-Slices autorisiert. Der Deployment-Test rotiert den Runtime-Schlüssel
+und erzwingt anschliessend einen fehlerhaften Prüfschlüssel für den Rollback.

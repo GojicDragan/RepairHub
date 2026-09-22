@@ -20,7 +20,7 @@ def test_minimal_scaffold_has_no_schema_or_api():
 
 @pytest.mark.parametrize(
     ("migrations", "routes"),
-    [([Path("initial.py")], set()), ([], {"/api/auth/token"})],
+    [([Path("initial.py")], set()), ([], {"/api/repairs"})],
 )
 def test_new_capability_requires_deployment_gate(migrations, routes):
     with pytest.raises(ValueError, match="stimmt nicht"):

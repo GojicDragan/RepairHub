@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
+from enum import Enum
 
 
 @dataclass(frozen=True)
@@ -54,3 +55,9 @@ class RepairDetails:
     labor_cost: Decimal = Decimal("0.00")
     parts_cost: Decimal = Decimal("0.00")
     total_cost: Decimal = Decimal("0.00")
+
+
+class SystemReadAccess(Enum):
+    """Explizite Leseberechtigung; niemals als Eigentümer für Schreibabläufe verwenden."""
+
+    ALL_REPAIRS = "all_repairs"

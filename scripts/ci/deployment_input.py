@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 from pathlib import Path
 from urllib.parse import quote
 
@@ -61,7 +62,12 @@ def main() -> None:
     if any(any(char in value for char in "\r\n\0") for value in mail.values()):
         raise ValueError("SMTP-/URL-Werte dürfen keine Zeilenumbrüche oder NUL enthalten.")
     runtime_env += "".join(f"{name}={value}\n" for name, value in mail.items())
+    system_key = required("API_SMOKE_KEY")
+    if not re.fullmatch(r"rh_[A-Za-z0-9_-]{43}", system_key):
+        raise ValueError("API_SMOKE_KEY benötigt rh_ gefolgt von 43 URL-sicheren Zeichen.")
+    runtime_env += f"API_SMOKE_KEY={system_key}\n"
     values = {
+        "repairhub_api_smoke_key": system_key,
         "ansible_password": ssh_password,
         "repairhub_app_image": required("APP_IMAGE"),
         "repairhub_release_commit": required("GITHUB_SHA"),
