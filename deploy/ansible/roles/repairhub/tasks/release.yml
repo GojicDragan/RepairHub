@@ -240,6 +240,7 @@
           POSTGRES_USER={{ repairhub_postgres_user }}
           POSTGRES_DB={{ repairhub_postgres_db }}
           HTTPS_HOST_PORT={{ repairhub_https_port }}
+          REPAIRHUB_HEALTHCHECK_HOST={{ repairhub_public_url | urlsplit('netloc') }}
           NGINX_CONFIG_DIRECTORY={{ repairhub_infrastructure_dir }}/nginx
           TLS_DIRECTORY={{ repairhub_infrastructure_dir }}/tls
           STATIC_ROOT={{ repairhub_install_dir }}/www

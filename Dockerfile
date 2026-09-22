@@ -24,8 +24,9 @@ COPY --from=dependencies /srv/repairhub/.venv ./.venv
 COPY app ./app
 RUN pybabel compile -d app/translations
 COPY migrations ./migrations
+COPY scripts/healthcheck.py ./healthcheck.py
 USER 10001:10001
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
-  CMD ["python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=4)"]
+  CMD ["python", "healthcheck.py"]
 CMD ["gunicorn", "--bind=0.0.0.0:8000", "--workers=2", "--worker-tmp-dir=/tmp", "--forwarded-allow-ips=", "app:create_app()"]

@@ -7,6 +7,8 @@
 !app/**
 !migrations/
 !migrations/**
+!scripts/
+!scripts/healthcheck.py
 
 # Auch in freigegebenen Quellverzeichnissen keine lokalen Daten einschliessen.
 **/.env

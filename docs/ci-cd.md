@@ -732,3 +732,38 @@ ohne manuelle Sonderfreigabe. Ein Retry des alten Tags v0.5 würde weiterhin den
 alten Workflow und das alte Playbook verwenden. Bestehende Tags nicht verschieben.
 
 Prüfnachweis: [Automatisches Infrastruktur-Upgrade](infrastructure-upgrade-validation.md).
+
+## Interne Healthchecks mit öffentlichem Hostnamen
+
+Der App-Healthcheck verbindet sich weiterhin ausschliesslich mit
+`127.0.0.1:8000`, sendet jedoch den Hostnamen samt optionalem Port aus `PUBLIC_URL`
+als HTTP-Host-Header. Andernfalls lehnt Flask bei aktiven `TRUSTED_HOSTS` den
+lokalen Check mit HTTP 400 ab und Docker markiert eine gestartete Anwendung als
+`unhealthy`. Der Check verwendet keinen Umgebungsproxy und gibt bei Fehlern
+keine Konfigurationswerte aus.
+
+Für Nginx schreibt Ansible `REPAIRHUB_HEALTHCHECK_HOST` aus `repairhub_public_url`
+in die generierte `compose.env`. Auch dieser Check verbindet sich lokal und
+verwendet den öffentlichen Host-Header. Es braucht kein zusätzliches
+GitHub-Secret und keine neue manuell gepflegte Variable. Die externe
+HTTPS-Abnahme prüft weiterhin die Zertifikatskette; der lokale Nginx-Check
+prüft die Bereitschaft ohne Zertifikatsnamensprüfung für die Loopback-Adresse.
+
+Der Build-Smoke-Test setzt nun ausdrücklich eine öffentliche Test-URL, damit
+die Hostbeschränkung auch in CI aktiv ist, und führt beide internen Checks aus.
+Der Regressionstest `tests/integration/app/test_healthcheck.py` prüft Domain
+und Nichtstandardport sowie die fortbestehende Ablehnung fremder Hosts.
+
+Nach einem Abbruch nach erfolgreicher Migration kann derselbe Deployment-Ablauf
+mit einem korrigierten Release erneut ausgeführt werden. Alembic erkennt bereits
+angewendete Revisionen. Weder Datenvolumes noch Release-Metadaten müssen dafür
+manuell gelöscht werden. Eine Wiederholung des alten Tags verwendet hingegen
+weiterhin das alte Image mit dem fehlerhaften Healthcheck.
+
+Lokale Prüfung dieses Fixes: 532 Unit-Tests und zwei neue HTTP-Regressionstests
+bestanden; Architekturprüfung, Ruff, Bandit für den Healthcheck und Ansible-Lint
+bestanden. Produktionsimage gebaut und isoliert mit echtem PostgreSQL sowie
+Nginx/TLS geprüft, einschliesslich beider interner Healthchecks mit aktivierter
+Hostbeschränkung. Produktions-Compose löst den generierten Host-Header korrekt
+auf. Ein vollständiger Ansible-Deployment-Lauf und die Produktionsabnahme wurden
+für diesen Fix noch nicht ausgeführt.

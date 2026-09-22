@@ -79,7 +79,7 @@ def _cleanup(containers: list[str], network: str | None) -> None:
 
 @contextmanager
 def isolated_runtime(
-    manifest: dict, *, publish_https: bool = False, receive_mail: bool = False
+    manifest: dict, *, publish_https: bool = False, receive_mail: bool = False, public_url: str = ""
 ) -> Iterator[IsolatedRuntime]:
     """Bereits geprüfte Images starten; kein externes Testziel kontaktieren.
 
@@ -121,6 +121,7 @@ def isolated_runtime(
         )
         _write_private(
             temporary_path / "app.env",
+            f"PUBLIC_URL={public_url}\n"
             f"SECRET_KEY={secrets.token_hex(32)}\n"
             f"DATABASE_URL=postgresql+psycopg://repairhub_test:{database_password}"
             "@db:5432/repairhub_test\n"
@@ -268,8 +269,12 @@ def isolated_runtime(
                 [
                     "python",
                     "-c",
-                    "import json,urllib.request; "
-                    "r=urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=5); "
+                    "import json,os,urllib.request,urllib.parse; "
+                    "host=urllib.parse.urlsplit(os.environ.get('PUBLIC_URL','')).netloc "
+                    "or '127.0.0.1:8000'; "
+                    "req=urllib.request.Request('http://127.0.0.1:8000/health/ready',"
+                    "headers={'Host':host}); "
+                    "r=urllib.request.urlopen(req,timeout=5); "
                     "assert json.load(r)=={'status':'ready'}",
                 ],
             )

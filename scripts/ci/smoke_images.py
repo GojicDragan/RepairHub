@@ -6,10 +6,10 @@ import os
 from pathlib import Path
 
 if __package__:
-    from .images import verify
+    from .images import docker, verify
     from .isolated_runtime import isolated_runtime
 else:
-    from images import verify
+    from images import docker, verify
     from isolated_runtime import isolated_runtime
 
 
@@ -19,8 +19,22 @@ def main(directory: Path, commit: str) -> None:
     reports.mkdir(parents=True, exist_ok=True)
     evidence = {"commit": commit, "images": manifest["images"], "passed": False}
     try:
-        with isolated_runtime(manifest):
+        with isolated_runtime(manifest, public_url="https://nginx:8443") as runtime:
+            # Produktions-Hostprüfung einschalten und den echten Image-Healthcheck ausführen.
+            docker("exec", runtime.app, "python", "healthcheck.py", capture=True)
+            docker(
+                "exec",
+                runtime.nginx,
+                "wget",
+                "--no-check-certificate",
+                "--spider",
+                "-q",
+                "--header=Host: nginx:8443",
+                "https://127.0.0.1:8443/health/ready",
+                capture=True,
+            )
             evidence["checks"] = [
+                "Interne App-/Nginx-Checks mit produktiver Hostbeschränkung",
                 "PostgreSQL bereit",
                 "Gunicorn bereit",
                 "Nginx HTTPS mit CA-Prüfung",
