@@ -42,6 +42,7 @@ def command(**overrides):
             "status": "in_progress",
             "completed": True,
             "offset": 0,
+            "part_offset": 0,
             "limit": 20,
             "snapshot": None,
             **overrides,
@@ -148,6 +149,9 @@ def test_windows_are_bounded():
     repository = Mock()
     ListRepairs(repository).execute(command())
     repository.list.assert_called_once_with(1, 2, 0, 20, None)
+    from app.domains.repairs.dto import RepairDetails
+
+    repository.get.return_value = RepairDetails(Mock(), (), 0, 0)
     GetRepair(repository).execute(command())
     repository.get.assert_called_once_with(1, 3, 0, 20)
 

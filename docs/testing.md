@@ -206,3 +206,21 @@ Ergebnisse und Releasehinweise: [T06-Abnahme](t06-validation.md).
 
 Die bestehenden Befehle für die vollständigen Unit-, Integrations- und E2E-Suiten
 schliessen diese Tests ein. Ergebnisse: [T07-Abnahme](t07-validation.md).
+
+## T08: Ersatzteile, Arbeitswerte und Kosten
+
+`tests/unit/domains/costs` prüft die reinen CHF-Beispiele, Rundung, grosse Werte,
+unabhängigen Decimal-Kontext und Eingabegrenzen. `tests/unit/domains/parts`
+prüft Teile-Slices und Arbeitswerte mit Fake-/Mock-Repositories, insbesondere
+Eigentum vor Validierung und fehlende Schreibzugriffe bei ungültigen Eingaben.
+
+`tests/integration/parts` verwendet PostgreSQL: Kosten nach Anlegen/Bearbeiten,
+manipulierte Gesamtsummen, atomare Rücknahme nach Commit-Fehler, Eigentums- und
+Fallzuordnung, DB-Constraints, Pagination mit vollständiger Kostensumme sowie
+Upgrade vorhandener T07-Daten. `tests/e2e/test_parts.py` prüft Englisch/Deutsch
+mit und ohne JavaScript, AJAX ohne Dokumentnavigation, Formularentwürfe,
+Validierungsfehler, Persistenz und mobile Darstellung. Derselbe Presenter wird
+weiter durch die bestehenden JavaScript-Tests abgesichert.
+
+Der neue Task benötigt keine zusätzlichen Ausnahmen der Architekturregeln und
+keine neue Abhängigkeit. Ergebnisse und Betriebsprüfung: [T08-Abnahme](t08-validation.md).

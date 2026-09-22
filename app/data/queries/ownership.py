@@ -28,3 +28,15 @@ def owned_steps(owner_id, repair_id):
         .join(Device, Repair.device_id == Device.id)
         .where(Device.owner_id == owner_id, Repair.id == repair_id)
     )
+
+
+def owned_parts(owner_id, repair_id):
+    from app.data.parts.model import PartItem
+    from app.data.repairs.model import Repair
+
+    return (
+        select(PartItem)
+        .join(Repair, PartItem.repair_id == Repair.id)
+        .join(Device, Repair.device_id == Device.id)
+        .where(Device.owner_id == owner_id, Repair.id == repair_id)
+    )

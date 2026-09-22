@@ -239,3 +239,8 @@ h1, h2, h3 { letter-spacing: -.045em; font-weight: 700; text-wrap: balance; }
 .repair-row .repair-card h2 { font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .repair-row .field-hint { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .repair-row .repair-status { flex-shrink: 0; }
+
+/* Kosten gehören optisch zusammen; die Gesamtsumme bildet den klaren Abschluss. */
+.cost-summary > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem 1rem; padding: .75rem 0; }
+.cost-summary dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.cost-summary .cost-total { border-top: 2px solid var(--bs-primary); font-weight: 700; font-size: 1.2rem; }

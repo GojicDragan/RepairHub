@@ -9,7 +9,9 @@ Flask-Security. T06 ergänzt eigene Geräte unter `/devices`: AJAX-Erfassung und
 Bearbeitung, serverseitiger Listenstart und virtuelle AJAX-Liste. T07 ergänzt
 Reparaturfälle, Fehlerbeschreibungen, Schritte und Statuswechsel mit Wiederaufnahme.
 Details: [Reparaturverwaltung](docs/repairs.md) und [T07-Abnahme](docs/t07-validation.md).
-Ersatzteile, Kosten und die fachliche API folgen in den weiteren Funktionstasks.
+T08 ergänzt Ersatzteilpositionen, Arbeitswerte und geschätzte Kosten in CHF.
+Details: [Teile und Kosten](docs/parts-and-costs.md) und [T08-Abnahme](docs/t08-validation.md).
+Die authentifizierte lesende API folgt mit T09.
 Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für aktive
 DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
 für Abhängigkeiten, Geheimnisse und Container.
@@ -142,7 +144,7 @@ Das in T03 vervollständigte Grundgerüst verwendet eine gemeinsame englische
 Seitenvorlage sowie getrennte HTML- und JSON-Fehlerantworten. Konfiguration,
 Fehlervertrag, Komponentengrenzen und Abnahme stehen in
 [docs/t03-validation.md](docs/t03-validation.md). Registrierung und E-Mail-Verifikation sind mit T04 umgesetzt;
-Geräte und Reparaturfälle sind mit T06 und T07 umgesetzt.
+Geräte, Reparaturfälle, Ersatzteile und Kosten sind mit T06–T08 umgesetzt.
 
 Das Frontend verwendet lokal eingebundenes Bootstrap und JavaScript mit kleinen
 DOM-Adaptern nach dem Humble-Object-Muster: [Frontend-Aufbau](docs/frontend.md).

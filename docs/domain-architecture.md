@@ -239,3 +239,13 @@ obere Fall-ID für virtuelle Listen. Der Eigentumsfilter gilt auch für Maximum,
 Gesamtzahl und jedes AJAX-Fenster. Diese Erweiterung verwendet weiterhin nur den
 eigenen Repository-Port; keine Abhängigkeit zur Geräte-Domäne. Das gemeinsame
 Scrollverhalten liegt ausschliesslich in der Präsentation.
+
+## T08: Ersatzteile, Arbeitswerte und reine Kostenberechnung
+
+`parts.add_part`, `parts.update_part` und `repairs.update_work` sind eigenständige
+Slices mit explizit injizierten Repository-Ports. `repairs.get_repair` berechnet
+Kosten über `costs.model.calculate`; auch Teile-Handler beziehen ihren
+Positionsbetrag von derselben Funktion. Die Kostenkomponente kennt ausschliesslich
+Standardbibliothek und übergebene Werte, keine Repository-Ports oder Persistenz.
+Keine Imports zwischen Reparatur- und Teiledomäne. Eigene DTOs der Fallauskunft
+tragen die benötigten Positionswerte. Einzelheiten: [Teile und Kosten](parts-and-costs.md).
