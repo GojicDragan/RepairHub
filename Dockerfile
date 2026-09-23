@@ -29,4 +29,6 @@ USER 10001:10001
 EXPOSE 8000
 HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
   CMD ["python", "healthcheck.py"]
-CMD ["gunicorn", "--bind=0.0.0.0:8000", "--workers=2", "--worker-tmp-dir=/tmp", "--forwarded-allow-ips=", "app:create_app()"]
+# Docker verwaltet den Prozess; der optionale Control-Socket würde ins
+# schreibgeschützte Home-Verzeichnis schreiben.
+CMD ["gunicorn", "--no-control-socket", "--bind=0.0.0.0:8000", "--workers=2", "--worker-tmp-dir=/tmp", "--forwarded-allow-ips=", "app:create_app()"]
