@@ -9,8 +9,9 @@
     state: present
     build: never
     pull: never
-    wait: true
-    wait_timeout: "{{ repairhub_wait_timeout }}"
+    # Ein bestehender unhealthy-Status darf weder den nötigen Reload verhindern
+    # noch die Erholung nach dem Austausch des App-Containers vorzeitig abbrechen.
+    wait: false
   no_log: true
 
 - name: Geänderte Nginx- und TLS-Konfiguration vor dem Neuladen validieren
@@ -34,6 +35,11 @@
   when: repairhub_previous | length > 0 and (repairhub_nginx_config.changed or repairhub_infrastructure_secrets.changed)
   changed_when: true
   no_log: true
+
+- name: Auf Nginx-Bereitschaft auch nach vorübergehendem Ausfall warten
+  ansible.builtin.include_tasks: wait_healthy.yml
+  vars:
+    repairhub_wait_service: nginx
 
 # Nach Erststart/Wartung verwendet der geprüfte Nginx diese Generation bereits.
 # Ohne diesen Marker würde der nächste identische Release unnötig nachladen.

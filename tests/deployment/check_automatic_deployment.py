@@ -11,6 +11,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 
@@ -160,6 +161,22 @@ def verify(directory: Path, *, recovery_only: bool = False) -> None:
     assert run("cat", path) == original
     assert containers() == upgraded, "Dateireparatur benötigt keinen Container-Neustart."
     deploy("drift-repeat", unchanged=True)
+
+    # Ein laufender, aber unhealthy Nginx muss zuerst seine reparierte Konfiguration
+    # laden können. Compose --wait würde bereits vor diesem Reload abbrechen.
+    nginx = run("docker", "ps", "-q", "--filter", "label=com.docker.compose.service=nginx")
+    assert "proxy_pass http://$upstream;" in original
+    broken = original.replace("proxy_pass http://$upstream;", "return 503;")
+    run("sh", "-c", 'cat > "$1"', "sh", path, input=broken)
+    run("docker", "exec", nginx, "nginx", "-s", "reload", "-c", "/etc/nginx/repairhub/nginx.conf")
+    deadline = time.monotonic() + 90
+    while run("docker", "inspect", "--format", "{{.State.Health.Status}}", nginx) != "unhealthy":
+        if time.monotonic() >= deadline:
+            raise AssertionError("Fixture-Nginx wurde mit HTTP 503 nicht unhealthy.")
+        time.sleep(1)
+    deploy("repair-unhealthy-nginx")
+    assert run("docker", "inspect", "--format", "{{.State.Health.Status}}", nginx) == "healthy"
+    assert containers() == upgraded, "Nginx-Erholung benötigt keinen Container-Neustart."
 
     # Ein fehlender Dienst wird wiederhergestellt; die übrigen Dienste bleiben bestehen.
     nginx = run("docker", "ps", "-q", "--filter", "label=com.docker.compose.service=nginx")

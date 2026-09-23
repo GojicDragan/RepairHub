@@ -22,9 +22,13 @@
     state: present
     build: never
     pull: never
-    wait: true
-    wait_timeout: "{{ repairhub_wait_timeout }}"
+    wait: false
   no_log: true
+
+- name: Bereitschaft der vorherigen Anwendung abwarten
+  ansible.builtin.include_tasks: wait_healthy.yml
+  vars:
+    repairhub_wait_service: app
 
 - name: Statische Dateien der vorherigen Anwendung atomar aktivieren
   ansible.builtin.include_tasks: activate_static.yml

@@ -1,0 +1,14 @@
+---
+# Compose --wait bricht bei unhealthy sofort ab, auch vor dem wait_timeout.
+# Nach einem App-Wechsel darf sich der Dienst innerhalb der Frist erholen.
+- name: Auf Container-Bereitschaft innerhalb der Deployment-Frist warten
+  community.docker.docker_container_info:
+    name: "{{ repairhub_project_name }}-{{ repairhub_wait_service }}-1"
+  register: repairhub_service_health
+  until: >-
+    repairhub_service_health.exists | default(false) and
+    (repairhub_service_health.container | default({}, true)).get('State', {}).get('Status', '') == 'running' and
+    (repairhub_service_health.container | default({}, true)).get('State', {}).get('Health', {}).get('Status', '') == 'healthy'
+  retries: "{{ ((repairhub_wait_timeout | int) / 3) | round(0, 'ceil') | int }}"
+  delay: 3
+  no_log: true
