@@ -1,7 +1,7 @@
 """Flask-Security-Funktionen hinter den frameworkfreien Ports der Benutzerdomäne.
 
 Verwendet die APIs für Registrierung, Bestätigung und Passwortwiederherstellung,
-nicht die HTTP-Views der Bibliothek. Integrationsgrenze: docs/user-use-cases.md.
+nicht die HTTP-Views der Bibliothek. Die Adaptergrenze kapselt die technische Identitätsbibliothek.
 """
 
 from dataclasses import asdict

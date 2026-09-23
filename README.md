@@ -6,18 +6,11 @@ Passwort-Recovery, Suche, Statusübersicht, private Bilder, PDF-Berichte und ein
 lesende API mit persönlichen Schlüsseln. Die Oberfläche unterstützt Deutsch und
 Englisch anhand der Browsersprache.
 
-- **Anwendung:** <https://lab19.ifalabs.org> (HTTPS, Port 443)
-- **Bedienung:** [Benutzeranleitung mit Screenshots](docs/user-guide/README.md)
-- **API:** [Endpunkte, Authentifizierung und Beispiele](docs/api.md)
-- **Architektur:** [Fachdomänen und Ports](docs/domain-architecture.md),
-  [aktuelle Diagramme](docs/diagrams/README.md)
-- **Abnahme:** [zwölf Testfälle](docs/acceptance-test-protocol.md), [T12-Nachweis](docs/t12-validation.md)
-- **Abgabe:** [Unterlagen und noch offene persönliche Angaben](docs/submission/README.md)
+Anwendung: <https://lab19.ifalabs.org>
 
 Der modulare Flask-Monolith läuft mit Nginx, PostgreSQL und Garage unter Docker
-Compose. GitHub Actions prüft Test → Build → Security; veröffentlichte Releases
-laufen zusätzlich durch Publish → Deploy via Ansible. Nur das App-Image wird
-veröffentlicht. Infrastrukturimages sind über Version und Digest festgelegt.
+Compose. GitHub Actions führt Test → Build → Security → Publish → Deploy aus;
+Publish und Deploy laufen nur für veröffentlichte Releases.
 
 ## Lokal starten
 
@@ -68,33 +61,15 @@ docker compose -f compose.yaml -f compose.development.yaml up -d --wait
 curl --fail http://127.0.0.1:8080/health/ready
 ```
 
-Die Startseite ist unter `http://127.0.0.1:8080` erreichbar. Entwicklung verwendet
-lokales HTTP, Quellcode-Mounts und Reload. Produktion verwendet HTTPS und
-geprüfte Image-Digests; die konkreten Abläufe stehen in
-[docs/ci-cd.md](docs/ci-cd.md). Es werden weder App- noch Datenbankports veröffentlicht.
+Die Anwendung ist unter `http://127.0.0.1:8080` erreichbar. Entwicklung verwendet
+lokales HTTP, Quellcode-Mounts und Reload. Mailpit fängt alle Entwicklungs-E-Mails
+ab; die Nachrichten sind unter `http://127.0.0.1:8025` sichtbar. Es gibt keinen
+externen Mailversand aus Development. Produktion verwendet verschlüsseltes SMTP.
 
-Beenden mit demselben Compose-Aufruf und `down` anstelle von `up --build -d --wait`.
-Das benannte PostgreSQL-Volume bleibt erhalten. Bestehende Volumes nicht mit
-neuen Zugangsdaten oder einer anderen Datenbankbasis wiederverwenden, ohne den
-entsprechenden Übernahmeweg zu prüfen. Volumes ersetzen keine Backups.
-
-## Benutzeranleitung lokal ansehen
-
-Development startet zusätzlich den Dienst `docs`. Öffne **http://127.0.0.1:8081**,
-um die Markdown-Anleitung mit Screenshots und PDF-Links zu lesen.
-Änderungen unter `docs/` werden nach dem Neuladen sichtbar. Der Port ist bei Bedarf
-über `DOCS_LOCAL_PORT` in `.env` konfigurierbar.
-
-Nur den Dokumentationscontainer bauen und starten:
-
-```bash
-docker compose -f compose.yaml -f compose.development.yaml up -d --build --wait docs
-```
-
-Der Dienst gehört ausschliesslich zu Development, benötigt keine Zugangsdaten und
-wird nicht veröffentlicht oder auf Produktion bereitgestellt. Er verwendet den
-[Markdown-it-Parser](https://markdown-it-py.readthedocs.io/en/latest/using.html);
-Versionen und Paket-Hashes stammen aus dem vorhandenen Lockfile.
+Zum Beenden denselben Compose-Aufruf mit `down` verwenden. Benannte Volumes bleiben
+erhalten. Volumes ersetzen keine Backups; bestehende Volumes nicht mit neuen
+Zugangsdaten oder einer anderen Datenbankbasis wiederverwenden.
+Migrationen explizit ausführen, niemals pro Gunicorn-Worker.
 
 ## Prüfen und weiterentwickeln
 
@@ -124,164 +99,73 @@ uv run --locked python scripts/ci/images.py build --commit "$(git rev-parse HEAD
 uv run --locked --group e2e pytest tests/e2e
 ```
 
-Die offiziellen Nginx-/PostgreSQL-/Garage-Pins stehen bereits in
-`deploy/infrastructure.json`; ein vorheriger eigener Infrastruktur-Release ist
-nicht erforderlich. Ansible richtet die Infrastruktur beim ersten Deployment
-ein. Die begrenzte, vom Benutzer freigegebene Ausnahme für die bekannten
-`gosu`-Befunde im PostgreSQL-Image ist in [docs/ci-cd.md](docs/ci-cd.md) dokumentiert.
+## Architektur
 
-Die drei Stufen lassen sich auch mit `-m unit`, `-m integration` und `-m e2e`
-auswählen. Ein Aufruf ohne Auswahl sammelt alle Stufen und benötigt deren
-Voraussetzungen. Einteilung, Berichte und Erweiterungsregeln stehen in
-[docs/testing.md](docs/testing.md).
+- `app.domains`: frameworkfreie vertikale Anwendungsfälle mit eigenen Ports und DTOs.
+  Keine Imports zwischen Slices; nur Reparaturen und Teile verwenden die reine
+  Kostenberechnung unter `app.domains.costs`.
+- `app.data`: persistente Modelle und Adapter für PostgreSQL und privaten Bildspeicher.
+- `app.adapters.users`: technische Integration von Flask-Security und API-Keys.
+- `app.bootstrap`: Application Factory und explizite Verdrahtung der Adapter.
+- `app.web` und `app.api`: HTTP, Formulare, Vorlagen und JSON; kein direkter ORM-Zugriff.
 
-Die acht Paketgrenzen unter `app/` folgen dem Komponentenentwurf. Fachlogik gehört
-in vertikale Slices unter `app.domains`, Datenzugriff in `app.data`; `app.domains.costs`
-bleibt eine reine Berechnungskomponente. Die technische Bereitschaftsprüfung
-verwendet eine gekapselte Diagnoseschnittstelle.
+Das Frontend verwendet lokales Bootstrap, kleine DOM-Adapter und separat testbare
+Presenter. Fachlogik bleibt in Python. Übersetzungen verwenden gettext unter
+`app/translations`; Englisch ist der Fallback, URLs bleiben sprachunabhängig.
+Die Grenzen werden von `scripts/check_architecture.py` und den Architekturtests geprüft.
 
-- [Pipeline, Secrets-Namen, Branchregeln und Betrieb](docs/ci-cd.md)
-- [ZAP-Formularprüfung, Browserabdeckung und DAST-Nachweis](docs/dast.md)
-- [Tatsächliche T02-Prüfergebnisse und offene externe Abnahme](docs/t02-validation.md)
-- [Isolierter lokaler Ansible-Testhost](tests/deployment/README.md)
+## Bedienung und API
 
-Test, Build und Security laufen auf allen Branches und bei Pull Requests.
-Nur veröffentlichte GitHub-Releases durchlaufen zusätzlich
-Publish und Deploy in die GitHub-Environment `production`; Release-Tags müssen
-auf den aktuellen `main`-Commit zeigen. Host und vorhandener SSH-Benutzer werden dort als **Variables**, SSH-Passwort,
-Anwendungs-/DB-Geheimnisse als **Secrets** hinterlegt; die
-[Einrichtungsliste](docs/ci-cd.md#github-einrichtung) nennt alle Werte.
-Automatisierte Tests und ZAP verwenden kurzlebige isolierte Instanzen;
-ein zusätzlicher Testserver oder eine Environment `test` ist nicht erforderlich.
-Die vorhandenen Planungsunterlagen und ältere lokale Arbeitsnachweise bleiben
-auf ausdrücklichen Benutzerwunsch ignoriert. Geheimnisse und lokale QA-Artefakte
-gehören ebenfalls nicht in das Repository oder Quellcode-ZIP.
+Nach Registrierung unter `/register` muss die E-Mail bestätigt werden. `/confirm`
+fordert einen neuen Bestätigungslink an; `/reset` startet die Passwortwiederherstellung.
+Benutzername und E-Mail sind eindeutig. Passwörter haben 8–128 Zeichen.
 
-TLS für `lab19.ifalabs.org` stellt Ansible beim ersten Deployment über Let’s Encrypt
-aus. Ein Host-Timer prüft danach die Erneuerung. Dafür `ACME_EMAIL` im GitHub-Environment
-setzen und Port 80 für HTTP-01 freigeben; siehe [TLS-Einrichtung](docs/ci-cd.md#tls-automatisch-ausstellen-und-erneuern).
+Unter `/devices` eigene Geräte erfassen und bearbeiten. Ein Gerät benötigt Name,
+Hersteller und Modell. Reparaturfälle unter `/repairs` enthalten Fehlerbeschreibung,
+Status, Schritte, Ersatzteile und Arbeitswerte. Zustände sind offen, in Bearbeitung
+und abgeschlossen; Wiederaufnahme ist möglich. Bilder werden an Geräten und Fällen
+hochgeladen. `/repairs/{id}/report.pdf` liefert den vollständigen PDF-Bericht.
 
-Das in T03 vervollständigte Grundgerüst verwendet eine gemeinsame englische
-Seitenvorlage sowie getrennte HTML- und JSON-Fehlerantworten. Konfiguration,
-Fehlervertrag, Komponentengrenzen und Abnahme stehen in
-[docs/t03-validation.md](docs/t03-validation.md). Registrierung und E-Mail-Verifikation sind mit T04 umgesetzt;
-Geräte, Reparaturfälle, Ersatzteile und Kosten sind mit T06–T08 umgesetzt.
+Kosten werden serverseitig mit Decimal berechnet:
+`Arbeitszeit × Stundensatz + Summe(Menge × Einzelpreis)`, in CHF und mit
+`ROUND_HALF_UP` auf zwei Nachkommastellen. Jeder Zugriff prüft Eigentümerschaft.
 
-Das Frontend verwendet lokal eingebundenes Bootstrap und JavaScript mit kleinen
-DOM-Adaptern nach dem Humble-Object-Muster: [Frontend-Aufbau](docs/frontend.md).
+Persönliche API-Keys unter `/account/api-key` erzeugen, ersetzen oder widerrufen.
+Klartext wird einmal angezeigt; nur der Hash wird gespeichert.
 
-Fachkomponenten bleiben frameworkfrei; Datenadapter implementieren ihre Ports und
-werden injiziert: [Architektur und Abhängigkeitsumkehr](docs/domain-architecture.md).
-
-
-## Registrierung und E-Mail-Bestätigung
-
-`/register` erstellt ein Konto; eine Bestätigung per E-Mail ist vor der
-Anmeldung erforderlich. Benutzername und E-Mail sind eindeutig, auch bei
-abweichender Gross-/Kleinschreibung. Benutzernamen: 1–80 Buchstaben/Ziffern;
-Passwörter: 8–128 Zeichen. Bestätigungslinks sind 24 Stunden gültig und können
-unter `/confirm` erneut angefordert werden. `/login` und die POST-Abmeldung
-stammen ebenfalls aus Flask-Security. `/reset` ermöglicht das Zurücksetzen des
-Passworts per E-Mail mit einem eine Stunde gültigen Link. Details und Nachweise:
-[Passwort-Recovery](docs/password-reset.md). Administratorfunktionen sind deaktiviert.
-
-In Produktion sind externer SMTP-Zugang und Absenderfreigabe Voraussetzung für
-tatsächlichen Mailversand; siehe [GitHub-Einrichtung](docs/ci-cd.md) und [T04-Nachweis](docs/t04-validation.md).
-Nach dem lokalen Build die Datenbank starten und die Migration explizit ausführen:
-
-```bash
-docker compose -f compose.yaml -f compose.development.yaml up -d db
-docker compose -f compose.yaml -f compose.development.yaml run --rm --no-deps app flask --app app db upgrade
-docker compose -f compose.yaml -f compose.development.yaml up -d
+```http
+Authorization: Bearer <api-key>
+GET /api/repairs?limit=20&offset=0
+GET /api/repairs/{id}
 ```
 
-Migrationen werden nicht beim Start jedes Workers ausgeführt. In Produktion
-übernimmt das Ansible-Deployment den kontrollierten Migrationsschritt.
+Die API ist lesend. Dezimalwerte werden als Strings ausgegeben. Fehlende oder
+ungültige Keys ergeben 401, fremde und unbekannte Fälle 404, Schreibmethoden 405.
+Der technische `API_SMOKE_KEY` ermöglicht ausdrücklich einen systemweiten Lesezugriff
+für Deployment-Prüfungen; persönliche Keys bleiben an den Benutzer gebunden.
 
+## Auslieferung und Betrieb
 
-### E-Mails in Development abfangen
+Die Pipeline steht in [.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml).
+Tests und Scans laufen auf Branches und Pull Requests. Veröffentlichte Releases
+müssen auf den aktuellen `main`-Commit zeigen und liefern über die GitHub-Environment
+`production` aus. Das App-Image wird einmal gebaut, geprüft, veröffentlicht und
+über seinen Digest bereitgestellt. Infrastruktur-Pins stehen in
+[deploy/infrastructure.json](deploy/infrastructure.json).
 
-Development startet automatisch **Mailpit** mit der Anwendung. Alle Nachrichten
-landen unter **http://127.0.0.1:8025**, auch die Bestätigungslinks der Registrierung.
-Die Links zeigen auf die lokale Anwendung unter `http://127.0.0.1:8080`
-(beziehungsweise `HTTP_LOCAL_PORT`). Es werden keine externen E-Mails versendet:
-Mailpit hat keinen konfigurierten Relay oder Forwarder und keinen
-veröffentlichten SMTP-Port. Seine Weboberfläche ist nur auf Loopback erreichbar.
+Ansible-Playbooks unter `deploy/ansible` übernehmen Hostvorbereitung (`bootstrap.yml`),
+Auslieferung (`deploy.yml`) und kompatiblen Rollback (`rollback.yml`).
+Host-/Umgebungswerte kommen aus Inventory und GitHub-Variables, Zugangsdaten aus
+Environment-Secrets. Die konkreten Namen und Prüfungen stehen im Workflow,
+in den Inventories und den Rollendefaults. Keine Geheimnisse einchecken.
 
-Die Development-Datei überschreibt SMTP-Host, Port, Zugangsdaten, Absender und
-TLS-Einstellungen ausdrücklich; externe SMTP-Werte aus `runtime.env` werden daher
-nicht genutzt. Unverschlüsseltes SMTP auf `mailpit:1025` bleibt auf das interne
-Entwicklungsnetz begrenzt. Produktion verwendet weiterhin verschlüsseltes SMTP.
+Der Zielhost verwendet Debian 12, Docker und Compose v2. Nur Nginx veröffentlicht
+Anwendungsports. Ansible richtet TLS über Let’s Encrypt ein; `ACME_EMAIL` und Port 80
+für HTTP-01 sind erforderlich. Ein Timer übernimmt Zertifikatserneuerungen.
+Release-Deployments gleichen Infrastruktur idempotent ab, sichern den vorherigen
+Stand, führen Migrationen einmalig im neuen App-Image aus und prüfen HTTPS sowie API.
+Kein automatisches Datenbank-Downgrade; Wiederherstellung muss zum Schema passen.
 
-```bash
-docker compose -f compose.yaml -f compose.development.yaml up --build -d --wait
-```
-
-Bei Bedarf `MAILPIT_LOCAL_PORT` in `.env` ändern. Nachrichten sind temporäre
-Testdaten und gehen beim Stoppen/Neuerstellen des Mailpit-Containers verloren.
-Nach erstmaligem Build die oben beschriebene Migration ausführen, bevor ein
-Benutzer registriert wird. Keine zusätzlichen SMTP-Secrets für Development nötig.
-
-Mailpit ist ein reines Entwicklungswerkzeug; es wird weder nach GHCR veröffentlicht
-noch durch Produktions-Ansible ausgerollt. Die isolierten CI-Mailtests bleiben
-unabhängig davon. Grundlage: [offizielle Docker-Dokumentation](https://mailpit.axllent.org/docs/install/docker/).
-
-Die Anwendung unterstützt Deutsch und Englisch anhand der Browsersprache
-(`Accept-Language`), mit Englisch als Fallback. Endpoints bleiben Englisch: [i18n-Konvention und Befehle](docs/i18n.md).
-
-Die visuelle Marke folgt dem Werkstatt-Thema mit klarer Formularhierarchie und
-Gestaltregeln: [Design-System](docs/design-system.md).
-
-Die Benutzerabläufe verwenden injizierte Domain-Handler und Flask-Security als
-technischen Adapter: [Aufrufwege und Grenzen](docs/user-use-cases.md).
-
-
-## Geräteverwaltung (T06)
-
-Nach Anmeldung führt **Your devices / Deine Geräte** zur Geräteübersicht. Name,
-Hersteller und Modell sind erforderlich. Erfassung und Bearbeitung speichern per
-AJAX; Listen starten mit 20 serverseitigen Zeilen und behalten danach höchstens
-60 Gerätezeilen im DOM. Ohne JavaScript bleiben Formulare und Seitenlinks nutzbar.
-Details: [Geräteverwaltung](docs/devices.md), [Abnahme](docs/t06-validation.md).
-
-Der normale `deploy.yml`-Aufruf gleicht die Nginx-CSP mit `connect-src 'self'`
-automatisch ab und liefert den geprüften App-Digest samt Migration aus.
-Identische Wiederholungen erstellen keine Container neu; eine separate
-Infrastrukturfreigabe ist nicht erforderlich.
-Keine neuen Environment-Variablen oder Secrets. Offene Security-Abnahmen bleiben
-im T06-Nachweis ausdrücklich ausgewiesen.
-
-Die authentifizierte, lesende REST-API und die zusätzlich erforderlichen
-Deployment-Prüfwerte sind in [docs/api.md](docs/api.md) beschrieben.
-
-T10 vervollständigt Navigation und Fehlerpfade. Der vollständige Browserablauf
-von Registrierung bis Kostenanzeige wird in beiden Sprachen mit und ohne
-JavaScript geprüft: [T10-Abnahme](docs/t10-validation.md).
-
-Deployment, Backupaufbewahrung und Wiederherstellung sind in der
-[Betriebsanleitung](docs/operations.md) beschrieben. T11 ist als Dokumentationsaufgabe
-abgeschlossen; eine Datenbankwiederherstellung wurde ausdrücklich nicht ausgeführt:
-[T11-Nachweis](docs/t11-validation.md).
-
-Reparaturfälle unterstützen Suche und kombinierbare Statusfilter mit SSR und
-virtuellen AJAX-Fenstern: [Suchsemantik](docs/repairs.md),
-[K-T01-Abnahme](docs/kt01-validation.md).
-
-Auch die Geräteliste unterstützt eine Suche über Name, Hersteller und Modell
-mit 300 ms Eingabepause und virtuellen Trefferfenstern:
-[Gerätesuche](docs/devices.md), [K-T02-Abnahme](docs/kt02-validation.md).
-
-Die [Statusübersicht](docs/repairs.md#statusübersicht-k-t03) zeigt die Anzahl eigener
-Fälle pro Zustand über alle Geräte hinweg.
-Prüfnachweis: [K-T03](docs/kt03-validation.md).
-
-K-T04 ergänzt private Bild-Uploads und eine Mosaikansicht auf Geräte- und Reparaturdetails.
-Einrichtung, Grenzen und neue Produktions-Secrets: [Bilder](docs/images.md) und
-[Garage](docs/garage.md).
-
-K-T05 ergänzt den vollständigen PDF-Reparaturbericht als Download auf der
-Falldetailseite. Details: [PDF-Berichte](docs/pdf-reports.md).
-
-Die Gesamtabnahme einschliesslich optionaler Funktionen ist in zwölf Fällen im
-[Abnahmeprotokoll](docs/acceptance-test-protocol.md) dokumentiert.
-Aktuelle Prüfergebnisse und Release-Zuordnung: [T12](docs/t12-validation.md).
+Lokale Ansible-Abnahme: [tests/deployment/README.md](tests/deployment/README.md).
+Scanner-Ausnahmen bleiben einzeln in `deploy/security` versioniert.
+Geheimnisse, lokale Umgebungen, QA-Artefakte und Berichte sind von Git ausgeschlossen.

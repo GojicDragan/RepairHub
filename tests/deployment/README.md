@@ -67,7 +67,7 @@ Infrastrukturänderungen werden im normalen Deploy automatisch abgeglichen;
 identische Eingaben dürfen keine Container neu starten. Weitere Abnahmefälle
 sind absichtlicher App-Abnahmefehler mit kompatiblem Rollback, veraltete
 Release-Sequenz und falscher SSH-Hostschlüssel.
-Die tatsächlich geprüften Fälle stehen in `docs/t02-validation.md`.
+Aktuelle Ergebnisse werden beim jeweiligen Testlauf ausgegeben.
 
 Nach abgeschlossener Diagnose nur den ausdrücklich erzeugten Testhost entfernen:
 
@@ -110,4 +110,4 @@ des Infrastruktur-Pending-Markers wird mit demselben Deploy abgeschlossen;
 die anschliessende Wiederholung muss wieder `changed=0` ergeben. Der Test erzeugt Logs ausschliesslich im geschützten Fixture-Verzeichnis;
 keine vollständigen Konfigurationsdateien oder Laufzeitwerte ausgeben.
 
-Konkrete Ergebnisse: [Automatisches Infrastruktur-Upgrade](../../docs/infrastructure-upgrade-validation.md).
+Der Testlauf prüft den automatischen Infrastrukturabgleich.

@@ -1,6 +1,6 @@
 // ZAP-HTTP-Sender: CSRF-Tokens mit dem passenden Cookie laden und volatile
 // Tokenmetadaten nur für SQL-Vergleiche vereinheitlichen. Keine Regeln ausblenden.
-// Hintergrund und Nachweis: docs/dast.md. Keine Anwendungsausgabe wird geändert.
+// Die Vereinheitlichung verändert keine Anwendungsausgabe.
 var HttpSender = Java.type('org.parosproxy.paros.network.HttpSender');
 var Stats = Java.type('org.zaproxy.zap.utils.Stats');
 // ZAP kann Tokens aus verglichenen Antworten erneut senden. Deshalb einen

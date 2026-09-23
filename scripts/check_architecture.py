@@ -4,8 +4,8 @@ import ast
 import sys
 from pathlib import Path
 
-# Komponenten gemäss Diagramm; Importumkehr gemäss Benutzerentscheidung
-# vom 21. September 2026 (docs/domain-architecture.md).
+# Erlaubte Komponentenimporte: Fachkern mit eigenen Ports, konkrete Adapter
+# ausserhalb der Domänen; Verdrahtung ausschliesslich in app.bootstrap.
 ALLOWED = {
     "app.web": {
         "app.domains.users",
