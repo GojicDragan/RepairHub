@@ -31,6 +31,25 @@ services:
     healthcheck:
       test: [CMD, wget, --spider, -q, 'http://127.0.0.1:8080/health/ready']
 
+  docs:
+    build:
+      context: ./deploy/docs
+    ports:
+      - '127.0.0.1:${DOCS_LOCAL_PORT:-8081}:8000'
+    # Nur öffentliche Dokumentation einhängen, niemals das Repository samt runtime.env.
+    volumes:
+      - ./docs:/content/docs:ro
+      - ./README.md:/content/README.md:ro
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/', timeout=3).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
   mailpit:
     image: axllent/mailpit:v1.31.2@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
     ports:

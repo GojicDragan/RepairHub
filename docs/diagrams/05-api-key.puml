@@ -1,0 +1,29 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam ArrowColor #243b35
+skinparam componentBackgroundColor #f2f5f3
+skinparam classBackgroundColor #f2f5f3
+skinparam wrapWidth 180
+title RepairHub – persönlichen API-Schlüssel erzeugen
+actor Benutzer
+participant "Webroute" as Web
+participant "users.create_api_key" as Domain
+participant "injizierter Key-Port / Adapter" as Adapter
+database PostgreSQL as DB
+Benutzer -> Web : POST /account/api-key\nBestätigte Sitzung + CSRF
+Web -> Domain : vertrauenswürdige Identität
+Domain -> Adapter : Schlüssel erzeugen / ersetzen
+Adapter -> Adapter : kryptografischen Zufall erzeugen
+Adapter -> DB : Hash + Identitätsbindung speichern
+DB --> Adapter : bestätigt
+Adapter --> Domain : einmaliger Klartext
+Domain --> Web : DTO
+Web --> Benutzer : HTML, no-store; Klartext jetzt kopieren
+note over Web, DB
+Spätere Seitenaufrufe zeigen keinen Klartext.
+Ersetzen / Widerruf sperrt den alten Key sofort.
+end note
+@enduml

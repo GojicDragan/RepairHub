@@ -7,8 +7,12 @@ kennt weder Flask noch SQLAlchemy, PostgreSQL oder konkrete Adapter.
 
 Diese Entscheidung ersetzt die bisherigen direkten Importkanten von Services
 zu `app.data`. Der fachliche Ablauf bleibt gleich; die Quellcode-Abhängigkeit
-wird umgedreht. Das bestehende Word-Dokument und Originaldiagramm bleiben als
-bisheriger Entwurf erhalten und müssen bei T13 abgeglichen werden.
+wird umgedreht. Das ursprüngliche Word-Dokument und die Originaldiagramme bleiben als
+bisheriger Entwurf erhalten. Der T13-Abgleich liegt in den
+[aktuellen Diagrammen](diagrams/README.md) und der
+[technischen Word-/PDF-Arbeitsfassung](submission/README.md). Die folgenden
+T03-/T04-Abschnitte halten historische Zwischenstände fest; spätere explizite
+Benutzerentscheidungen in diesem Dokument haben Vorrang.
 
 ## Verträge und Verdrahtung
 

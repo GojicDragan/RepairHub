@@ -1,24 +1,23 @@
 # RepairHub
 
-RepairHub wird eine Webanwendung zur Verwaltung privater Reparaturfälle für
-Haushaltsgeräte und Elektronik. Der aktuelle Stand enthält
-Flask mit PostgreSQL-Bereitschaftsprüfung, Docker Compose und eine
-Pipeline für Test → Build → Security → Deploy über GitHub Actions und Ansible.
-Registrierung, E-Mail-Verifikation, Anmeldung und Passwort-Recovery verwenden
-Flask-Security. T06 ergänzt eigene Geräte unter `/devices`: AJAX-Erfassung und
-Bearbeitung, serverseitiger Listenstart und virtuelle AJAX-Liste. T07 ergänzt
-Reparaturfälle, Fehlerbeschreibungen, Schritte und Statuswechsel mit Wiederaufnahme.
-Details: [Reparaturverwaltung](docs/repairs.md) und [T07-Abnahme](docs/t07-validation.md).
-T08 ergänzt Ersatzteilpositionen, Arbeitswerte und geschätzte Kosten in CHF.
-Details: [Teile und Kosten](docs/parts-and-costs.md) und [T08-Abnahme](docs/t08-validation.md).
-T09 ergänzt die lesende API mit persönlichen Schlüsseln aus dem Frontend und
-dem zentralen System-Leseschlüssel `API_SMOKE_KEY`. Details: [API](docs/api.md).
-Die Security-Stufe verwendet Open-Source-Scanner: Bandit für SAST, ZAP für aktive
-DAST-Prüfungen in einer isolierten CI-Instanz sowie pip-audit, Gitleaks und Trivy
-für Abhängigkeiten, Geheimnisse und Container.
-Normale Releases bauen und veröffentlichen nur das App-Image. Ansible verwaltet
-Nginx, PostgreSQL und Garage als offizielle, über Version und Digest festgelegte Images.
-Ein eigener PostgreSQL-Build oder ein separates Datenbankpaket in GHCR entfällt.
+RepairHub verwaltet eigene Geräte und Reparaturfälle mit Schritten, Ersatzteilen
+und Kostenschätzung in CHF. Enthalten sind Registrierung mit E-Mail-Bestätigung,
+Passwort-Recovery, Suche, Statusübersicht, private Bilder, PDF-Berichte und eine
+lesende API mit persönlichen Schlüsseln. Die Oberfläche unterstützt Deutsch und
+Englisch anhand der Browsersprache.
+
+- **Anwendung:** <https://lab19.ifalabs.org> (HTTPS, Port 443)
+- **Bedienung:** [Benutzeranleitung mit Screenshots](docs/user-guide/README.md)
+- **API:** [Endpunkte, Authentifizierung und Beispiele](docs/api.md)
+- **Architektur:** [Fachdomänen und Ports](docs/domain-architecture.md),
+  [aktuelle Diagramme](docs/diagrams/README.md)
+- **Abnahme:** [zwölf Testfälle](docs/acceptance-test-protocol.md), [T12-Nachweis](docs/t12-validation.md)
+- **Abgabe:** [Unterlagen und noch offene persönliche Angaben](docs/submission/README.md)
+
+Der modulare Flask-Monolith läuft mit Nginx, PostgreSQL und Garage unter Docker
+Compose. GitHub Actions prüft Test → Build → Security; veröffentlichte Releases
+laufen zusätzlich durch Publish → Deploy via Ansible. Nur das App-Image wird
+veröffentlicht. Infrastrukturimages sind über Version und Digest festgelegt.
 
 ## Lokal starten
 
@@ -79,6 +78,24 @@ Das benannte PostgreSQL-Volume bleibt erhalten. Bestehende Volumes nicht mit
 neuen Zugangsdaten oder einer anderen Datenbankbasis wiederverwenden, ohne den
 entsprechenden Übernahmeweg zu prüfen. Volumes ersetzen keine Backups.
 
+## Benutzeranleitung lokal ansehen
+
+Development startet zusätzlich den Dienst `docs`. Öffne **http://127.0.0.1:8081**,
+um die Markdown-Anleitung mit Screenshots und PDF-Links zu lesen.
+Änderungen unter `docs/` werden nach dem Neuladen sichtbar. Der Port ist bei Bedarf
+über `DOCS_LOCAL_PORT` in `.env` konfigurierbar.
+
+Nur den Dokumentationscontainer bauen und starten:
+
+```bash
+docker compose -f compose.yaml -f compose.development.yaml up -d --build --wait docs
+```
+
+Der Dienst gehört ausschliesslich zu Development, benötigt keine Zugangsdaten und
+wird nicht veröffentlicht oder auf Produktion bereitgestellt. Er verwendet den
+[Markdown-it-Parser](https://markdown-it-py.readthedocs.io/en/latest/using.html);
+Versionen und Paket-Hashes stammen aus dem vorhandenen Lockfile.
+
 ## Prüfen und weiterentwickeln
 
 ```bash
@@ -91,12 +108,14 @@ uv run --locked pytest tests/integration
 ```
 
 Für die PostgreSQL-Integration muss `TEST_DATABASE_URL` auf eine getrennte
-Testdatenbank zeigen. Ohne diese Angabe wird der entsprechende Test lokal
-sichtbar übersprungen; in CI ist eine fehlende Testdatenbank ein Fehler.
+Testdatenbank zeigen. Ohne diese Angabe werden die datenbankabhängigen Tests lokal
+sichtbar übersprungen; datenbankfreie Integrationsprüfungen können trotzdem laufen.
+Ein solcher Lauf ersetzt keine vollständige PostgreSQL-Abnahme. In CI ist eine
+fehlende Testdatenbank ein Fehler.
 Vollständige CI-Werkzeuge werden mit `uv sync --locked --group ci` installiert.
 
 End-to-End-Tests verwenden einen echten Chromium-Browser gegen die gebauten
-App-Images mit den festgelegten Nginx-/PostgreSQL-Infrastrukturimages:
+App-Images mit den festgelegten Nginx-/PostgreSQL-/Garage-Infrastrukturimages:
 
 ```bash
 uv sync --locked --group e2e
@@ -105,7 +124,7 @@ uv run --locked python scripts/ci/images.py build --commit "$(git rev-parse HEAD
 uv run --locked --group e2e pytest tests/e2e
 ```
 
-Die offiziellen Nginx-/PostgreSQL-Pins stehen bereits in
+Die offiziellen Nginx-/PostgreSQL-/Garage-Pins stehen bereits in
 `deploy/infrastructure.json`; ein vorheriger eigener Infrastruktur-Release ist
 nicht erforderlich. Ansible richtet die Infrastruktur beim ersten Deployment
 ein. Die begrenzte, vom Benutzer freigegebene Ausnahme für die bekannten
@@ -117,7 +136,7 @@ Voraussetzungen. Einteilung, Berichte und Erweiterungsregeln stehen in
 [docs/testing.md](docs/testing.md).
 
 Die acht Paketgrenzen unter `app/` folgen dem Komponentenentwurf. Fachlogik gehört
-in die zuständigen Services, Datenzugriff in `app.data`; `app.domains.costs`
+in vertikale Slices unter `app.domains`, Datenzugriff in `app.data`; `app.domains.costs`
 bleibt eine reine Berechnungskomponente. Die technische Bereitschaftsprüfung
 verwendet eine gekapselte Diagnoseschnittstelle.
 

@@ -1,0 +1,53 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam ArrowColor #243b35
+skinparam componentBackgroundColor #f2f5f3
+skinparam classBackgroundColor #f2f5f3
+skinparam wrapWidth 180
+title RepairHub – Quellcode-Abhängigkeiten
+left to right direction
+package Präsentation {
+ component "Web / Jinja / PDF" as Web
+ component "REST-API / JSON" as API
+}
+package "Frameworkfreie Fachdomänen (vertikale Slices)" {
+ component "users" as Users
+ component "devices" as Devices
+ component "repairs" as Repairs
+ component "parts" as Parts
+ component "costs / Decimal" as Costs
+ interface "Slice-eigene Ports / DTOs" as Ports
+}
+component "Adapter: Identität, ORM, Bilder" as Data
+component "app.bootstrap\nComposition Root" as Root
+database PostgreSQL as DB
+cloud "Garage / SMTP" as External
+Web --> Users
+Web --> Devices
+Web --> Repairs
+Web --> Parts
+API --> Users
+API --> Repairs
+Repairs --> Costs
+Parts --> Costs
+Users --> Ports
+Devices --> Ports
+Repairs --> Ports
+Parts --> Ports
+Data ..|> Ports
+Data --> DB
+Data --> External
+Root ..> Data : erzeugt
+Root ..> Users : injiziert
+Root ..> Devices : injiziert
+Root ..> Repairs : injiziert
+Root ..> Parts : injiziert
+note bottom of Ports
+Ports gehören dem jeweiligen Slice.
+Keine Imports zwischen Slices.
+Kosten kennen weder Datenbank noch Flask.
+end note
+@enduml

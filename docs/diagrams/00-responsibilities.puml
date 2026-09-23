@@ -1,0 +1,20 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam backgroundColor white
+title RepairHub – Verantwortlichkeiten
+rectangle "Präsentation\nFlask-Routen, Jinja, JSON, PDF\nBootstrap / Humble Objects" as UI
+rectangle "Fachdomänen\nusers · devices · repairs · parts · costs\nVertikale Slices / eigene Ports / DTOs" as Domain
+rectangle "Technische Adapter\nFlask-Security, SQLAlchemy, Pillow, S3" as Adapter
+database "PostgreSQL" as DB
+cloud "Garage / SMTP" as Services
+UI --> Domain : verwendet Anwendungsfälle
+Adapter ..> Domain : implementiert Ports
+Adapter --> DB
+Adapter --> Services
+note right of Domain
+Frameworkfreier Kern.
+app.bootstrap injiziert Adapter.
+Keine Slice-Querverbindungen.
+end note
+@enduml

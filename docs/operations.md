@@ -143,3 +143,32 @@ als passendes `.dump.files.tar`; beide Archive werden verschlüsselt aufbewahrt.
 Für eine Wiederherstellung gehören Datenbank- und Objektarchiv zusammen.
 Details und Grenzen: [Garage](garage.md). Ein tatsächlicher Datenbank-/Gesamtrestore
 wurde auch bei T12 nicht durchgeführt.
+
+## Korrekturphase und Störungsprotokoll
+
+Die Praxisarbeit verlangt mindestens vier Wochen Erreichbarkeit nach dem tatsächlichen
+Abgabetermin. Termin, Fristende, verantwortliche Person und Prüfzugang werden im
+[Übergabeblatt](submission/README.md) festgehalten. Solange sie nicht bestätigt sind,
+sind sie offen; ein erfolgreicher Release erfüllt die Betriebsfrist noch nicht.
+
+Während der Frist täglich und nach jedem Eingriff von ausserhalb des Hosts prüfen:
+
+```bash
+curl --fail --silent --show-error https://lab19.ifalabs.org/health/ready
+```
+
+Zusätzlich nach Releases Anmeldung, vorhandenes Beispielgerät und einen persönlichen
+API-Lesezugriff kontrollieren; Zugangsdaten nicht in ein öffentliches Protokoll schreiben.
+Zertifikatserneuerung, freien Speicher und erfolgreiche zusammengehörige DB-/Garage-
+Backups anhand der oben beschriebenen Betriebswege kontrollieren. Diese Regel ist
+ein Betriebsplan, kein bereits über 28 Tage ausgeführtes Monitoring.
+
+Bei Ausfall Zeitpunkt und Symptom notieren, Host/Docker/Compose und Bereitschaft prüfen,
+anschliessend den dokumentierten Wiederanlauf oder kompatiblen App-Rollback verwenden.
+Keine Volumes löschen und keine Datenbank blind auf einen älteren Stand zurücksetzen.
+Nach der Behebung HTTPS, Anmeldung und API erneut prüfen. Muss der Examinator informiert
+werden, übernimmt dies die verantwortliche Person über den vereinbarten Kontaktkanal.
+
+| Datum/Zeit mit Zeitzone | Prüfung / Symptom | Massnahme | Wieder verfügbar / offen | Verantwortlich |
+| --- | --- | --- | --- | --- |
+| Nach tatsächlicher Abgabe einzutragen | Noch keine Betriebsfrist protokolliert | — | Offen | Zu bestätigen |
