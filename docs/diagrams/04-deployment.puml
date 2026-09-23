@@ -1,0 +1,44 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam ArrowColor #243b35
+skinparam componentBackgroundColor #f2f5f3
+skinparam classBackgroundColor #f2f5f3
+skinparam wrapWidth 180
+title RepairHub – tatsächliche Bereitstellung
+actor Browser
+actor "API-Client" as Client
+cloud "GitHub Actions\nTest → Build → Security\nRelease: Publish → Deploy" as CI
+node "Debian 12 / lab19.ifalabs.org" {
+ node "Docker Compose" {
+  component "nginx\nHTTPS :443; HTTP :80 → HTTPS / ACME" as Nginx
+  component "app\nGunicorn / Flask :8000" as App
+  database "db\nPostgreSQL :5432" as DB
+  component "garage\nprivates S3 :3900" as Garage
+ }
+ folder "Benannte persistente Volumes" as Volumes
+ component "TLS-Erneuerung / Backups" as Tasks
+}
+cloud "Externer SMTP-Dienst" as SMTP
+cloud "GHCR\nApp-Digest" as Registry
+folder "Verschlüsselte Offhost-Backups\nDB + Garage-Objekte" as Backups
+Browser --> Nginx : HTTPS
+Client --> Nginx : HTTPS / Authorization
+Nginx --> App : HTTP im privaten Netz
+App --> DB
+App --> Garage
+App --> SMTP : TLS
+DB --> Volumes
+Garage --> Volumes
+CI --> Registry : ein geprüftes App-Image
+CI --> Tasks : Ansible über SSH
+Tasks --> App : Migration / idempotenter Abgleich
+Tasks --> Backups
+note bottom of App
+Alle Fachdomänen laufen im selben App-Dienst.
+Kein öffentlicher DB-, App- oder S3-Port.
+Ein Host; keine Hochverfügbarkeit.
+end note
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+skinparam shadowing false
+skinparam defaultFontName DejaVu Sans
+skinparam defaultFontSize 13
+skinparam backgroundColor white
+skinparam ArrowColor #243b35
+skinparam componentBackgroundColor #f2f5f3
+skinparam classBackgroundColor #f2f5f3
+skinparam wrapWidth 180
+title RepairHub – typischer Benutzerablauf
+start
+:Konto registrieren;
+:E-Mail bestätigen;
+:Mit E-Mail oder Benutzername anmelden;
+:Eigenes Gerät erfassen oder auswählen;
+:Reparatur mit Fehlerbeschreibung anlegen;
+:Status Offen;
+repeat
+ :Beschreibung, Schritte, Teile und Arbeitswerte pflegen;
+ :Jeweiliges Formular speichern;
+ :Eigentum und Eingaben serverseitig prüfen;
+ if (Gültig?) then (ja)
+  :Atomar speichern und CHF-Kosten berechnen;
+ else (nein)
+  :Feldfehler anzeigen; Eingaben korrigieren;
+ endif
+repeat while (Weitere Bearbeitung?) is (ja)
+:Status Abgeschlossen speichern;
+:Optional PDF herunterladen;
+:Abmelden;
+stop
+note right
+Abgeschlossene Fälle können wieder
+auf Offen oder In Bearbeitung wechseln.
+end note
+@enduml
